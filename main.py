@@ -4,7 +4,6 @@ sample will then be used to generate the embeddings that will be used
 to create the NFT."""
 
 # Initial Imports
-from audio_recorder_streamlit import audio_recorder
 from streamlit_extras.switch_page_button import switch_page
 import streamlit as st
 from PIL import Image
@@ -13,10 +12,10 @@ from PIL import Image
 def init_session_variables():
     """Initialize session state variables"""
     session_vars = [
-        'audio_files', 'record_audio_page', 'upload_audio_page', 'librosa_waveforms'
+        'audio_files', 'record_audio_page', 'upload_audio_page', 'waveform_data', 'features_data', 'tsne_results'
     ]
     default_values = [
-        None, 'record_audio', 'upload_audio', {}
+        {}, 'record_audio', 'upload_audio', {}, {}, None
     ]
 
     for var, default_value in zip(session_vars, default_values):
@@ -50,9 +49,9 @@ def audio_home():
         st.image(mic_image, use_column_width=True)
         choose_recording_button = st.button("Record Audio", type='primary', use_container_width=True)
         if choose_recording_button:
-            st.session_state.get_audio_page = 'record_audio'
+            st.session_state.record_audio_page = 'record_audio'
+            switch_page("record_audio")
             st.experimental_rerun()
-
        
             
     # Display the up
@@ -64,17 +63,8 @@ def audio_home():
         st.image(upload_image, use_column_width=True)
         upload_files_button = st.button("Upload Files", type='primary', use_container_width=True)
         if upload_files_button:
-            st.session_state.get_audio_page = 'upload_audio'
+            st.session_state.upload_audio_page = 'upload_audio'
+            switch_page("upload_audio")
             st.experimental_rerun()
-            
 
-            
-
-
-if st.session_state.get_audio_page == "audio_home":
-    audio_home()
-elif st.session_state.get_audio_page == "record_audio":
-    get_recordings()
-elif st.session_state.get_audio_page == "upload_audio":
-    upload_audio()
-    
+audio_home()
