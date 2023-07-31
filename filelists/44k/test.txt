@@ -1,0 +1,2 @@
+dataset/44k/speaker_1/Speaker26_001_4.wav
+dataset/44k/speaker_1/Speaker26_002_1.wav

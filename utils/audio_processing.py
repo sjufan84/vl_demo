@@ -9,6 +9,7 @@ import torchaudio
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
 from speechbrain.pretrained import EncoderClassifier
+import streamlit as st
 # Load the environment variables
 load_dotenv()
 
@@ -31,19 +32,17 @@ def extract_features(file_name):
     """ Extracts the features from the audio file. """
     classifier = EncoderClassifier.from_hparams(source="speechbrain/spkrec-ecapa-voxceleb", savedir="pretrained_models/spkrec-ecapa-voxceleb")
     classifier.hparams.label_encoder.ignore_len()
-    signal, fs =torchaudio.load(file_name)
+    signal, fs = torchaudio.load(file_name)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     signal = signal.to(device)  # ensure signal is on the same device as the model
-    window_length = int(fs * 1.0)  # 1 second window
-    overlap = int(fs * 0.5)  # 50% overlap
-    embeddings = []
-    for i in range(0, len(signal), overlap):
-        window = signal[i:i+window_length]
-        if len(window) == window_length:
-            embedding = classifier.encode_batch(window)
-            embeddings.append(embedding)
-    # Convert the list of embeddings to a 2D array
+    embeddings = classifier.encode_batch(signal)
+    # Convert the tensor to numpy and reshape it
+    embeddings = embeddings.cpu().numpy().reshape(1, -1)
     return embeddings
+
+
+
+
 
 
 
@@ -53,9 +52,33 @@ def perform_kmeans_clustering(data, n_clusters=2):
     kmeans = KMeans(n_clusters=n_clusters).fit(data)
     return kmeans.labels_
 
-def perform_tsne(features, n_components=2):
-    """ Performs t-SNE on the data. """
-    tsne = TSNE(n_components=n_components)
-    tsne_result = tsne.fit_transform(features)
-    return tsne_result
+
+def perform_tsne(n_components=2):
+
+    # Step 1: Extract features for all files
+    all_features = []
+    for file in st.session_state.audio_files.keys():
+        feature = extract_features(st.session_state.audio_files[file])
+        st.write(feature.shape)
+        all_features.append(feature)
+    # Step 2: Concatenate all features into one array   
+    combined_features = np.concatenate(all_features, axis=0)
+
+    # Step 3: Perform TSNE on the combined array
+    tsne = TSNE(n_components=2)  # or however many dimensions you want
+    tsne_results = tsne.fit_transform(combined_features)
+    st.write(tsne_results)
+
+    # Step 4: Split the results back out
+    split_points = np.cumsum([features.shape[0] for features in all_features])
+    split_tsne_results = np.split(tsne_results, split_points[:-1])
+
+    # Step 5: Save each result to the session state
+    # Step 5: Save each result to the session state
+    for i, file in enumerate(st.session_state.audio_files.keys()):
+        st.write(f"{file}: {split_tsne_results[i]}")
+        st.session_state.tsne_results[file] = split_tsne_results[i].tolist()
+    return split_tsne_results
+
+
 

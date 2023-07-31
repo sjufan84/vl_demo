@@ -15,7 +15,7 @@ def init_session_variables():
         'audio_files', 'record_audio_page', 'upload_audio_page', 'waveform_data', 'features_data', 'tsne_results'
     ]
     default_values = [
-        {}, 'record_audio', 'upload_audio', {}, {}, None
+        {}, 'record_audio', 'upload_audio', {}, {}, {}
     ]
 
     for var, default_value in zip(session_vars, default_values):
