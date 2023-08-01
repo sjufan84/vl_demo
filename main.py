@@ -12,10 +12,10 @@ from PIL import Image
 def init_session_variables():
     """Initialize session state variables"""
     session_vars = [
-        'audio_files', 'record_audio_page', 'upload_audio_page', 'waveform_data', 'features_data', 'tsne_results'
+        'audio_files', 'record_audio_page', 'upload_audio_page', 'waveform_data', 'features', 'tsne_results', 'embeddings', 'visual_page', 'home_page'
     ]
     default_values = [
-        {}, 'record_audio', 'upload_audio', {}, {}, {}
+        {}, 'record_audio', 'upload_audio', {}, {}, {}, {}, 'visual_home', 'home'
     ]
 
     for var, default_value in zip(session_vars, default_values):
@@ -25,19 +25,24 @@ def init_session_variables():
 # Initialize the session variables
 init_session_variables()    
 
-def audio_home():
-    """ Capture audio from the user's microphone or uploaded that will then
-    need to be converted in .wav files if not already in that format. """
+def home():
+    """ Landing page for the application. """
     # Create two columns to display the recorder and the upload mechanism
-    st.markdown('''<div style="text-align: center;">
-    <h2 class="title">Voice Locker Demo v1</h2>
-                </div>''', unsafe_allow_html=True)
+    st.markdown("""<div style="text-align: center"><h1>Voice Lockr Demo v1</h1></div>""", unsafe_allow_html=True)
                 
     st.markdown('---')
-    st.markdown('''<div style="text-align: center;">
-                <h3 class="title">Choose an option below to get started.</h3>
-                </div>''', unsafe_allow_html=True)
-    
+    st.markdown("""**Our voice print technology transforms the realm of audio and voice content. We leverage advanced algorithms to create unique voice prints - think of it as the 'fingerprint' of one's voice. When copyright disputes arise, our technology can compare voice prints to detect potential infringements, providing an unprecedented level of accuracy in voice-related disputes.**""")
+
+    st.markdown("""**Imagine creating personalized voice assistants or virtual avatars using a unique voice - that's the power of our voice print technology in AI content generation. We can train AI models on specific voice prints, allowing the generation of new content that retains unique voice characteristics. In addition, our technology ensures that artists' voices are not used without their consent, paving the way for a new era of ethical, personalized content creation.**""")
+    st.markdown('---')
+    get_started_button = st.button("Get Started", type='primary', use_container_width=True)
+    if get_started_button:
+        st.session_state.home_page = 'audio_home'
+        st.experimental_rerun()
+
+def audio_home():
+    """ Capture audio from the user's microphone or uploaded that will then
+    need to be converted in .wav files if not already in that format. """    
     st.text('')
     col1, col2 = st.columns(2, gap="medium")
 
@@ -67,4 +72,7 @@ def audio_home():
             switch_page("upload_audio")
             st.experimental_rerun()
 
-audio_home()
+if st.session_state.home_page == 'home':
+    home()
+elif st.session_state.home_page == 'audio_home':
+    audio_home()
