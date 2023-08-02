@@ -16,6 +16,12 @@ import torch
 #return {"signal": signal, "stft": stft, "fbanks": fbanks, "mfccs": 
 # mfccs, "delta1": delta1, "delta2": delta2, "cw": cw, "norm": norm}
 
+#speaker_data = {}
+# Create the speaker data from the st.session_state.features dictionary
+#for i, key in enumerate(st.session_state.features.keys()):
+    # Convert the keys to Speaker {i} format
+#    speaker_data[f"Speaker {i}"] = st.session_state.features[key]
+
 # Load the pickle file that contains the speaker data
 with open('speaker_data.pkl', 'rb') as f:
     speaker_data = pickle.load(f)
