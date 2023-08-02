@@ -4,10 +4,9 @@ audio extraction functions. """
 
 # Import required libraries
 import os
-from PIL import Image
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
-from utils.audio_processing import get_waveform_data, extract_features, get_embeddings
+from utils.audio_processing import get_waveform_data, extract_norm_features, get_embeddings
 
 if 'progress' not in st.session_state:
     st.session_state.progress = 0
@@ -29,22 +28,21 @@ def upload_audio():
         upload_files_button = st.button("Upload File(s)", type='primary', use_container_width=True)
         if upload_files_button:
             with st.spinner('Hang tight, processing your files...'):
-                #for uploaded_file in uploaded_files:
+                for uploaded_file in uploaded_files:
                     # Save the file to the session state
-                    #with open(uploaded_file.name, 'wb') as f:
-                    #    f.write(uploaded_file.getbuffer())
+                    with open(uploaded_file.name, 'wb') as f:
+                        f.write(uploaded_file.getbuffer())
                     # Get the file
-                    #file = uploaded_file.name
-                    #file_name = os.path.basename(file) # Assuming file_name is the base name of the file
-                    #st.session_state.audio_files[file_name] = file
+                    file = uploaded_file.name
+                    file_name = os.path.basename(file) # Assuming file_name is the base name of the file
+                    st.session_state.audio_files[file_name] = file
                     # Update the waveform data
-                    #st.session_state.waveform_data[file_name] = get_waveform_data(file)
-                    # Extract the features from the audio file
-                    #st.session_state.features[file_name] = extract_features(file)
+                    st.session_state.waveform_data[file_name] = get_waveform_data(file)
                     # Extract the embeddings from the audio file
-                    #st.session_state.embeddings[file_name] = get_embeddings(file)
-                    #st.write(st.session_state.features_data[file_name])
-                    # Once all of the files have been processed, display a success message
+                    st.session_state.embeddings[file_name] = get_embeddings(file)
+                    # Extract the features from the audio file
+                    st.session_state.features[file_name] = extract_norm_features(file)
+                # Once all of the files have been processed, display a success message
                 st.success("File(s) uploaded successfully!")
 
     # Display the buttons
