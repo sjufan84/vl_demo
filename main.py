@@ -31,9 +31,21 @@ def home():
     st.markdown("""<div style="text-align: center"><h1>Voice Lockr Demo v1</h1></div>""", unsafe_allow_html=True)
                 
     st.markdown('---')
-    st.markdown("""**Our voice print technology transforms the realm of audio and voice content. We leverage advanced algorithms to create unique voice prints - think of it as the 'fingerprint' of one's voice. When copyright disputes arise, our technology can compare voice prints to detect potential infringements, providing an unprecedented level of accuracy in voice-related disputes.**""")
-
-    st.markdown("""**Imagine creating personalized voice assistants or virtual avatars using a unique voice - that's the power of our voice print technology in AI content generation. We can train AI models on specific voice prints, allowing the generation of new content that retains unique voice characteristics. In addition, our technology ensures that artists' voices are not used without their consent, paving the way for a new era of ethical, personalized content creation.**""")
+    st.markdown("""<div><p><b>In April of this year, </b>when an AI generated song imitating Drake and
+                the Weekend took <a href="https://www.nytimes.com/2023/04/19/arts/music/ai-drake-the-weeknd-fake.html">social media by storm</a>,
+                it set off alarm bells across the music industry.  What seemed like the stuff of science fiction only a short time ago was now
+                all too real.  Shortly thereafter, Hollywood confronted its own battles over AI.  Actors and writers
+                decided to go on strike, in part because of the possibility that their likenesses, which in some cases had been signed away
+                in contracts written before the dawn of this new age, were suddenly at risk of being used to create content
+                that they would not even need to be present for.  This, of course, raises all sorts of legal, ethical, and business
+                questions about the future of artificial intelligence in the arts.  What, if any, recourse do artists have to protect themselves
+                in this environment?<br><br>
+                Thankfully, the same technology that is used to produce these deepfake songs can also be used to help artists fight back
+                against them.  This is what Vocalockr aims to do.  By helping artists generate the same Melodic Voiceprints that fuel these
+                AI generated voice clones and storing it on the blockchain, we put the power back in the hands of the artists to decide when, where,
+                and how to license their voice in this brave new world of content generation.  This demo will walk through the stages of the MV capture
+                process as well as the myriad use cases that this technology represents.  You will have the option to either record your vocals
+                or upload recordings to demonstrate the core features of the app.</div>""", unsafe_allow_html=True)
     st.markdown('---')
     get_started_button = st.button("Get Started", type='primary', use_container_width=True)
     if get_started_button:

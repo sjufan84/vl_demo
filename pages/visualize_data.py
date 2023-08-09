@@ -15,16 +15,15 @@ import torch
 # Returned features for reference:
 #return {"signal": signal, "stft": stft, "fbanks": fbanks, "mfccs": 
 # mfccs, "delta1": delta1, "delta2": delta2, "cw": cw, "norm": norm}
+# Create a dictionary to store the vocals data
+speaker_data = {}
 
-#speaker_data = {}
-# Create the speaker data from the st.session_state.features dictionary
-#for i, key in enumerate(st.session_state.features.keys()):
-    # Convert the keys to Speaker {i} format
-#    speaker_data[f"Speaker {i}"] = st.session_state.features[key]
-
-# Load the pickle file that contains the speaker data
+# Load the pickle file that contains the dummy speaker data
 with open('speaker_data.pkl', 'rb') as f:
     speaker_data = pickle.load(f)
+
+# Add the user's data to the speaker data
+speaker_data["user"] = st.session_state.features["user"]
 
 def visualize_waveform_data(wavform_data):
     """ Visualize waveform data """
@@ -168,39 +167,37 @@ def visualize_spectrogram_data():
     # Allow the user to select the speaker
     spectrogram_selection = st.selectbox("Select speaker", speakers_list)
     # Display the spectrogram chart for the selected speaker
-    
-    if spectrogram_selection == "Speaker 0":
-        image = Image.open("./images/spectrograms/spectrogram0.png")
-        st.image(image)
-    elif spectrogram_selection == "Speaker 1":
-        image = Image.open("./images/spectrograms/spectrogram1.png")
-        st.image(image)
-    else: 
-        image = Image.open("./images/spectrograms/spectrogram2.png")
-        st.image(image)
 
-    st.warning("""**Note:** While a spectrogram can help us see the sound,
-                it doesn't quite match how we humans "hear" the sound.
-                Our ears don't hear all frequencies equally. We are more sensitive
-                to certain frequencies, and we perceive changes in frequency on
-                a logarithmic scale (meaning, we can tell the difference between low frequencies better than high ones).
-                This is where Mel-filterbanks, or simply fbanks, come in. They take the same information as in a spectrogram
-                but adjust the frequency scale to better match human hearing. If you would
-                like to see a visual representation of these filter banks, select "Filter Banks" from the sidebar menu.""")
     
-    #spectrogram = speaker_data[speaker]['spectrogram']
-    # Converting tensor to numpy for plotly
-    #spectrogram = spectrogram.numpy()
-    # Create a heatmap with plotly
-    #fig = go.Figure(data=go.Heatmap(z=spectrogram,
-    #                                colorscale='Viridis',
-    #                                zmin=0, zmax=1))
-    #fig.update_layout(title=f'Spectrogram for {speaker} ', autosize=False,
-    #                xaxis_title='Time',
-    #                yaxis_title='Frequency',
-    #                )
-    # In streamlit, use the plotly_chart function to display the plotly figure
-    #st.plotly_chart(fig)
+    if spectrogram_selection == "Speaker 1":
+     #    image = Image.open("./images/spectrograms/spectrogram1.png")
+    #    st.image(image)
+    #else: 
+    #    image = Image.open("./images/spectrograms/spectrogram2.png")
+    #    st.image(image)
+
+        st.warning("""**Note:** While a spectrogram can help us see the sound,
+                    it doesn't quite match how we humans "hear" the sound.
+                    Our ears don't hear all frequencies equally. We are more sensitive
+                    to certain frequencies, and we perceive changes in frequency on
+                    a logarithmic scale (meaning, we can tell the difference between low frequencies better than high ones).
+                    This is where Mel-filterbanks, or simply fbanks, come in. They take the same information as in a spectrogram
+                    but adjust the frequency scale to better match human hearing. If you would
+                    like to see a visual representation of these filter banks, select "Filter Banks" from the sidebar menu.""")
+        
+        spectrogram = speaker_data[speaker]['spectrogram']
+        # Converting tensor to numpy for plotly
+        #spectrogram = spectrogram.numpy()
+        # Create a heatmap with plotly
+        #fig = go.Figure(data=go.Heatmap(z=spectrogram,
+        #                                colorscale='Viridis',
+        #                                zmin=0, zmax=1))
+        #fig.update_layout(title=f'Spectrogram for {speaker} ', autosize=False,
+        #                xaxis_title='Time',
+        #                yaxis_title='Frequency',
+        #                )
+        # In streamlit, use the plotly_chart function to display the plotly figure
+        #st.plotly_chart(fig)
 
 def visualize_mfccs_data():
     """ Visualize the MFCCs data stored in the speaker data dictionary """
@@ -210,7 +207,10 @@ def visualize_mfccs_data():
 
     Think of a piece of music as a delicious cake. The MFCCs plot is like the recipe for the cake. 
 
-    The x-axis represents time (like the steps in the recipe), and the y-axis represents different MFCC coefficients (like the different parts of the cake). The color at each point tells us the value of each MFCC coefficient at each point in time. This allows us to see not just what frequencies are present in the music, but also how these frequencies are combined and change over time.
+    The x-axis represents time (like the steps in the recipe), and the y-axis represents different
+    MFCC coefficients (like the different parts of the cake). The color at each point tells us the
+    value of each MFCC coefficient at each point in time. This allows us to see not just what frequencies
+    are present in the music, but also how these frequencies are combined and change over time.
 
     """
     )
@@ -247,27 +247,23 @@ def visualize_mfccs_data():
 def app():
     """ Visualize data home """
     # Brief explanation of the different features and embeddings
-    st.markdown("""**Voice prints, similar to fingerprints, are unique to each individual
-    and can be extracted using various voice feature representations such
-    as MFCCs, STFTs, and FBanks. These methods translate the raw complexity
-    of speech into more manageable data formats. MFCCs, or Mel Frequency
-    Cepstral Coefficients, focus on the human auditory system's perception
-    of sound. STFTs, or Short-Time Fourier Transforms, provide a dynamic
-    spectrum analysis of the signal, revealing its frequency components over
-    time. FBanks, or Filter Banks, offer frequency-based representations, capturing
-    crucial elements of the speech pattern. By combining these different analyses,
-    our app is able to capture a detailed 'voice print' - a unique auditory signature
+    st.markdown("""**Melodic Voice prints, or MVs, similar to fingerprints, 
+    are unique to each individual and can be extracted using various voice feature
+    representations such as MFCCs, STFTs, and FBanks. These methods translate the
+    raw complexity of speech into more manageable data formats.By combining these
+    different analyses, our app is able to capture a detailed MV - a unique auditory signature
     that allows for precise speaker identification and voice recognition.**""")
     st.markdown('---')
-    st.markdown("""**We have prepared visualizations of the different features and embeddings
-                which are illustrative of the unique characteristics of each speaker's voice.
-                Select an option below to get started.**""")
+    st.success("""**For demonstration purposes, we have prepared visualizations of
+                the different features and embeddings based on recordings from three
+                different speakers which are illustrative of the unique characteristics
+                of each speaker's voice. Select an option from the sidebar to get started.**""")
 
 # Create sidebar buttons to allow the user to select which visualization to view
 st.sidebar.markdown('**Select a visualization:**')
 # Create a sidebar with radio buttons for the user to select which visualization to view
 visual_choice = st.sidebar.radio('Visualizations', ['Home', 'Embeddings', 'Filter Banks', 'MFCCs',
-                                        'Spectrograms', 'Normalized Features'])
+                                        'Spectrograms'])
 if visual_choice == 'Home':
     st.session_state.visual_page = 'visual_home'
 elif visual_choice == 'Embeddings':
@@ -278,8 +274,8 @@ elif visual_choice == 'MFCCs':
     st.session_state.visual_page = 'mfccs'
 elif visual_choice == 'Spectrograms':
     st.session_state.visual_page = 'spectrogram'
-elif visual_choice == 'Normalized Features':
-    st.session_state.visual_page = 'norm_features'
+#elif visual_choice == 'Normalized Features':
+#    st.session_state.visual_page = 'norm_features'
 
 # App flow
 if st.session_state.visual_page == 'visual_home':
