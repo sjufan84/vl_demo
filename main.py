@@ -12,10 +12,10 @@ from PIL import Image
 def init_session_variables():
     """Initialize session state variables"""
     session_vars = [
-        'audio_files', 'record_audio_page', 'upload_audio_page', 'waveform_data', 'features', 'tsne_results', 'embeddings', 'home_page'
+        'audio_files', 'record_audio_page', 'upload_audio_page','embeddings', 'home_page'
     ]
     default_values = [
-        {}, 'record_audio', 'upload_audio', {}, {}, {}, {},'home'
+        {}, 'record_audio', 'upload_audio', {},'home'
     ]
 
     for var, default_value in zip(session_vars, default_values):

@@ -4,16 +4,17 @@ import io
 from PIL import Image
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
+from audio_recorder_streamlit import audio_recorder
 
 
 # Initialize the session state
 def init_session_variables():
     """Initialize session state variables"""
     session_vars = [
-        'audio_files', 'record_audio_page', 'upload_audio_page', 'waveform_data', 'progress'
+        'audio_files', 'record_audio_page', 'upload_audio_page'
     ]
     default_values = [
-        {}, 'record_audio', 'upload_audio', {}, 0
+        {}, 'record_audio', 'upload_audio'
     ]
 
     for var, default_value in zip(session_vars, default_values):
@@ -49,43 +50,28 @@ def get_recordings():
             file = io.BytesIO(audio_bytes)
             # Save the file to the session state
             st.session_state.audio_files[file_name] = file
-            # Update the progress bar and text
-            st.session_state.progress += 1
-            st.session_state.progress_text = "Audio File Uploaded"
-            # Update the waveform data
-            st.session_state.waveform_data[file_name] = get_waveform_data(file)
-            # Update the progress bar and text
-            st.session_state.progress += 1
-            st.session_state.progress_text = "Waveform Data Extracted"
+            
                 
             # Create buttons to allow the user to record another audio clip,
             # upload an audio clip, or visualize the data
-            record_another_button = st.button("Record Another",
-            type = 'primary', use_container_width=True)
-            upload_audio_button = st.button("Upload Audio",
-            type = 'primary', use_container_width=True)
-            visualize_data_button = st.button("Visualize Data",
-            type = 'primary', use_container_width=True)
+            record_another_button = st.button("Record Another", type='primary', use_container_width=True)
+            visualize_data_button = st.button("Visualize Data", type = 'primary', use_container_width=True)
+            upload_audio_button = st.button("Upload Audio", type='primary', use_container_width=True)
 
             # If the user clicks the record another button,
             # switch to the record audio page
             if record_another_button:
                 st.session_state.record_audio_page = 'record_audio'
-                st.session_state.progress = 0
                 st.experimental_rerun()
             # If the user clicks the upload audio button,
             # switch to the upload audio page
             if upload_audio_button:
                 st.session_state.upload_audio_page = 'upload_audio'
-                st.session_state.progress = 0
-                switch_page("upload_audio")
-                st.experimental_rerun()
+                switch_page("Upload Audio")
             # If the user clicks the visualize data button,
             # switch to the visualize data page
             if visualize_data_button:
-                st.session_state.visualize_data_page = 'visualize_data'
-                switch_page("visualize_data")
-                st.experimental_rerun()
+                switch_page("Visualize Data")
         
 if st.session_state.record_audio_page == 'record_audio':
     get_recordings()
