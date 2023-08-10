@@ -1,130 +1,173 @@
-""" Audio processing utilities live here. """
-
-import os
-from dotenv import load_dotenv
-import numpy as np
+""" Audio processing, feature extraction, and visualization using torch and librosa"""
+from IPython.display import Audio
 import librosa
-import librosa.display
 import torch
 import torchaudio
-from speechbrain.pretrained import EncoderClassifier
-from speechbrain.dataio.dataio import read_audio
-from speechbrain.processing.features import STFT, Filterbank, DCT, Deltas, ContextWindow, InputNormalization 
-from sklearn.manifold import TSNE
+import torchaudio.functional as F
+import torchaudio.transforms as T
+import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
-# Load the environment variables
-load_dotenv()
 
-# Load the Hugging Face API key
-HUGGING_FACE_API_KEY = os.getenv("HUGGING_FACE_KEY")
+def load_audio(audio_path):
+    """ Load audio from the specified path """
+    waveform, sample_rate = torchaudio.load(audio_path)
+    # Flatten the tensor if it's multi-channel
+    if len(waveform.shape) > 1:
+        waveform = torch.mean(waveform, dim=0, keepdim=True)
+    return waveform, sample_rate
 
-def get_spectrogram(stft):
-    """ Generates the spectrogram from the audio file. """
-    #signal = process_audio(wav_file)
-    #signal_stft = compute_stft(signal)
-    spectrogram = stft.pow(2).sum(-1) # Power spectrogram
-    spectrogram = spectrogram.squeeze(0).transpose(0,1)
-    spectrogram = torch.log(spectrogram)
-    return spectrogram
+@st.cache_data
+def plot_waveform(_waveform, sr, title="Waveform"):
+    """ Plot the waveform using plotly """
+    waveform = _waveform.numpy()
+    num_channels, num_frames = waveform.shape
+    time_axis = torch.arange(0, num_frames) / sr
 
-def process_audio(wav_file):
-    """ Reads in an audio file and returns the signal. """
-    signal = read_audio(wav_file)
-    processed_signal = signal.unsqueeze(0)
-    return processed_signal
+    fig = go.Figure()
 
-def get_waveform_data(wav_file):    
-    """ Loads the audio data from librosa
-    and displays the waveform. """
-    audio, sr = librosa.load(wav_file, sr=None)
+    for ch in range(num_channels):
+        fig.add_trace(go.Scatter(x=time_axis, y=waveform[ch], line=dict(width=1), name=f"Channel {ch+1}"))
 
-    # Return a tuple of the audio data and the sample rate
-    return audio, sr
+    fig.update_layout(title=title, xaxis_title="Time", yaxis_title="Amplitude")
+    fig.update_yaxes(gridcolor="gray")
+    fig.update_xaxes(gridcolor="gray")
+    
+    return fig
 
-def compute_stft(signal):
-    """ Compute the short-time Fourier transform from the audio file. """
-    stft = STFT(
-    sample_rate=16000, win_length=25, hop_length=10, n_fft=400
+def play_audio(waveform, sr):
+    """ Play the audio waveform using IPython.display.Audio """
+    waveform = waveform.numpy()
+    return Audio(waveform, rate=sr)
+
+@st.cache_data
+def get_spectrogram(_waveform):
+    """ Get the spectrogram from the waveform """
+    n_fft = 1024
+    win_length = None
+    hop_length = 512
+
+    spectrogram = T.Spectrogram(
+        n_fft=n_fft,
+        win_length=win_length,
+        hop_length=hop_length,
+        center=True,
+        pad_mode="reflect",
+        power=2.0,
     )
-    return stft(signal)    
 
-def compute_fbanks(stft):
-    """ Compute the filterbanks from the STFT. """
-    fbanks = Filterbank(n_mels=40)
-    return fbanks(stft)
+    return spectrogram(_waveform)
 
-def compute_mfccs(fbanks):
-    """ Compute the MFCCs from the filterbanks. """
-    mfccs = DCT(input_size=40, n_out=20)
-    return mfccs(fbanks)
+@st.cache_data
+def plot_spectrogram(_specgram, title="Spectrogram", ylabel="freq_bin"):
+    """ Plot the spectrogram using plotly"""
+    # Squeeze the first dimension if it's of size 1
+    specgram = _specgram.squeeze(0) if _specgram.shape[0] == 1 else _specgram
+    specgram_db = librosa.power_to_db(specgram)
+    fig = px.imshow(specgram_db, origin="lower", labels={'x': 'Frame', 'y': ylabel, 'color': 'dB'})
+    if title:
+        fig.update_layout(title=title)
+    
+    return fig
 
-def compute_delta1(mfccs):
-    """ Compute the deltas from the MFCCs. """
-    deltas = Deltas(input_size=20)
-    return deltas(mfccs)
+@st.cache_data
+def generate_mel_spectrogram(_waveform, sample_rate):
+    """ Generate the mel spectrogram from the waveform """
+    n_fft = 1024
+    win_length = None
+    hop_length = 512
+    n_mels = 128
 
-def compute_delta2(delta1):
-    """ Compute the deltas from the MFCCs. """
-    deltas = Deltas(input_size=20)
-    return deltas(delta1)
+    mel_spectrogram = T.MelSpectrogram(
+        sample_rate=sample_rate,
+        n_fft=n_fft,
+        win_length=win_length,
+        hop_length=hop_length,
+        center=True,
+        pad_mode="reflect",
+        power=2.0,
+        norm="slaney",
+        onesided=True,
+        n_mels=n_mels,
+        mel_scale="htk",
+    )
 
-def compute_cw(mfccs, delta1, delta2):
-    """ Compute the context window from the MFCCs. """
-    cw = ContextWindow(left_frames=5, right_frames=5)
-    features = torch.cat([mfccs, delta1, delta2], dim=2)
-    return cw(features)
+    melspec = mel_spectrogram(_waveform)
+    melspec = melspec.squeeze(0) if melspec.shape[0] == 1 else melspec
 
-def normalize_features(cw):
-    """ Normalize the features. """
-    norm = InputNormalization()
-    return norm(cw, torch.tensor([1]).float())  
+    return melspec
 
-def extract_norm_features(file_name):
-    """ Extracts the features from the audio file. """
-    signal = process_audio(file_name)
-    stft = compute_stft(signal)
-    fbanks = compute_fbanks(stft)
-    mfccs = compute_mfccs(fbanks)
-    delta1 = compute_delta1(mfccs)
-    delta2 = compute_delta2(delta1)
-    cw = compute_cw(mfccs, delta1, delta2)
-    norm = normalize_features(cw)
-    return {"signal": signal, "stft": stft, "fbanks": fbanks, "mfccs": mfccs, "delta1": delta1, "delta2": delta2, "cw": cw, "norm": norm}
+@st.cache_data
+def get_mfcc(_waveform, sample_rate):
+    """ Get the MFCC from the waveform """
+    n_fft = 2048
+    win_length = None
+    hop_length = 512
+    n_mels = 256
+    n_mfcc = 256
 
-def perform_tsne():
-    """ Performs TSNE on the normalized features. """
+    mfcc_transform = T.MFCC(
+        sample_rate=sample_rate,
+        n_mfcc=n_mfcc,
+        melkwargs={
+            "n_fft": n_fft,
+            "n_mels": n_mels,
+            "hop_length": hop_length,
+            "mel_scale": "htk",
+        },
+    )
 
-    # Step 1: Extract features for all files
-    all_features = []
-    for file in st.session_state.audio_files.keys():
-        feature = extract_norm_features(st.session_state.audio_files[file])
-        all_features.append(feature)
-    # Step 2: Concatenate all features into one array   
-    combined_features = np.concatenate(all_features, axis=0)
+    mfcc = mfcc_transform(_waveform)
 
-    # Step 3: Perform TSNE on the combined array
-    tsne = TSNE(n_components=2)  # or however many dimensions you want
-    tsne_results = tsne.fit_transform(combined_features)
+    return mfcc
 
-    # Step 4: Split the results back out
-    split_points = np.cumsum([features.shape[0] for features in all_features])
-    split_tsne_results = np.split(tsne_results, split_points[:-1])
+@st.cache_data
+def get_lfcc(_waveform, sample_rate):
+    """ Get the LFCC from the waveform """
+    n_fft = 2048
+    win_length = None
+    hop_length = 512
+    n_lfcc = 256
 
-    # Step 5: Save each result to the session state
-    for i, file in enumerate(st.session_state.audio_files.keys()):
-        st.write(f"{file}: {split_tsne_results[i]}")
-        st.session_state.tsne_results[file] = split_tsne_results[i].tolist()
-    return split_tsne_results
-   
-def get_embeddings(wav_file):
-    """ Extracts the embeddings from the audio file. """
-    classifier = EncoderClassifier.from_hparams(source="speechbrain/spkrec-xvect-voxceleb")
-    signal, fs = torchaudio.load(wav_file)
+    lfcc_transform = T.LFCC(
+        sample_rate=sample_rate,
+        n_lfcc=n_lfcc,
+        speckwargs={
+            "n_fft": n_fft,
+            "win_length": win_length,
+            "hop_length": hop_length,
+        },
+    )
 
-    # Compute speaker embeddings
-    embeddings = classifier.encode_batch(signal)
+    lfcc = lfcc_transform(_waveform)
 
-    # Average over time dimension to get a single vector per audio clip
-    averaged_embeddings = embeddings.mean(axis=1)
+    return lfcc
 
-    return averaged_embeddings.cpu().numpy()
+@st.cache_data
+def get_pitch(_waveform, sample_rate):
+    """ Get the pitch from the waveform """
+    pitch = F.detect_pitch_frequency(_waveform, sample_rate)
+
+    return pitch
+
+@st.cache_data
+def plot_pitch(_waveform, sr, _pitch):
+    """ Plot the waveform and pitch using plotly """
+    waveform = _waveform.numpy()
+    pitch = _pitch.numpy()
+    num_frames = waveform.shape[1]
+    end_time = num_frames / sr
+    time_axis_waveform = torch.linspace(0, end_time, num_frames)
+    time_axis_pitch = torch.linspace(0, end_time, pitch.shape[1])
+
+    # Create the figure with two traces
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=time_axis_waveform, y=waveform[0], line=dict(width=1, color="gray"), opacity=0.3, name="Waveform"))
+    fig.add_trace(go.Scatter(x=time_axis_pitch, y=pitch[0], line=dict(width=2, color="green"), name="Pitch"))
+
+    # Update layout
+    fig.update_layout(title="Pitch Feature", xaxis_title="Time", yaxis_title="Amplitude")
+    fig.update_yaxes(gridcolor="gray")
+    fig.update_xaxes(gridcolor="gray")
+
+    return fig

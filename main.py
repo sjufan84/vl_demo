@@ -12,10 +12,10 @@ from PIL import Image
 def init_session_variables():
     """Initialize session state variables"""
     session_vars = [
-        'audio_files', 'record_audio_page', 'upload_audio_page', 'waveform_data', 'features', 'tsne_results', 'embeddings', 'visual_page', 'home_page'
+        'audio_files', 'record_audio_page', 'upload_audio_page', 'waveform_data', 'features', 'tsne_results', 'embeddings', 'home_page'
     ]
     default_values = [
-        {}, 'record_audio', 'upload_audio', {}, {}, {}, {}, 'visual_home', 'home'
+        {}, 'record_audio', 'upload_audio', {}, {}, {}, {},'home'
     ]
 
     for var, default_value in zip(session_vars, default_values):
@@ -67,8 +67,7 @@ def audio_home():
         choose_recording_button = st.button("Record Audio", type='primary', use_container_width=True)
         if choose_recording_button:
             st.session_state.record_audio_page = 'record_audio'
-            switch_page("record_audio")
-            st.experimental_rerun()
+            switch_page("Record Audio")
        
             
     # Display the up
@@ -81,7 +80,7 @@ def audio_home():
         upload_files_button = st.button("Upload Files", type='primary', use_container_width=True)
         if upload_files_button:
             st.session_state.upload_audio_page = 'upload_audio'
-            switch_page("upload_audio")
+            switch_page("Upload Audio")
             st.experimental_rerun()
 
 if st.session_state.home_page == 'home':
