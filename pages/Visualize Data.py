@@ -2,10 +2,14 @@
     We will leverage the functions from the audio_processing.py file to generate
     different visualizations of the audio data.  There will be data from the user's
     recordings as well as some dummy data for comparison. """
-from io import StringIO
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
-from utils.audio_processing import load_audio, get_spectrogram, generate_mel_spectrogram, get_mfcc, get_lfcc, get_pitch, plot_waveform, plot_spectrogram, plot_pitch
+from utils.audio_processing import (
+    load_audio, get_spectrogram,
+    generate_mel_spectrogram, get_mfcc, 
+    get_lfcc, get_pitch, plot_waveform, 
+    plot_spectrogram, plot_pitch
+)
 
 def visualize_data():
     """ Visualize the audio data. """
