@@ -1,4 +1,5 @@
 """ Audio processing, feature extraction, and visualization using torch and librosa"""
+from typing import Tuple
 from IPython.display import Audio
 import librosa
 import torch
@@ -9,25 +10,33 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-def load_audio(audio_path):
+# Global constants
+N_FFT = 1024
+WIN_LENGTH = None
+HOP_LENGTH = 512
+
+# Set the torchaudio backend to soundfile
+torchaudio.set_audio_backend("soundfile")
+
+@st.cache_data
+def load_audio(audio_path: str) -> Tuple[torch.Tensor, int]:
     """ Load audio from the specified path """
     waveform, sample_rate = torchaudio.load(audio_path)
     # Flatten the tensor if it's multi-channel
-    if len(waveform.shape) > 1:
+    if waveform.ndim > 1:
         waveform = torch.mean(waveform, dim=0, keepdim=True)
     return waveform, sample_rate
 
 @st.cache_data
-def plot_waveform(_waveform, sr, title="Waveform"):
+def plot_waveform(_waveform: torch.Tensor, sr: int, title: str = "Waveform") -> go.Figure:
     """ Plot the waveform using plotly """
-    waveform = _waveform.numpy()
-    num_channels, num_frames = waveform.shape
+    num_channels, num_frames = _waveform.shape
     time_axis = torch.arange(0, num_frames) / sr
 
     fig = go.Figure()
 
     for ch in range(num_channels):
-        fig.add_trace(go.Scatter(x=time_axis, y=waveform[ch], line=dict(width=1), name=f"Channel {ch+1}"))
+        fig.add_trace(go.Scatter(x=time_axis, y=_waveform[ch], line=dict(width=1), name=f"Channel {ch+1}"))
 
     fig.update_layout(title=title, xaxis_title="Time", yaxis_title="Amplitude")
     fig.update_yaxes(gridcolor="gray")
@@ -35,10 +44,10 @@ def plot_waveform(_waveform, sr, title="Waveform"):
     
     return fig
 
-def play_audio(waveform, sr):
+@st.cache_data
+def play_audio(file) -> Audio:
     """ Play the audio waveform using IPython.display.Audio """
-    waveform = waveform.numpy()
-    return Audio(waveform, rate=sr)
+    return Audio(file, rate=22050)
 
 @st.cache_data
 def get_spectrogram(_waveform):
@@ -101,7 +110,6 @@ def generate_mel_spectrogram(_waveform, sample_rate):
 def get_mfcc(_waveform, sample_rate):
     """ Get the MFCC from the waveform """
     n_fft = 2048
-    win_length = None
     hop_length = 512
     n_mels = 256
     n_mfcc = 256
@@ -162,8 +170,10 @@ def plot_pitch(_waveform, sr, _pitch):
 
     # Create the figure with two traces
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=time_axis_waveform, y=waveform[0], line=dict(width=1, color="gray"), opacity=0.3, name="Waveform"))
-    fig.add_trace(go.Scatter(x=time_axis_pitch, y=pitch[0], line=dict(width=2, color="green"), name="Pitch"))
+    fig.add_trace(go.Scatter(x=time_axis_waveform, y=waveform[0],
+                line=dict(width=1, color="gray"), opacity=0.3, name="Waveform"))
+    fig.add_trace(go.Scatter(x=time_axis_pitch, y=pitch[0], line=dict(width=2,
+                color="green"), name="Pitch"))
 
     # Update layout
     fig.update_layout(title="Pitch Feature", xaxis_title="Time", yaxis_title="Amplitude")

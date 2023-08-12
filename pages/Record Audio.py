@@ -1,9 +1,16 @@
 """ Main page to record the audio clip to be processed."""
 # Import required libraries
-import io
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 from audio_recorder_streamlit import audio_recorder
+
+# Establish the warning messages
+RECORDING_NAME_WARNING = "**Please enter a name for the recording.**"
+RECORDING_EXISTS_WARNING = "**A recording with that name already exists.\
+Please enter a different name.**"
+NO_AUDIO_WARNING = "**Please record audio before saving.**"
+SUCCESS_MESSAGE = "**Recording saved successfully! You may now visualize\
+the data by clicking the button below, or select another option.**"
 
 
 # Initialize the session state
@@ -36,34 +43,23 @@ def get_recordings():
                 a name for it below and save the recording.**')
     # Allow the user to enter a name for the recording
     file_name = st.text_input("Recording Name:")
-    save_recording_button = st.button("Save Recording",
-        type = 'primary', use_container_width=True)
-    # Check to make sure a name and audio was entered,
-    # then display a button to save the recording
+    save_recording_button = st.button("Save Recording", type='primary', use_container_width=True)
+
     if save_recording_button:
-        # Check to make sure a name was entered and that it is not already
-        # in the session state
         if file_name == '':
-            st.warning('**Please enter a name for the recording.**')
+            st.warning(RECORDING_NAME_WARNING)
         elif file_name in st.session_state.audio_files:
-            st.warning('**A recording with that name already exists.\
-                        Please enter a different name.**')
-        # Check to make sure audio was captured
+            st.warning(RECORDING_EXISTS_WARNING)
         elif audio_bytes is None:
-            st.warning('**Please record audio before saving.**')
+            st.warning(NO_AUDIO_WARNING)
         else:
-            # Convert the audio bytes to a wav file or file-like object
-            # and save it to the session state
-            file = io.BytesIO(audio_bytes)
-            # Save the file to the session state
-            with open(f"{file_name}", 'wb') as f:
-                f.write(file.getvalue())
+            with open(f"{file_name}.wav", 'wb') as f:
+                f.write(audio_bytes)
             st.session_state.audio_files[file_name] = file_name
-            # Display a success message
-            st.success('**Recording saved successfully!  You may now visualize the data\
-                       by clicking the button below, or select another option.**')
+            st.success(SUCCESS_MESSAGE)
     st.markdown('---')
-                
+    
+    # Create the buttons to switch pages
     visualize_data_button = st.button("Visualize Data", type = 'primary', use_container_width=True)
     upload_audio_button = st.button("Upload Audio", type='primary', use_container_width=True)
     record_another_button = st.button("Record Another", type='primary', use_container_width=True)
@@ -85,3 +81,4 @@ def get_recordings():
         
 if st.session_state.record_audio_page == 'record_audio':
     get_recordings()
+
