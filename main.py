@@ -12,10 +12,11 @@ from PIL import Image
 def init_session_variables():
     """Initialize session state variables"""
     session_vars = [
-        'audio_files', 'record_audio_page', 'upload_audio_page','embeddings', 'home_page'
+        'audio_files', 'record_audio_page', 'upload_audio_page','embeddings', 'home_page',
+        'av_feature_dict', 'lc_feature_dict', 'demo_visual_page'
     ]
     default_values = [
-        {}, 'record_audio', 'upload_audio', {},'home'
+        {}, 'record_audio', 'upload_audio', {},'home', {}, {}, 'demo_visualize_home'
     ]
 
     for var, default_value in zip(session_vars, default_values):
@@ -49,8 +50,7 @@ def home():
     st.markdown('---')
     get_started_button = st.button("Get Started", type='primary', use_container_width=True)
     if get_started_button:
-        st.session_state.home_page = 'audio_home'
-        st.experimental_rerun()
+        switch_page("Demo Visualize")
 
 def audio_home():
     """ Capture audio from the user's microphone or uploaded that will then

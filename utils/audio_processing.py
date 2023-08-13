@@ -47,7 +47,7 @@ def plot_waveform(_waveform: torch.Tensor, sr: int, title: str = "Waveform") -> 
 @st.cache_data
 def play_audio(file) -> Audio:
     """ Play the audio waveform using IPython.display.Audio """
-    return Audio(file, rate=22050)
+    return Audio(filename=file, rate=22050)
 
 @st.cache_data
 def get_spectrogram(_waveform):
@@ -180,4 +180,18 @@ def plot_pitch(_waveform, sr, _pitch):
     fig.update_yaxes(gridcolor="gray")
     fig.update_xaxes(gridcolor="gray")
 
+    return fig
+
+@st.cache_data
+def plot_mfcc(mfcc):
+    """ Plot the MFCC using plotly """
+    fig = px.imshow(mfcc.squeeze().numpy(), origin="lower", labels={'x': 'Frame', 'y': 'Coefficients', 'color': 'Value'})
+    fig.update_layout(title="MFCC")
+    return fig
+
+@st.cache_data  
+def plot_lfcc(lfcc):
+    """ Plot the LFCC using plotly """
+    fig = px.imshow(lfcc.squeeze().numpy(), origin="lower", labels={'x': 'Frame', 'y': 'Coefficients', 'color': 'Value'})
+    fig.update_layout(title="LFCC")
     return fig
