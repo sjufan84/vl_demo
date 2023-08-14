@@ -5,14 +5,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 import plotly.express as px
-from speechbrain.processing.features import STFT, ISTFT
-import torch
-from speechbrain.dataio.dataio import read_audio
+import librosa
+import numpy as np
 from utils.audio_processing import (
-    load_audio, plot_waveform, get_spectrogram, plot_spectrogram,
-    generate_mel_spectrogram, get_mfcc, get_lfcc, get_pitch, plot_pitch,
-    plot_mfcc, plot_lfcc
+    load_audio, get_spectrogram, get_mfcc, get_lfcc, get_pitch,
+    plot_waveform, plot_spectrogram, plot_mfcc, plot_lfcc, plot_pitch
 )
+
 
 # Function for KMeans clustering
 def plot_results(pca_df):
@@ -98,41 +97,62 @@ def plot_feature(waveform, sr, feature_option, audio_file, label):
         st.markdown(f"**{label} - Audio Clip**")  # Add the label for the audio clip
         col2.audio(audio_file, format='audio/wav')
 
-# Run this page
-#if __name__ == "__main__":
-    demo_visualize_page()
+def read_audio(file_path):
+    signal, _ = librosa.load(file_path, sr=16000)
+    return signal
+
+def compute_STFT(signal, n_fft=400, hop_length=10, win_length=25):
+    return librosa.stft(signal, n_fft=n_fft, hop_length=hop_length, win_length=win_length)
+
+def compute_ISTFT(stft_matrix, hop_length=10, win_length=25):
+    return librosa.istft(stft_matrix, hop_length=hop_length, win_length=win_length)
+
+def extract_features(signal):
+    # Compute MFCCs
+    mfccs = librosa.feature.mfcc(y=signal, sr=16000, n_mfcc=13).T
+    # Compute spectral contrast
+    contrast = librosa.feature.spectral_contrast(y=signal, sr=16000).T
+    # Compute chroma features
+    chroma = librosa.feature.chroma_stft(y=signal, sr=16000).T
+    # Concatenate all the features (vertically)
+    return np.hstack([mfccs, contrast, chroma])
 
 
 def test_plots():
-    """ Test plotting functions / reconstructing audio """
-    avicii_signal = read_audio('./audio_samples/avicii1.wav').unsqueeze(0)
-    compute_STFT = STFT(sample_rate=16000, n_fft=400,
-                        hop_length=10, win_length=25)
-    avicii_STFT = compute_STFT(avicii_signal)
-    combs_signal = read_audio('./audio_samples/combs1.wav').unsqueeze(0)
-    combs_STFT = compute_STFT(combs_signal)
-    st.write(combs_STFT.shape)    
-    compute_ISTFT = ISTFT(sample_rate=16000,win_length=25, hop_length=10)
-    avicii_recon = compute_ISTFT(avicii_STFT).squeeze()
-    combs_recon = compute_ISTFT(combs_STFT)
+    # Read and preprocess audio signals
+    avicii_signal = read_audio('./audio_samples/avicii1.wav')
+    combs_signal = read_audio('./audio_samples/combs1.wav')
+    min_length = min(len(avicii_signal), len(combs_signal))
+    avicii_signal = avicii_signal[:min_length]
+    combs_signal = combs_signal[:min_length]
+
+    # Extract features
+    avicii_features = extract_features(avicii_signal)
+    combs_features = extract_features(combs_signal)
+
+    # Transpose to have features as columns
+    avicii_features = avicii_features.T
+    combs_features = combs_features.T
+
+    # Create a DataFrame by concatenating the two feature sets
+    df = pd.concat([pd.DataFrame(avicii_features), pd.DataFrame(combs_features)], axis=0)
+
+    # Perform PCA
+    pca = PCA(n_components=3)
+    pca_df = pca.fit_transform(df)
+
+    # Perform KMeans clustering
+    kmeans = KMeans(n_clusters=4, random_state=42)
+    kmeans.fit(pca_df)
+    clusters = kmeans.predict(pca_df)
+
+    # Create a DataFrame for plotting
+    cluster_df = pd.DataFrame(pca_df, columns=['PC1', 'PC2', 'PC3'])
+    cluster_df['cluster'] = clusters
+
+    # Rest of the code for plotting remains the same
 
 
-    # Create a dataframe from the STFT
-    avicii_df = pd.DataFrame(avicii_recon)
-    # Drop the last column
-    st.write(avicii_df)
-    combs_df = pd.DataFrame(combs_recon)
-    # Drop the last column
-    st.write(combs_df)
-    st.stop()
-
-    # Concatenate the two dataframes
-    df = pd.concat([avicii_df, combs_df], axis=1)
-
-    # Drop the null values
-    df = df.dropna()
-    st.write(df)
-    st.stop()
 
     # Perform PCA
     pca = PCA(n_components=3)
@@ -146,10 +166,6 @@ def test_plots():
     # Create a DataFrame
     cluster_df = pd.DataFrame(pca_df, columns=['PC1', 'PC2', 'PC3'])
     cluster_df['cluster'] = clusters
-
-    # Save to CSV file
-    cluster_df.to_csv('./resources/cluster_results.csv', index=False)
-    df.to_csv('./resources/avicii_combs.csv', index=False)
 
     # 3D scatter plot
     fig = px.scatter_3d(
@@ -171,9 +187,4 @@ def test_plots():
     )
     st.plotly_chart(fig)
 
-    
-
-
-test_plots()
-    
-  
+test_plots()      
