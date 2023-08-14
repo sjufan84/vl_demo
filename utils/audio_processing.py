@@ -183,15 +183,17 @@ def plot_pitch(_waveform, sr, _pitch):
     return fig
 
 @st.cache_data
-def plot_mfcc(mfcc):
+def plot_mfcc(_mfcc):
     """ Plot the MFCC using plotly """
+    mfcc = _mfcc
     fig = px.imshow(mfcc.squeeze().numpy(), origin="lower", labels={'x': 'Frame', 'y': 'Coefficients', 'color': 'Value'})
     fig.update_layout(title="MFCC")
     return fig
 
 @st.cache_data  
-def plot_lfcc(lfcc):
+def plot_lfcc(_lfcc):
     """ Plot the LFCC using plotly """
+    lfcc = _lfcc
     fig = px.imshow(lfcc.squeeze().numpy(), origin="lower", labels={'x': 'Frame', 'y': 'Coefficients', 'color': 'Value'})
     fig.update_layout(title="LFCC")
     return fig

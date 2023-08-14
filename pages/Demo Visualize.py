@@ -1,8 +1,6 @@
 """ Demo page for visualizing audio features """
 import tempfile
 import base64   
-import os
-import streamlit as st
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -12,63 +10,41 @@ import librosa
 import numpy as np
 import soundfile as sf
 import streamlit.components.v1 as components
-from utils.audio_processing import (
-    load_audio, get_spectrogram, get_mfcc, get_lfcc, get_pitch,
-    plot_waveform, plot_spectrogram, plot_mfcc, plot_lfcc, plot_pitch
-)
+from streamlit_extras.switch_page_button import switch_page
+import streamlit as st
 
+# Initialize the session state
+def init_session_variables():
+    """Initialize session state variables"""
+    session_vars = [
+        'demo_visualize_page'
+    ]
+    default_values = [
+        'demo_visualize_home'
+    ]
+
+    for var, default_value in zip(session_vars, default_values):
+        if var not in st.session_state:
+            st.session_state[var] = default_value
+
+# Initialize the session variables
+init_session_variables()    
 
 def audio_player_component():
+    """ Audio player component """
     # specify directory and initialize st_audiorec object functionality
     audio_player = components.declare_component("audio_player", url="http://localhost:3001")
 
     return audio_player
 
-
-def demo_visualize_page():
-    """ Demo page for visualizing audio features """
-    audio_files = ['./audio_samples/avicii1.wav', './audio_samples/combs1.wav']
-    labels = ["Aloe Blacc", "Luke Combs"]  # Labels for the audio clips
-    
-    # Load and process audio files
-    audio_waveforms = [load_audio(file) for file in audio_files]
-
-    # Select feature to visualize
-    feature_option = st.selectbox(
-        "Select a feature to visualize:",
-        ("Waveform", "Spectrogram", "Mel Spectrogram", "MFCC", "LFCC", "Pitch", "KMeans Clustering")
-    )
-
-    for i, (waveform, sr) in enumerate(audio_waveforms):
-        plot_feature(waveform, sr, feature_option, audio_files[i], labels[i])
-
-
-def plot_feature(waveform, sr, feature_option, audio_file, label):
-    """ Plot the selected feature """
-    col1, col2 = st.columns([2, 1])  # Adjust ratios as needed
-    with col1:
-        st.markdown(f"**{label} - {feature_option}**")  # Add the label and title
-        if feature_option == "Waveform":
-            col1.plotly_chart(plot_waveform(waveform, sr))
-        elif feature_option == "Spectrogram":
-            col1.plotly_chart(plot_spectrogram(get_spectrogram(waveform)))
-        # ... (rest of the code remains the same)
-    with col2:
-        st.markdown(f"**{label} - Audio Clip**")  # Add the label for the audio clip
-        col2.audio(audio_file, format='audio/wav')
-
 def read_audio(file_path):
+    """ Read an audio file and return the signal """
     signal, _ = librosa.load(file_path, sr=16000)
     return signal
 
-def compute_STFT(signal, n_fft=400, hop_length=10, win_length=25):
-    return librosa.stft(signal, n_fft=n_fft, hop_length=hop_length, win_length=win_length)
-
-def compute_ISTFT(stft_matrix, hop_length=10, win_length=25):
-    return librosa.istft(stft_matrix, hop_length=hop_length, win_length=win_length)
-
 # Create temporary audio files for the segments
 def create_audio_files(segments, sr=16000):
+    """ Create temporary audio files for the segments """
     files = []
     for segment in segments:
         tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
@@ -78,10 +54,12 @@ def create_audio_files(segments, sr=16000):
 
 # Create a data URL for an audio file
 def audio_file_to_data_url(file):
+    """ Create a data URL for an audio file """
     audio_encoded = base64.b64encode(file.read())
     return "data:audio/wav;base64," + audio_encoded.decode()
 
 def extract_features(signal):
+    """ Extract features from an audio signal """
     # Compute MFCCs
     mfccs = librosa.feature.mfcc(y=signal, sr=16000, n_mfcc=13).T
     # Compute spectral contrast
@@ -90,9 +68,9 @@ def extract_features(signal):
     chroma = librosa.feature.chroma_stft(y=signal, sr=16000).T
     # Concatenate all the features (vertically)
     return np.hstack([mfccs, contrast, chroma])
-# Function to create audio data URLs
 
 def create_audio_urls(segments):
+    """ Create data URLs for the audio segments """
     urls = []
     for segment in segments:
         tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
@@ -102,12 +80,16 @@ def create_audio_urls(segments):
         urls.append("data:audio/wav;base64," + audio_encoded.decode())
     return urls
 
-def test_plots():
-
+def demo_visualize():
+    """ Demo page for visualizing audio features via Kmeans clustering """
     st.markdown("""
     ### Melodic Voiceprint: A Harmony of Science, Art, and Security
+    The logical first question to ask is:  How do these deepfake audio clips work,\
+    and what can artists do to protect themselves?  The answer lies in securing the\
+    Melodic Voiceprint of the artist that is being used to train the models\
+    that make these deepfakes possible.
 
-    The 3D chart visualizes the unique features that compose the voice of two different artists.
+    The 3D chart below visualizes the unique features that compose the voice of two different artists.
     Each point represents a segment of a song, and the position of the points reflects various
     characteristics of the voice such as pitch, rhythm, and timbre.
     The segments are grouped by color, highlighting similarities and differences between the artists.
@@ -232,7 +214,16 @@ def test_plots():
         # Render the custom component for audio playback for the selected segment
         audio_player = audio_player_component()
         audio_player(audioUrls=[audio_urls[selected_index]], segmentNames=[selected_segment])
+    st.markdown("""
+                If you are interested in viewing even more granular details of the audio, you can
+                click the button below.
+                """)
+        # Create a button for showing the detailed audio features
+    detailed_features_button = st.button("Show Detailed Audio Features", type="primary", use_container_width=True)
+    if detailed_features_button:
+        switch_page("Detailed Vocal Features")
 
+    st.markdown("""---""")
     st.markdown("""
                  **So What Does This Mean for Music, Security, and the Future of the Industry?**
 
@@ -257,6 +248,20 @@ def test_plots():
     * **New Business Models**: The Melodic Voiceprint can be used to create new revenue streams for artists, such as personalized content and voice authentication.
     """)
 
-    
+    st.text("")
+    st.markdown("""
+                By securing the Melodic Voiceprint through NFTs, or non-fungible tokens,
+                Vocalockr ensures unique and protected ownership. An NFT represents a binding
+                contract between an artist and an owner, whether a record label, streaming
+                service, or fan. Without owning the NFT, usage of the artist's voice is
+                unapproved. This method not only safeguards the artist's voice but also
+                guarantees that it's used in line with their wishes, offering a powerful
+                tool in the evolving digital landscape of music.
+                """)
+    mint_nft_button = st.button("Mint an NFT", type="primary", use_container_width=True)
+    if mint_nft_button:
+        switch_page("Generate NFT")
 
-test_plots()      
+
+if st.session_state.demo_visualize_page == "demo_visualize_home":
+    demo_visualize()

@@ -13,10 +13,10 @@ def init_session_variables():
     """Initialize session state variables"""
     session_vars = [
         'audio_files', 'record_audio_page', 'upload_audio_page','embeddings', 'home_page',
-        'av_feature_dict', 'lc_feature_dict', 'demo_visual_page'
+        'av_feature_dict', 'lc_feature_dict', 'demo_visualize_page', "detailed_vocal_features_page"
     ]
     default_values = [
-        {}, 'record_audio', 'upload_audio', {},'home', {}, {}, 'demo_visualize_home'
+        {}, 'record_audio', 'upload_audio', {},'home', {}, {}, 'demo_visualize_home', "detailed_home"
     ]
 
     for var, default_value in zip(session_vars, default_values):
@@ -45,8 +45,8 @@ def home():
                 against them.  This is what Vocalockr aims to do.  By helping artists generate the same Melodic Voiceprints that fuel these
                 AI generated voice clones and storing it on the blockchain, we put the power back in the hands of the artists to decide when, where,
                 and how to license their voice in this brave new world of content generation.  This demo will walk through the stages of the MV capture
-                process as well as the myriad use cases that this technology represents.  You will have the option to either record your vocals
-                or upload recordings to demonstrate the core features of the app.</div>""", unsafe_allow_html=True)
+                process as well as the myriad use cases that this technology represents.
+                </div>""", unsafe_allow_html=True)
     st.markdown('---')
     get_started_button = st.button("Get Started", type='primary', use_container_width=True)
     if get_started_button:
