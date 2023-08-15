@@ -212,8 +212,8 @@ def demo_visualize():
         selected_index = segment_labels.index(selected_segment)
 
         # Render the custom component for audio playback for the selected segment
-        audio_player = audio_player_component()
-        audio_player(audioUrls=[audio_urls[selected_index]], segmentNames=[selected_segment])
+        #audio_player = audio_player_component()
+        #audio_player(audioUrls=[audio_urls[selected_index]], segmentNames=[selected_segment])
     st.markdown("""
                 If you are interested in viewing even more granular details of the audio, you can
                 click the button below.
