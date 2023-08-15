@@ -13,10 +13,12 @@ def init_session_variables():
     """Initialize session state variables"""
     session_vars = [
         'audio_files', 'record_audio_page', 'upload_audio_page','embeddings', 'home_page',
-        'av_feature_dict', 'lc_feature_dict', 'demo_visualize_page', "detailed_vocal_features_page"
+        'av_feature_dict', 'lc_feature_dict', 'demo_visualize_page', "detailed_vocal_features_page",
+        'nft_demo_page', 'token_id'
     ]
     default_values = [
-        {}, 'record_audio', 'upload_audio', {},'home', {}, {}, 'demo_visualize_home', "detailed_home"
+        {}, 'record_audio', 'upload_audio', {},'home', {}, {}, 'demo_visualize_home', "detailed_home",
+        'nft_demo_home', 0
     ]
 
     for var, default_value in zip(session_vars, default_values):

@@ -83,16 +83,16 @@ def create_audio_urls(segments):
 def demo_visualize():
     """ Demo page for visualizing audio features via Kmeans clustering """
     st.markdown("""
-    ### Melodic Voiceprint: A Harmony of Science, Art, and Security
-    The logical first question to ask is:  How do these deepfake audio clips work,\
+    ### :blue[Melodic Voiceprint: A Harmony of Science, Art, and Security]
+    **The logical first question to ask is:  How do these deepfake audio clips work,\
     and what can artists do to protect themselves?  The answer lies in securing the\
     Melodic Voiceprint of the artist that is being used to train the models\
-    that make these deepfakes possible.
+    that make these deepfakes possible.**
 
-    The 3D chart below visualizes the unique features that compose the voice of two different artists.
+    **The 3D chart below visualizes the unique features that compose the voice of two different artists.
     Each point represents a segment of a song, and the position of the points reflects various
     characteristics of the voice such as pitch, rhythm, and timbre.
-    The segments are grouped by color, highlighting similarities and differences between the artists.
+    The segments are grouped by color, highlighting similarities and differences between the artists.**
     """)
 
     # Read and preprocess audio signals
@@ -131,6 +131,9 @@ def demo_visualize():
     cluster_df = pd.DataFrame(pca_df, columns=['PC1', 'PC2', 'PC3'])
     cluster_df['cluster'] = clusters
 
+    # Keep every other row for each artist
+    cluster_df = cluster_df.iloc[::2, :]
+
     # Create segments (you may need to adjust this to match your actual segmentation logic)
     avicii_segments = np.array_split(avicii_signal, len(cluster_df)//2)
     combs_segments = np.array_split(combs_signal, len(cluster_df)//2)
@@ -158,71 +161,78 @@ def demo_visualize():
     combs_audio_urls = [audio_file_to_data_url(file) for file in combs_files]
     audio_urls = avicii_audio_urls + combs_audio_urls
 
-    fig = px.scatter_3d(
-    cluster_df,
-    x='PC1',
-    y='PC2',
-    z='PC3',
-    color='segment_number',
-    color_continuous_scale='rainbow',
-    title='3d Representation of Vocal Features (Aloe Blacc vs. Luke Combs)',
-    text='segment_name',  # Label the points with segment names
+    col1, col2 = st.columns([1.5, 1], gap='large')
+
+
+    with col2:# Add a Streamlit multiselect widget to allow users to select artists
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
+        selected_artists = st.multiselect(
+        "Select Artists to Display:",
+        options=['Avicii', 'Luke Combs'],
+        default=['Avicii', 'Luke Combs'],
+        )
+        # Filter the DataFrame based on selected artists
+        filtered_cluster_df = cluster_df[cluster_df['segment_name'].str.contains('|'.join(selected_artists))]
+
+    with col1:# Plot using the filtered DataFrame
+        fig = px.scatter_3d(
+        filtered_cluster_df,
+        x='PC1',
+        y='PC2',
+        z='PC3',
+        color='segment_number',
+        color_continuous_scale='rainbow',
+        title='3D Representation of Vocal Features',
+        text='segment_name',
     )
-    fig.update_layout(
-        width=750,  # Width of the plot in pixels
-        height=750,  # Height of the plot in pixels
-        scene=dict(
-            xaxis=dict(title='PC1'),
-            yaxis=dict(title='PC2'),
-            zaxis=dict(title='PC3')
-        ),
-        showlegend=False,
+
+        fig.update_layout(
+            width=750,  # Width of the plot in pixels
+            height=750,  # Height of the plot in pixels
+            scene=dict(
+                xaxis=dict(title='PC1'),
+                yaxis=dict(title='PC2'),
+                zaxis=dict(title='PC3')
+            ),
+            showlegend=False,
+        )
+        fig.update_traces(
+        textposition='top center',  # Position of the text labels
+        textfont_size=10,
+        marker_size=8            # Font size of the text labels
     )
-    fig.update_traces(
-    textposition='top center',  # Position of the text labels
-    textfont_size=10,
-    marker_size=8            # Font size of the text labels
-)
-    col1, col2, col3 = st.columns([4, 0.25, 1], gap="small")
-    with col1:
         st.plotly_chart(fig, use_container_width=True)
-
-    with col2:
-        st.text("")
-    with col3:
-        # Create a dropdown list for selecting a segment
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-
-        st.success("""**To drill down even further, select a segment to play the audio clip\
-                    that corresponds to that segment.**""")
-        selected_segment = st.selectbox("Select a Segment to Play:", segment_labels)
+    
+    #with col3:
+    #st.success("""**To drill down even further, select a segment to play the audio clip\
+    #                that corresponds to that segment.**""")
+    #    selected_segment = st.selectbox("Select a Segment to Play:", segment_labels)
 
         # Get the index of the selected label in the segment_labels list
-        selected_index = segment_labels.index(selected_segment)
+    #    selected_index = segment_labels.index(selected_segment)
 
         # Render the custom component for audio playback for the selected segment
-        #audio_player = audio_player_component()
-        #audio_player(audioUrls=[audio_urls[selected_index]], segmentNames=[selected_segment])
+    #    audio_player = audio_player_component()
+    #    audio_player(audioUrls=[audio_urls[selected_index]], segmentNames=[selected_segment])
     st.markdown("""
-                If you are interested in viewing even more granular details of the audio, you can
-                click the button below.
+                ***If you are interested in viewing even more granular details of the audio, you can
+                click the button below.***
                 """)
         # Create a button for showing the detailed audio features
     detailed_features_button = st.button("Show Detailed Audio Features", type="primary", use_container_width=True)
     if detailed_features_button:
         switch_page("Detailed Vocal Features")
-
     st.markdown("""---""")
     st.markdown("""
                  **So What Does This Mean for Music, Security, and the Future of the Industry?**
@@ -260,6 +270,7 @@ def demo_visualize():
                 """)
     mint_nft_button = st.button("Mint an NFT", type="primary", use_container_width=True)
     if mint_nft_button:
+        st.session_state.nft_demo_page = "nft_demo_home"
         switch_page("Generate NFT")
 
 

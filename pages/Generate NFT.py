@@ -1,74 +1,193 @@
 import streamlit as st
-from PIL import Image
+from web3 import Web3
 
+# Connect to Ethereum (Replace with your provider URL)
+def conntect_to_contract():
+    """ Connect to the contract and return the contract instance."""
+    w3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:7545"))
 
-def minting_demo_page():
+    # Contract ABI (Replace with the actual ABI of your contract)
+    contract_abi = []
+
+    # Contract Address (Replace with the actual address of your deployed contract)
+    contract_address = "THIS IS A PLACEHOLDER ADDRESS"
+
+    # Create Contract Instance
+    contract = w3.eth.contract(address=contract_address, abi=contract_abi)
+
+    return contract
+
+def init_session_variables():
+    """Initialize session state variables"""
+    session_vars = [
+        'nft_demo_page', 'token_id', 'artist_signed'
+    ]
+    default_values = [
+        'nft_demo_home', 0, False
+    ]
+
+    for var, default_value in zip(session_vars, default_values):
+        if var not in st.session_state:
+            st.session_state[var] = default_value
+
+init_session_variables()
+
+def get_metadata(token_id):
+    """ Fetches the metadata of the minted NFT. """
+    contract = conntect_to_contract()
+    # Example: Fetching the metadata of the minted NFT (Replace with actual fetching)
+    metadata = contract.functions.getMetadata(token_id).call()
+    return metadata
+
+    
+def minting_demo_home():
+    """ Home page for the NFT minting demo. Allows the user
+    to emulate the process of minting the NFT as an artist would."""
     # Introduction to NFT minting
-    st.title("Understanding NFT Minting: A Demonstration")
-    st.markdown("Minting an NFT (Non-Fungible Token) is like creating a digital certificate of authenticity that can be bought, sold, or traded. For artists, it's a way to ensure ownership and control over their work. Here's how it works:")
+    st.markdown("### :blue[Understanding NFT Minting: A Demonstration]")
+    st.markdown("""**Minting an NFT (Non-Fungible Token) is like
+                creating a digital certificate of authenticity that
+                can be bought, sold, or traded. For artists, it's
+                a way to ensure ownership and control over their work.
+                Here's how it works:**""")
 
     # Step 1: Artist generates the NFT
-    st.subheader("Step 1: Artist Generates the NFT")
-    st.markdown("The artist starts by creating the NFT, associating it with\
-                 their unique Melodic Voiceprint.  Once both parties have signed\
-                the contract, the counterparty will then have access to the artist's\
-                MV.")
-    artist_name = st.text_input("Artist Name:")
-    voiceprint_description = st.text_input("Voiceprint Description:")
-    if st.button("Generate NFT"):
-        st.success(f"NFT for '{artist_name}' generated successfully!")
+    st.subheader(":blue[Step 1: Artist Generates the NFT]")
+    st.markdown("""**The artist starts by creating the NFT, associating it with
+                 their unique Melodic Voiceprint.  Once both parties have signed
+                the contract, then and only then will the counterparty have access
+                to the MV, and only on the terms in which the artist has agreed to.
+                We will walk through each step in the minting process to see how it works.**""")
+    
+    # Create a button to go to the next step
+    artist_demo_button = st.button("Proceed to Artist Minting Demo",
+                                    type='primary', use_container_width=True)
+    if artist_demo_button:
+        st.session_state.nft_demo_page = "artist_minting_demo"
+        st.experimental_rerun()
 
-    # Step 2: Artist sets a price
-    st.subheader("Step 2: Set a Price for the NFT")
-    st.markdown("The artist can set a price for the NFT in USD, defining its market value.")
-    price = st.number_input("Price in USD:", min_value=1.00, step=0.01)
-    if st.button("Set Price"):
-        st.success(f"Price set to ${price} USD successfully!")
+def artist_minting_demo():
+    """ Allows the user to emulate the process of minting
+    the NFT as an artist would."""
+    st.warning("""
+               **@Joel: This page is as far as I've gotten.  The
+               smart contract has basically been written, it's just a matter
+               of deploying it to a testnet.  Because this will require actual
+               demo wallet addresses, the integration will require a few
+               more steps.**""")
+    # Artist Actions
+    st.markdown("### :blue[Artist NFT Demo]")
+    st.text("")
+    st.markdown("""
+                ##### In line with our mission to serve artists first,\
+                the power to initialize rests entirely with the artist\
+                and any other approved (by the artist) parties.\
+                The Vocalockr team will never initiate an NFT on behalf of an artist\
+                unless explicitly requested to do so.  Below you can walk through\
+                a very basic representation of the process of minting an NFT.\
+                """)
+    st.text("")
+    # We will create a form to take in all of the relevant information
+    # for minting the NFT
+    with st.form("minting_form", clear_on_submit=True):
+        value = st.number_input("Enter the value of the contract:")
+        contract_verbiage = st.text_input("Enter the verbiage of the contract:")
+        reason = st.text_input("Enter the reason for the NFT:")
+        approved_wallet_address = "0x123"
+        wallet_address = st.selectbox("Select your wallet address:", ["0x123", "0x456", "0x789"])
+        # Create a button to mint the NFT
+        mint_button = st.form_submit_button("Sign and Mint NFT", type='primary', use_container_width=True)
+        if mint_button:
+            if wallet_address != approved_wallet_address:
+                st.error("You are not authorized to mint this NFT. Please select an approved wallet address.")
+                st.stop()
+            # Connect to the contract
+            contract = conntect_to_contract()
+            # Call the initiateNFT function from the contract (Replace with correct function name and parameters)
+            txn_hash = contract.functions.initiateNFT(wallet_address, value, contract_verbiage, reason).transact()
+            # Display a success message with the transaction hash
+            st.success(f"Transaction Hash: {txn_hash}")
+            st.session_state.artist_signed = True
+    
+    if st.session_state.artist_signed:
+        # Create a button to go to the next step
+        proceed_button = st.button("Proceed to Label Signing Demo")
+        if proceed_button:
+            st.session_state.nft_demo_page = "label_signing_demo"
+            st.experimental_rerun()
+        
 
-    # Step 3: Input contract metadata
-    st.subheader("Step 3: Input Contract Metadata")
-    st.markdown("The contract metadata includes terms, conditions, and any special agreements between the artist and the buyer.")
-    contract_terms = st.text_area("Contract Terms:")
-    if st.button("Input Metadata"):
-        st.success("Contract metadata inputted successfully!")
+    # Function to Set Developer's Address
+    #if st.button("Set Developer's Address"):
+    #    developer_address = st.text_input("Enter the developer's address:")
+        
+        # Call the setDeveloperAddress function from the contract
+    #    txn_hash = contract.functions.setDeveloperAddress(developer_address).transact()
+    #    st.write(f"Transaction Hash: {txn_hash}")
 
-    # Step 4: Both parties sign the contract
-    st.subheader("Step 4: Both Parties Sign the Contract")
-    st.markdown("Both the artist and the buyer (e.g., a label) need to sign the contract, agreeing to the terms.")
-    artist_signature = st.checkbox("Artist Signature")
-    buyer_signature = st.checkbox("Buyer/Label Signature")
-    if artist_signature and buyer_signature:
-        if st.button("Mint NFT"):
-            st.success("NFT minted successfully!")
-            display_nft_page(artist_name, voiceprint_description, price, contract_terms)
+    # Function to Get Metadata
+    #if st.button("Get Metadata"):
+    #    token_id = st.number_input("Enter the token ID:")
+        
+        # Call the getMetadata function from the contract
+    #    metadata = contract.functions.getMetadata(token_id).call()
+    #    st.write(f"Metadata: {metadata}")
 
 
-def display_nft_page(artist_name, voiceprint_description, price, contract_terms):
-    st.title("Your Virtual NFT")
-    st.markdown("Congratulations! You've minted a virtual NFT. Here's how it looks and what it represents:")
+def label_interface():
+    """ Allows the user to emulate the process of signing
+      the NFT as a record label would."""
+    st.markdown("### NFT Record Label Simulator")
+    st.markdown('---')
+    st.markdown("""
+                **For the purposes of the demo, we will automatically
+                import the artist's contract and metadata.  In further 
+                deployments record labels could have many more options
+                including search for available artists, etc.**
+                """)
 
-    # Display a cool visual (replace with the path to your image)
-    nft_image_path = './nft_image.png'
-    nft_image = Image.open(nft_image_path)
-    st.image(nft_image, caption="Virtual NFT", use_column_width=True)
+    # Example: Fetching available NFTs for signing (You'll need to replace this with actual data fetching)
+    available_nfts = [{"tokenId": 1, "artist": "Artist 1", "reason": "Album Release"}, 
+                      {"tokenId": 2, "artist": "Artist 2", "reason": "Single Release"}]
 
-    # Display metadata
-    st.subheader("NFT Metadata:")
-    st.markdown(f"**Artist:** {artist_name}")
-    st.markdown(f"**Voiceprint Description:** {voiceprint_description}")
-    st.markdown(f"**Price:** ${price} USD")
-    st.markdown(f"**Contract Terms:** {contract_terms}")
+    # Display available NFTs
+    selected_nft = st.selectbox("Select an NFT to view details:", available_nfts,
+                            format_func=lambda x: f"Token ID: {x['tokenId']} - Artist: {x['artist']} - Reason: {x['reason']}")
 
-    # Explain how NFT relates to voiceprint
-    st.subheader("How the NFT Relates to the Voiceprint:")
-    st.markdown("The NFT is a digital representation of the artist's unique voiceprint. It carries the information and ownership rights, ensuring authenticity and control.")
+    # Display details of selected NFT
+    st.subheader("NFT Details:")
+    st.write(f"Token ID: {selected_nft['tokenId']}")
+    st.write(f"Artist: {selected_nft['artist']}")
+    st.write(f"Reason: {selected_nft['reason']}")
 
-    # Explain secure storage
-    st.subheader("Secure Storage:")
-    st.markdown("Your NFT is stored securely on a virtual blockchain platform. In a real-world scenario, it would be encrypted and stored on a decentralized network, ensuring protection and immutability.")
+    # Additional details, images, etc., can be added here
 
-# You can call this function with the appropriate parameters once the NFT is minted
+    # Signing process
+    if st.button("Sign NFT"):
+        confirm = st.button("Are you sure you want to sign this NFT?")
+        if confirm:
+            # Call the counterpartySign function from the contract
+            # ...
+            st.success("NFT successfully signed!")
 
+def display_nft_metadata():
+    """ Displays the metadata of the NFT."""
+    metadata = get_metadata(st.session_state.token_id)
+    # Display Metadata
+    st.subheader("NFT Details:")
+    st.write(f"Value: {metadata['value']}")
+    st.write(f"Contract Verbiage: {metadata['contractVerbiage']}")
+    st.write(f"Voice Print Link: {metadata['voicePrintLink']}")
+    st.write(f"Reason: {metadata['reason']}")
+    st.write(f"Artist Signed: {metadata['artistSigned']}")
+    st.write(f"Counterparty Signed: {metadata['counterpartySigned']}")
 
 # Call the function to display the page
-minting_demo_page()
+if st.session_state.nft_demo_page == "nft_demo_home":
+    minting_demo_home()
+elif st.session_state.nft_demo_page == "artist_minting_demo":
+    artist_minting_demo()
+elif st.session_state.nft_demo_page == "label_signing_demo":
+    label_interface()
+elif st.session_state.nft_demo_page == "display_nft_metadata":
+    display_nft_metadata()
