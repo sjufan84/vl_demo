@@ -83,7 +83,4 @@ def audio_home():
             switch_page("Upload Audio")
             st.experimental_rerun()
 
-if st.session_state.home_page == 'home':
-    home()
-elif st.session_state.home_page == 'audio_home':
-    audio_home()
+home()
