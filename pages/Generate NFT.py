@@ -2,6 +2,8 @@ import os
 from dotenv import load_dotenv
 import streamlit as st
 from web3 import Web3
+import uuid
+import numpy as np
 
 # Load the environment variables
 load_dotenv()
@@ -36,7 +38,7 @@ label_wallet = os.getenv("LABEL_WALLET")
 def init_session_variables():
     """Initialize session state variables"""
     session_vars = [
-        'nft_demo_page', 'token_id', 'artist_signed', 'metadata'
+        'nft_demo_page', 'token_id', 'artist_signed', 'nft_metadata'
     ]
     default_values = [
         'nft_demo_home', 0, False, {}
@@ -105,29 +107,36 @@ def artist_minting_demo():
         approved_wallet_address = artist_wallet
         wallet_address = st.selectbox("Select your wallet address:", [artist_wallet, "0x1234", "0x5678"])
         # Create a button to mint the NFT
-        mint_button = st.form_submit_button("Sign and Mint NFT", type='primary', use_container_width=True)
+        mint_button = st.form_submit_button("Sign and Initiate the NFT", type='primary', use_container_width=True)
         if mint_button:
             if wallet_address != approved_wallet_address:
                 st.error("You are not authorized to mint this NFT. Please select an approved wallet address.")
                 st.stop()
-                
-            # Connect to the contract
-            # Create a dummy address for the MV
-            dummy_address = "http://someserver.com/voiceprint"
+            # Set the metadata for the NFT
+            metadata = {
+                "value": value,
+                "contract_verbiage": contract_verbiage,
+                "reason": reason,
+                "mv_link": "http://someserver.com/voiceprint",
+                "artist_wallet": artist_wallet,
+            }
+            # Connect to the contract        
             # Call the initiateNFT function from the contract (Replace with correct function name and parameters)
-            token_id = contract.functions.initiateNFT(
-                value, contract_verbiage, dummy_address, reason).call()
-            st.write(token_id)
+            #token_id = contract.functions.initiateNFT(
+            #    value, contract_verbiage, dummy_address, reason).call()
+            #st.write(token_id)
+            token_id = np.random.randint(1, 100000)
             st.session_state.latest_nft = token_id
-            st.write(st.session_state.latest_nft)
+            st.session_state.nft_metadata[token_id] = metadata
             # Display a success message with the transaction hash
             st.success(f"Successfully initiated NFT # {token_id}!\
+                       The transaction hash is {uuid.uuid4()}.\
                        Waiting on counterparty to sign contract...")
             st.session_state.artist_signed = True
     
     if st.session_state.artist_signed:
         # Create a button to go to the next step
-        proceed_button = st.button("Proceed to Label Signing Demo")
+        proceed_button = st.button("Proceed to Label Signing Demo", type='primary', use_container_width=True)
         if proceed_button:
             st.session_state.nft_demo_page = "label_signing_demo"
             st.experimental_rerun()
@@ -166,19 +175,27 @@ def label_interface():
         Metadata is listed below:\
                ")
     # Send a transaction to get the metadata
-    metadata = get_metadata(st.session_state.latest_nft)
+    metadata = st.session_state.nft_metadata[st.session_state.latest_nft]
+
+    st.markdown("#### :blue[Contract Metadata:]")
+    # Display details of selected NFT
+    st.write(f"**Contract Value:** {metadata['value']}")
+    st.write(f"**Contract Verbiage:** {metadata['contract_verbiage']}")
+    st.write(f"**Voice Print Link:** {metadata['mv_link']}")
+    st.write(f"**Reason:** {metadata['reason']}")
+    st.write(f"**Artist Signed:** {metadata['artist_wallet']}")
     #tx_hash = w3.eth.wait_for_transaction_receipt(metadata)['transactionHash'].hex()
     #st.write(f"Transaction Hash: {tx_hash}")
                                                 
     # Display details of selected NFT
-    st.markdown("#### :blue[Contract Metadata:]")
+    
     # Additional details, images, etc., can be added here
-    st.write(f"**Contract Value:** {metadata[0]}")
-    st.write(f"**Contract Verbiage:** {metadata[1]}")
-    st.write(f"**Voice Print Link:** {metadata[2]}")
-    st.write(f"**Reason:** {metadata[3]}")
-    st.write(f"**Artist Signed:** {metadata[4]}")
-    st.write(f"**Counterparty Signed:** {metadata[5]}")
+    #st.write(f"**Contract Value:** {metadata[0]}")
+    #st.write(f"**Contract Verbiage:** {metadata[1]}")
+    #st.write(f"**Voice Print Link:** {metadata[2]}")
+    #st.write(f"**Reason:** {metadata[3]}")
+    #st.write(f"**Artist Signed:** {metadata[4]}")
+    #st.write(f"**Counterparty Signed:** {metadata[5]}")
     # Allow the user to select their wallet address
     wallet_address = st.selectbox("Select your wallet address:", [label_wallet, "0x1234", "0x5678"])
     approved_wallet_address = label_wallet
@@ -197,8 +214,8 @@ def label_interface():
                 st.stop()
             # Connect to the contract
             # Call the signNFT function from the contract
-            txn_hash = contract.functions.counterpartySign(st.session_state.latest_nft-1).call({"from": label_wallet})
-            st.write(f"Transaction Hash: {txn_hash}")
+            #txn_hash = contract.functions.counterpartySign(st.session_state.latest_nft-1).call({"from": label_wallet})
+            #st.write(f"Transaction Hash: {txn_hash}")
             # Display a success message with the transaction hash
             st.success(f"Successfully signed NFT # {st.session_state.latest_nft}!\
                        Waiting on artist to sign contract...")
