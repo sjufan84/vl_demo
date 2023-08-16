@@ -9,9 +9,11 @@ import plotly.express as px
 import librosa
 import numpy as np
 import soundfile as sf
+import streamlit as st
 import streamlit.components.v1 as components
 from streamlit_extras.switch_page_button import switch_page
-import streamlit as st
+
+st.set_page_config(page_title="Voice Lockr Demo", page_icon=":microphone:", layout="wide", initial_sidebar_state="collapsed")
 
 # Initialize the session state
 def init_session_variables():
@@ -98,21 +100,25 @@ def demo_visualize():
     # Read and preprocess audio signals
     avicii_signal = read_audio('./audio_samples/avicii1.wav')
     combs_signal = read_audio('./audio_samples/combs1.wav')
-    min_length = min(len(avicii_signal), len(combs_signal))
+    jeremiah_signal = read_audio('./audio_samples/jeremiah1.wav')
+    min_length = min(len(avicii_signal), len(combs_signal), len(jeremiah_signal))
     avicii_signal = avicii_signal[:min_length]
     combs_signal = combs_signal[:min_length]
+    jeremiah_signal = jeremiah_signal[:min_length]
     
 
     # Extract features
     avicii_features = extract_features(avicii_signal)
     combs_features = extract_features(combs_signal)
+    jeremiah_features = extract_features(jeremiah_signal)
 
     # Transpose to have features as columns
     avicii_features = avicii_features.T
     combs_features = combs_features.T
+    jeremiah_features = jeremiah_features.T
 
     # Create a DataFrame by concatenating the two feature sets
-    df = pd.concat([pd.DataFrame(avicii_features), pd.DataFrame(combs_features)], axis=0)
+    df = pd.concat([pd.DataFrame(avicii_features), pd.DataFrame(combs_features), pd.DataFrame(jeremiah_features)], axis=0)
 
     # Standardize the data before applying PCA and KMeans
     scaler = StandardScaler()
@@ -135,16 +141,19 @@ def demo_visualize():
     cluster_df = cluster_df.iloc[::2, :]
 
     # Create segments (you may need to adjust this to match your actual segmentation logic)
-    avicii_segments = np.array_split(avicii_signal, len(cluster_df)//2)
-    combs_segments = np.array_split(combs_signal, len(cluster_df)//2)
+    avicii_segments = np.array_split(avicii_signal, len(cluster_df)//3)
+    combs_segments = np.array_split(combs_signal, len(cluster_df)//3)
+    jeremiah_segments = np.array_split(jeremiah_signal, len(cluster_df)//3)
+    total_segments = avicii_segments + combs_segments + jeremiah_segments
 
    # Create labels for the segments
     avicii_labels = [f"Avicii - Segment {i+1}" for i in range(len(avicii_segments))]
     combs_labels = [f"Luke Combs - Segment {i+1}" for i in range(len(combs_segments))]
-    segment_labels = avicii_labels + combs_labels
+    jeremiah_labels = [f"Jeremiah - Segment {i+1}" for i in range(len(jeremiah_segments))]
+    segment_labels = avicii_labels + combs_labels + jeremiah_labels
 
     # Create segment numbers (e.g., Segment 1, Segment 2, ...)
-    segment_numbers = [f"Segment {i+1}" for i in range(len(avicii_segments))] * 2
+    segment_numbers = [f"Segment {i+1}" for i in range(len(avicii_segments))] * 3
 
     # Add segment names and numbers to the DataFrame
     cluster_df['segment_name'] = segment_labels
@@ -155,13 +164,15 @@ def demo_visualize():
     # Create temporary audio files
     avicii_files = create_audio_files(avicii_segments)
     combs_files = create_audio_files(combs_segments)
+    jeremiah_files = create_audio_files(jeremiah_segments)
 
     # Create audio URLs
     avicii_audio_urls = [audio_file_to_data_url(file) for file in avicii_files]
     combs_audio_urls = [audio_file_to_data_url(file) for file in combs_files]
-    audio_urls = avicii_audio_urls + combs_audio_urls
+    jeremiah_audio_urls = [audio_file_to_data_url(file) for file in jeremiah_files]
+    audio_urls = avicii_audio_urls + combs_audio_urls + jeremiah_audio_urls
 
-    col1, col2 = st.columns([1.5, 1], gap='large')
+    col1, col2 = st.columns([1.75, 1], gap='large')
 
 
     with col2:# Add a Streamlit multiselect widget to allow users to select artists
@@ -179,11 +190,43 @@ def demo_visualize():
         st.text("")
         selected_artists = st.multiselect(
         "Select Artists to Display:",
-        options=['Avicii', 'Luke Combs'],
-        default=['Avicii', 'Luke Combs'],
+        options=['Avicii', 'Luke Combs', 'Jeremiah'],
+        default=['Avicii', 'Luke Combs', 'Jeremiah'],
         )
         # Filter the DataFrame based on selected artists
         filtered_cluster_df = cluster_df[cluster_df['segment_name'].str.contains('|'.join(selected_artists))]
+
+        st.text("")
+        st.text("")
+
+        st.success("""**To drill down even further, select a segment to play the audio clip\
+                 that corresponds to that segment.**""")
+        # Create a selectbox to allow the users to choose the segment to play
+        # We only want to show the unique segment names apart from the artist name
+        # For example, we want to show "Segment 1" instead of "Avicii - Segment 1"
+        unique_segment_names = list(set([segment.split(' - ')[1] for segment in cluster_df['segment_name']]))
+        # List the unique segment names in ascending order of the segment number
+        unique_segment_names.sort(key=lambda x: int(x.split(' ')[1]))
+        segment_options = st.selectbox(
+        "Select Segment:",
+        options=unique_segment_names,
+        )
+        # Let the user choose which artist to play
+        selected_artist = st.selectbox(
+        "Select Artist:",
+        options=['Avicii', 'Luke Combs', 'Jeremiah'],
+        )
+      
+        selected_segment = f"{selected_artist} - {segment_options}"
+        # Convert the selected artist to the corresponding audio URL
+        # Get the index of the selected label in the segment_labels list
+        selected_index = segment_labels.index(selected_segment)
+
+        # Convert the audio from bytes to a playable file using librosa
+        audio_bytes = librosa.to_mono(total_segments[selected_index].T)
+        st.audio(audio_bytes, format='audio/ogg', start_time=0, sample_rate=16000)
+
+
 
     with col1:# Plot using the filtered DataFrame
         fig = px.scatter_3d(
@@ -213,18 +256,7 @@ def demo_visualize():
         marker_size=8            # Font size of the text labels
     )
         st.plotly_chart(fig, use_container_width=True)
-    
-    #with col3:
-    #st.success("""**To drill down even further, select a segment to play the audio clip\
-    #                that corresponds to that segment.**""")
-    #    selected_segment = st.selectbox("Select a Segment to Play:", segment_labels)
-
-        # Get the index of the selected label in the segment_labels list
-    #    selected_index = segment_labels.index(selected_segment)
-
-        # Render the custom component for audio playback for the selected segment
-    #    audio_player = audio_player_component()
-    #    audio_player(audioUrls=[audio_urls[selected_index]], segmentNames=[selected_segment])
+            
     st.markdown("""
                 ***If you are interested in viewing even more granular details of the audio, you can
                 click the button below.***

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "ganache": "^7.9.0",
+    "global": "^4.4.0"
+  }
+}
