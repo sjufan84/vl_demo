@@ -6,57 +6,70 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
+// Contract to represent the NFT
 contract ArtistNFT is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
 // Events
-    event NFTInitiated(uint256 tokenId, address artist);
-    event NFTSigned(uint256 tokenId, address signer);
-    event NFTMinted(uint256 tokenId, address artist);
-    event CommissionSent(uint256 tokenId, uint256 amount, address developer);
+    event NFTInitiated(uint256 indexed tokenId, address indexed artist, address indexed counterparty);
+    event NFTSigned(uint256 indexed tokenId, address indexed counterparty, address indexed artist);
+    event NFTMinted(uint256 indexed tokenId, address artist, address indexed counterparty);
+    event CommissionSent(uint256 indexed tokenId, uint256 indexed amount, address indexed developer);
 
     // Structure to represent the NFT metadata
     struct NFTMetadata {
-        uint256 value;
-        string contractVerbiage;
-        string voicePrintLink;
-        string reason;
-        bool artistSigned;
-        bool counterpartySigned;
+        uint256 _value;
+        string _contractVerbiage;
+        string _voicePrintLink;
+        string _reason;
+        bool _artistSigned;
+        bool _counterpartySigned;
+        address payable _counterparty;
     }
 
+    // Mapping to store the NFT metadata
     mapping(uint256 => NFTMetadata) private _metadata;
+    address payable public owner; // Owner of the contract
     address payable private developerAddress; // Developer's address for commission
     uint256 private constant COMMISSION_PERCENT = 5; // 5% commission
 
+    modifier onlyOwner {
+    require(msg.sender == owner, "Ownable: You are not the owner, Bye.");
+    _;
+  }
+
+    // Constructor -- sets the developer's address
     constructor(address payable _developerAddress) ERC721("ART", "ART") {
         developerAddress = _developerAddress;
+        owner = msg.sender;
     }
 
-    // Rest of the minting and signature logic will be implemented in subsequent steps
-
+    // Primary function to initiate the NFT
     function initiateNFT(
             uint256 value,
             string memory contractVerbiage,
             string memory voicePrintLink,
-            string memory reason
-        ) public onlyOwner returns (uint256) {
-            _tokenIds.increment();
-            uint256 newItemId = _tokenIds.current();
-            _metadata[newItemId] = NFTMetadata(value, contractVerbiage, voicePrintLink, reason, true, false);
+            string memory reason, 
+            address payable memory counterparty
+        ) public onlyOwner returns (uint256) { // Only owner can initiate the NFT
+            _tokenIds.increment(); // Increment token ID
+            uint256 newItemId = _tokenIds.current(); // Get current token ID
+            _metadata[newItemId] = NFTMetadata(value, contractVerbiage, voicePrintLink, reason, true, false, counterparty); // Set metadata
             
-            emit NFTInitiated(newItemId, msg.sender); // Emit event
+            emit NFTInitiated(newItemId, msg.sender, counterparty); // Emit event
             return newItemId;
         }
 
     function counterpartySign(uint256 tokenId) public {
-        require(!_metadata[tokenId].counterpartySigned, "Already signed by counterparty");
-        _metadata[tokenId].counterpartySigned = true;
+        // require that the caller is the appropriate counterparty
+        require(msg.sender == _metadata[tokenId]._counterparty, "Only counterparty can sign");
+        require(!_metadata[tokenId]._counterpartySigned, "Already signed by counterparty");
+        _metadata[tokenId]._counterpartySigned = true;
 
-        emit NFTSigned(tokenId, msg.sender); // Emit event
+        emit NFTSigned(tokenId, msg.sender, this.owner); // Emit event
         
-        if (_metadata[tokenId].artistSigned) {
+        if (_metadata[tokenId]._artistSigned) {
             mintNFT(tokenId);
         }
     }

@@ -83,19 +83,19 @@
 		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": false,
+				"indexed": true,
 				"internalType": "uint256",
 				"name": "tokenId",
 				"type": "uint256"
 			},
 			{
-				"indexed": false,
+				"indexed": true,
 				"internalType": "uint256",
 				"name": "amount",
 				"type": "uint256"
 			},
 			{
-				"indexed": false,
+				"indexed": true,
 				"internalType": "address",
 				"name": "developer",
 				"type": "address"
@@ -121,15 +121,21 @@
 		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": false,
+				"indexed": true,
 				"internalType": "uint256",
 				"name": "tokenId",
 				"type": "uint256"
 			},
 			{
-				"indexed": false,
+				"indexed": true,
 				"internalType": "address",
 				"name": "artist",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "counterparty",
 				"type": "address"
 			}
 		],
@@ -140,7 +146,7 @@
 		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": false,
+				"indexed": true,
 				"internalType": "uint256",
 				"name": "tokenId",
 				"type": "uint256"
@@ -149,6 +155,12 @@
 				"indexed": false,
 				"internalType": "address",
 				"name": "artist",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "counterparty",
 				"type": "address"
 			}
 		],
@@ -159,15 +171,21 @@
 		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": false,
+				"indexed": true,
 				"internalType": "uint256",
 				"name": "tokenId",
 				"type": "uint256"
 			},
 			{
-				"indexed": false,
+				"indexed": true,
 				"internalType": "address",
-				"name": "signer",
+				"name": "counterparty",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "artist",
 				"type": "address"
 			}
 		],
@@ -314,33 +332,38 @@
 				"components": [
 					{
 						"internalType": "uint256",
-						"name": "value",
+						"name": "_value",
 						"type": "uint256"
 					},
 					{
 						"internalType": "string",
-						"name": "contractVerbiage",
+						"name": "_contractVerbiage",
 						"type": "string"
 					},
 					{
 						"internalType": "string",
-						"name": "voicePrintLink",
+						"name": "_voicePrintLink",
 						"type": "string"
 					},
 					{
 						"internalType": "string",
-						"name": "reason",
+						"name": "_reason",
 						"type": "string"
 					},
 					{
 						"internalType": "bool",
-						"name": "artistSigned",
+						"name": "_artistSigned",
 						"type": "bool"
 					},
 					{
 						"internalType": "bool",
-						"name": "counterpartySigned",
+						"name": "_counterpartySigned",
 						"type": "bool"
+					},
+					{
+						"internalType": "address payable",
+						"name": "_counterparty",
+						"type": "address"
 					}
 				],
 				"internalType": "struct ArtistNFT.NFTMetadata",
@@ -372,6 +395,11 @@
 				"internalType": "string",
 				"name": "reason",
 				"type": "string"
+			},
+			{
+				"internalType": "address payable",
+				"name": "counterparty",
+				"type": "address"
 			}
 		],
 		"name": "initiateNFT",
