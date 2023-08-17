@@ -95,6 +95,7 @@ def artist_minting_demo():
         reason = st.text_input("Enter the reason for the NFT:")
         approved_artist_address = artist_wallet
         artist_address = st.selectbox("Select your wallet address:", [artist_wallet, "0x1234", "0x5678"])
+        artist_private_key = st.text_input("Enter your private key:", type='password', value = os.getenv("ARTIST_PRIVATE_KEY"))
         # Select the wallet address of the label
         label_address = st.selectbox("Select the wallet address of the label:", [label_wallet, "0x1234", "0x5678"])
         # Set an approved label address
@@ -219,7 +220,7 @@ def label_interface():
                 st.error("You are not authorized to sign this contract. Please select an approved wallet address.")
                 st.stop()
             # Call the signNFT function from the contract
-            tx = contract.functions.counterpartySign(st.session_state.latest_nft-1).build_transaction(
+            tx = contract.functions.counterpartySign(st.session_state.latest_nft).build_transaction(
                 {
                     "from": label_wallet,
                     'gas': 1728712,
