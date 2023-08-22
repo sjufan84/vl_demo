@@ -62,18 +62,18 @@ class Contract:
         return self.total_cost * 0.05
 
 # Connect to Ethereum (Replace with your provider URL)
-w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:7545"))
-st.session_state.w3 = w3
+#w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:7545"))
+#st.session_state.w3 = w3
 # Contract ABI (Replace with the actual ABI of your contract
 # Read in the contract ABI
-with open('./contracts/compiled/mv_contracts.json', 'r') as f:
-    contract_abi = f.read()
+#with open('./contracts/compiled/mv_contracts.json', 'r') as f:
+#    contract_abi = f.read()
 
 # Contract Address (Replace with the actual address of your deployed contract)
-contract_address = F'{os.getenv("CONTRACT_ADDRESS")}'
+#contract_address = F'{os.getenv("CONTRACT_ADDRESS")}'
 
 # Create Contract Instance
-contract = w3.eth.contract(address=contract_address, abi=contract_abi)
+#contract = w3.eth.contract(address=contract_address, abi=contract_abi)
 
 def init_session_variables():
     """Initialize session state variables"""
@@ -100,11 +100,11 @@ contract_types = [
 ]
         
 
-def get_metadata(token_id):
-    """ Fetches the metadata of the minted NFT. """
-    # Example: Fetching the metadata of the minted NFT (Replace with actual fetching)
-    metadata = contract.functions.getMetadata(token_id).call({'from': os.getenv('ARTIST_WALLET')})
-    return metadata
+#def get_metadata(token_id):
+#    """ Fetches the metadata of the minted NFT. """
+#    # Example: Fetching the metadata of the minted NFT (Replace with actual fetching)
+#    metadata = contract.functions.getMetadata(token_id).call({'from': os.getenv('ARTIST_WALLET')})
+#    return metadata
 
     
 def minting_demo_home():
