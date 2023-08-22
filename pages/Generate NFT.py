@@ -119,7 +119,7 @@ def minting_demo_home():
                 Here's how it works:**""")
 
     # Step 1: Artist generates the NFT
-    st.subheader("### Step 1: Artist Generates the NFT")
+    st.subheader("Step 1: Artist Generates the NFT")
     st.markdown("""**The artist starts by creating the NFT, associating it with
                  their unique Melodic Voiceprint.  Once both parties have signed
                 the contract, then and only then will the counterparty have access
