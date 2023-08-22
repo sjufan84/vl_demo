@@ -101,7 +101,7 @@ def demo_visualize():
     **It's worth noting that** these two clips illustrate two primary use cases for Vocalockr.  The rendition\
                 of "Happy Birthday" illustrates the possibilities for personalized content generation for fans,\
                 just one of many implementations that could produce previously unimaginable revenue streams for artists.\
-                The other tune, however, shows just how easy it would be for anyone to create a personal and PR\
+                Conversely, however, this shows just how easy it would be for anyone to create a personal and PR\
                 nightmare for the artist.  Anyone with the right set of skills could create a deepfake of an artist\
                 singing virtually anything, without any immediately verifiable proof that they were\
                 not licensed to do so.
@@ -198,9 +198,9 @@ def demo_visualize():
         st.markdown("**Original Audio Clips:**")
         jeremiah_bytes = librosa.to_mono(jeremiah_signal)
         combs_bytes = librosa.to_mono(combs_signal)
-        st.markdown("**User**")
+        st.markdown("**User Happy Birthday**")
         st.audio(combs_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        st.markdown("**Jeremiah Harmon**")
+        st.markdown("**Jeremiah Harmon Happy Birthday**")
         st.audio(jeremiah_bytes, format='audio/wav', start_time=0, sample_rate=16000)
         selected_artists = st.multiselect(
         "Select Artists to Display:",
