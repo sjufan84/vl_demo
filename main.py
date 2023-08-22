@@ -41,7 +41,7 @@ def home():
     """ Landing page for the application. """
     # Display the description
     st.markdown("""<div>
-                <h4 style="font-family: 'Montserrat', sans-serif; color: #2F3A56; font-size: 50px; font-weight: 550;">
+                <h4 style="font-family: 'Montserrat', sans-serif; color: #2F3A56; font-size: 40px; font-weight: 550;">
                 Vocalockr: Empowering Artists in the Age of AI</h4>
                 </div>""", unsafe_allow_html=True)
     st.markdown("---")

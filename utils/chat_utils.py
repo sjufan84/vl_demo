@@ -64,7 +64,7 @@ def get_artist_response(user_message: str):
     },
     {
         "role": "user",
-        "content":f"Hi Luke, thanks for co-writing with.  Here is my next message {user_message}."
+        "content":f"Hi Luke, thanks for co-writing with me.  Here is my next message {user_message}."
     },
     ]
     # Models to iterate through

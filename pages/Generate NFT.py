@@ -81,7 +81,7 @@ def init_session_variables():
         'nft_demo_page', 'token_id', 'artist_signed', 'nft_metadata', 'label_wallet', 'receipt', 'label_signed', 'contract'
     ]
     default_values = [
-        'nft_demo_home', 0, False, {}, '', {}, False, Contract('MV Only', 1, 500, 'Use must be approved before deployment', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', uuid.uuid4().hex)
+        'nft_demo_home', 0, False, {}, '', {}, False, None
     ]
 
     for var, default_value in zip(session_vars, default_values):
@@ -111,7 +111,7 @@ def minting_demo_home():
     """ Home page for the NFT minting demo. Allows the user
     to emulate the process of minting the NFT as an artist would."""
     # Introduction to NFT minting
-    st.markdown("### :blue[Understanding NFT Minting: A Demonstration]")
+    st.markdown("### Understanding NFT Minting: A Demonstration")
     st.markdown("""**Minting an NFT (Non-Fungible Token) is like
                 creating a digital certificate of authenticity that
                 can be bought, sold, or traded. For artists, it's
@@ -119,7 +119,7 @@ def minting_demo_home():
                 Here's how it works:**""")
 
     # Step 1: Artist generates the NFT
-    st.subheader(":blue[Step 1: Artist Generates the NFT]")
+    st.subheader("### Step 1: Artist Generates the NFT")
     st.markdown("""**The artist starts by creating the NFT, associating it with
                  their unique Melodic Voiceprint.  Once both parties have signed
                 the contract, then and only then will the counterparty have access
@@ -137,7 +137,7 @@ def artist_minting_demo():
     """ Allows the user to emulate the process of minting
     the NFT as an artist would."""
     # Artist Actions
-    st.markdown("### :blue[Artist NFT Demo]")
+    st.markdown("### Artist Actions")
     st.text("")
     st.text("")
     # We will create a form to take in all of the relevant information
@@ -187,7 +187,7 @@ def artist_minting_demo():
                 st.error("You are not authorized to mint this NFT or the label address is\
                             not approved. Please select an approved wallet address.")    
             # Create a new NFT contract and set the session state
-            st.session_state.nft_contract = Contract(type_of_contract, 1, contract_cost, limitations, 
+            st.session_state.contract = Contract(type_of_contract, 1, contract_cost, limitations, 
                                                         voice_print_link, contract_id, artist_address, label_address)
            
             # Call the initiateNFT function from the contract (Replace with correct function name and parameters)
@@ -244,7 +244,7 @@ def label_interface():
     # Display the details of the NFT
     st.markdown(f"**Contract ID:** {st.session_state.contract.contract_id}")
     st.markdown(f"**Contract Type:** {st.session_state.contract.contract_type}")
-    st.markdown(f"**Cost**: {st.session_state.contract.total_cost}")
+    st.markdown(f"**Cost**: ${st.session_state.contract.total_cost:.2f}")
     st.markdown(f"**Limitations:** {st.session_state.contract.limitations}")
 
     # Allow the user to select their wallet address
@@ -320,6 +320,11 @@ def display_nft_metadata():
     chat_with_artist_button = st.button("Co-write with Combs", type='primary', use_container_width=True)
     if chat_with_artist_button:
         switch_page("Co-writer")
+    mint_new_nft_button = st.button("Mint a new NFT", type='primary', use_container_width=True)
+    if mint_new_nft_button:
+        st.session_state.contract = None
+        st.session_state.nft_demo_page = "artist_minting_demo"
+        st.experimental_rerun()
     
 # Call the function to display the page
 if st.session_state.nft_demo_page == "nft_demo_home":
