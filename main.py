@@ -8,17 +8,25 @@ from streamlit_extras.switch_page_button import switch_page
 import streamlit as st
 from PIL import Image
 
+st.set_page_config(
+    page_title="Vocal NFT Demo",
+    page_icon="🎤",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
+
 # Initialize the session state
 def init_session_variables():
     """Initialize session state variables"""
     session_vars = [
         'audio_files', 'record_audio_page', 'upload_audio_page','embeddings', 'home_page',
         'av_feature_dict', 'lc_feature_dict', 'demo_visualize_page', "detailed_vocal_features_page",
-        'nft_demo_page', 'token_id', 'contract_address', 'latest_nft', 'nft_metadata'
+        'nft_demo_page', 'token_id', 'contract_address', 'latest_nft', 'nft_metadata', 'chat_history'
+        'chat_page', 'user_name'
     ]
     default_values = [
         {}, 'record_audio', 'upload_audio', {},'home', {}, {}, 'demo_visualize_home', "detailed_home",
-        'nft_demo_home', 0, '', 0, {}
+        'nft_demo_home', 0, '', 0, {}, [], 'chat_home', ''
     ]
 
     for var, default_value in zip(session_vars, default_values):
@@ -28,26 +36,33 @@ def init_session_variables():
 # Initialize the session variables
 init_session_variables()    
 
+
 def home():
     """ Landing page for the application. """
-    # Create two columns to display the recorder and the upload mechanism
-    st.markdown("""<div style="text-align: center"><h1>Voice Lockr Demo v1</h1></div>""", unsafe_allow_html=True)
+    # Display the description
+    st.markdown("""<div>
+                <h4 style="font-family: 'Montserrat', sans-serif; color: #2F3A56; font-size: 50px; font-weight: 550;">
+                Vocalockr: Empowering Artists in the Age of AI</h4>
+                </div>""", unsafe_allow_html=True)
+    st.markdown("---")
+
                 
-    st.markdown('---')
-    st.markdown("""<div><p><b>In April of this year, </b>when an AI generated song imitating Drake and
-                the Weekend took <a href="https://www.nytimes.com/2023/04/19/arts/music/ai-drake-the-weeknd-fake.html">social media by storm</a>,
-                it set off alarm bells across the music industry.  What seemed like the stuff of science fiction only a short time ago was now
-                all too real.  Shortly thereafter, Hollywood confronted its own battles over AI.  Actors and writers
-                decided to go on strike, in part because of the possibility that their likenesses, which in some cases had been signed away
-                in contracts written before the dawn of this new age, were suddenly at risk of being used to create content
-                that they would not even need to be present for.  This, of course, raises all sorts of legal, ethical, and business
-                questions about the future of artificial intelligence in the arts.  What, if any, recourse do artists have to protect themselves
-                in this environment?<br><br>
-                Thankfully, the same technology that is used to produce these deepfake songs can also be used to help artists fight back
-                against them.  This is what Vocalockr aims to do.  By helping artists generate the same Melodic Voiceprints that fuel these
-                AI generated voice clones and storing it on the blockchain, we put the power back in the hands of the artists to decide when, where,
-                and how to license their voice in this brave new world of content generation.  This demo will walk through the stages of the MV capture
-                process as well as the myriad use cases that this technology represents.
+    st.markdown("""<div>
+                When a song, <i>imitating Drake and the Weeknd through AI</i>, 
+                shocked social media this April, it revealed a reality that was
+                once confined to <b>science fiction</b>. The music industry and
+                Hollywood were thrown into disarray as <b>legal, ethical, and business
+                dilemmas</b> surrounding artificial intelligence in the arts emerged.<br><br>
+                <h5>Vocalockr responds to this challenge by empowering artists.</h5>
+                Utilizing the technology behind <i>deepfake creations</i>, Vocalockr enables
+                artists to generate <b>Melodic Voiceprints</b> and store them securely on the
+                <b>blockchain</b>. By doing so, we place control over voice licensing firmly
+                in the hands of the creators themselves in this rapidly evolving world
+                of content generation. <br><br>
+                <h5>In this demo, we will guide you through the MV
+                capture process and explore the wide-ranging applications of this
+                groundbreaking technology.</h5> Join us as we showcase how <b>Vocalockr</b>
+                restores autonomy to artists, navigating them through this <i>brave new era</i>.
                 </div>""", unsafe_allow_html=True)
     st.markdown('---')
     get_started_button = st.button("Get Started", type='primary', use_container_width=True)

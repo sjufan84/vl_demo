@@ -63,7 +63,7 @@ def load_plots():
         feature_options
     )
 
-    audio_files = ['./audio_samples/avicii1.wav', './audio_samples/combs1.wav']
+    audio_files = ['./audio_samples/avicii_aloe.wav', './audio_samples/combs_aloe.wav']
     plot_filenames = {
         "Waveform": ['./plots/aloe_waveform.png', './plots/combs_waveform.png'],
         "Spectrogram": ['./plots/aloe_spectrogram.png', './plots/combs_spectrogram.png'],

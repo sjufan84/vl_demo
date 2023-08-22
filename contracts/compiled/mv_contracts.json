@@ -3,7 +3,7 @@
 		"inputs": [
 			{
 				"internalType": "address payable",
-				"name": "_developerAddress",
+				"name": "developerAddress",
 				"type": "address"
 			}
 		],
@@ -83,31 +83,6 @@
 		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": true,
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			},
-			{
-				"indexed": true,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "developer",
-				"type": "address"
-			}
-		],
-		"name": "CommissionSent",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
 				"indexed": false,
 				"internalType": "uint256",
 				"name": "_tokenId",
@@ -152,7 +127,7 @@
 				"type": "uint256"
 			},
 			{
-				"indexed": false,
+				"indexed": true,
 				"internalType": "address",
 				"name": "artist",
 				"type": "address"
@@ -295,19 +270,6 @@
 			}
 		],
 		"name": "getApproved",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getDeveloperAddress",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -554,19 +516,6 @@
 			}
 		],
 		"name": "setApprovalForAll",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address payable",
-				"name": "_developerAddress",
-				"type": "address"
-			}
-		],
-		"name": "setDeveloperAddress",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"

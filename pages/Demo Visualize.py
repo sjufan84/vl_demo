@@ -13,7 +13,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 from streamlit_extras.switch_page_button import switch_page
 
-st.set_page_config(page_title="Voice Lockr Demo", page_icon=":microphone:", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Voice Lockr Demo", page_icon=":microphone:", initial_sidebar_state="collapsed", layout="wide")
 
 # Initialize the session state
 def init_session_variables():
@@ -85,41 +85,51 @@ def create_audio_urls(segments):
 def demo_visualize():
     """ Demo page for visualizing audio features via Kmeans clustering """
     st.markdown("""
-    ### :blue[Melodic Voiceprint: A Harmony of Science, Art, and Security]
-    **The logical first question to ask is:  How do these deepfake audio clips work,\
+    ### Melodic Voiceprint: A Harmony of Science, Art, and Security
+                
+    **The logical first question to ask is:**  How do these deepfake audio clips work,\
     and what can artists do to protect themselves?  The answer lies in securing the\
     Melodic Voiceprint of the artist that is being used to train the models\
-    that make these deepfakes possible.**
+    that make these deepfakes possible.
 
-    **The 3D chart below visualizes the unique features that compose the voice of two different artists.
+    **The 3D chart below** visualizes the unique features that compose the voice of two different artists.
     Each point represents a segment of a song, and the position of the points reflects various
     characteristics of the voice such as pitch, rhythm, and timbre.
-    The segments are grouped by color, highlighting similarities and differences between the artists.**
+    The segments are grouped by color, highlighting similarities and differences between the artists.  By\
+    securing their MV with Vocalockr on the blockchain, artists can ensure that their voiceprint is protected.
+                
+    **It's worth noting that** these two clips illustrate two primary use cases for Vocallockr.  The rendition\
+                of "Happy Birthday" illustrates the possibilities for personalized content generation for fans,\
+                just one of many implementations that could produce previously unimaginable revenue streams for artists.\
+                The other tune, however, shows just how easy it would be for anyone to create a personal and PR\
+                nightmare for the artist.  Anyone with the right set of skills could create a deepfake of an artist\
+                singing virtually anything, without any immediately verifiable proof that they were\
+                not licensed to do so.
     """)
 
     # Read and preprocess audio signals
-    avicii_signal = read_audio('./audio_samples/avicii1.wav')
-    combs_signal = read_audio('./audio_samples/combs1.wav')
-    jeremiah_signal = read_audio('./audio_samples/jeremiah1.wav')
-    min_length = min(len(avicii_signal), len(combs_signal), len(jeremiah_signal))
-    avicii_signal = avicii_signal[:min_length]
+    #avicii_signal = read_audio('./audio_samples/avicii1.wav')
+    combs_signal = read_audio('./audio_samples/combs_fcar1.wav')
+    jeremiah_signal = read_audio('./audio_samples/jeremiah_fcar1.wav')
+    min_length = min(len(combs_signal), len(jeremiah_signal))
+    #avicii_signal = avicii_signal[:min_length]
     combs_signal = combs_signal[:min_length]
     jeremiah_signal = jeremiah_signal[:min_length]
     
 
     # Extract features
-    avicii_features = extract_features(avicii_signal)
+    #avicii_features = extract_features(avicii_signal)
     combs_features = extract_features(combs_signal)
     jeremiah_features = extract_features(jeremiah_signal)
 
     # Transpose to have features as columns
-    avicii_features = avicii_features.T
+    #avicii_features = avicii_features.T
     combs_features = combs_features.T
     jeremiah_features = jeremiah_features.T
 
     # Create a DataFrame by concatenating the two feature sets
-    df = pd.concat([pd.DataFrame(avicii_features), pd.DataFrame(combs_features), pd.DataFrame(jeremiah_features)], axis=0)
-
+    #df = pd.concat([pd.DataFrame(avicii_features), pd.DataFrame(combs_features), pd.DataFrame(jeremiah_features)], axis=0)
+    df = pd.concat([pd.DataFrame(combs_features), pd.DataFrame(jeremiah_features)], axis=0)
     # Standardize the data before applying PCA and KMeans
     scaler = StandardScaler()
     scaled_df = scaler.fit_transform(df)
@@ -138,22 +148,24 @@ def demo_visualize():
     cluster_df['cluster'] = clusters
 
     # Keep every other row for each artist
-    cluster_df = cluster_df.iloc[::2, :]
+    #cluster_df = cluster_df.iloc[::2, :]
 
     # Create segments (you may need to adjust this to match your actual segmentation logic)
-    avicii_segments = np.array_split(avicii_signal, len(cluster_df)//3)
-    combs_segments = np.array_split(combs_signal, len(cluster_df)//3)
-    jeremiah_segments = np.array_split(jeremiah_signal, len(cluster_df)//3)
-    total_segments = avicii_segments + combs_segments + jeremiah_segments
+    #avicii_segments = np.array_split(avicii_signal, len(cluster_df)//3)
+    combs_segments = np.array_split(combs_signal, len(cluster_df)//2)
+    jeremiah_segments = np.array_split(jeremiah_signal, len(cluster_df)//2)
+    #total_segments = avicii_segments + combs_segments + jeremiah_segments
+    total_segments = combs_segments + jeremiah_segments
 
    # Create labels for the segments
-    avicii_labels = [f"Avicii - Segment {i+1}" for i in range(len(avicii_segments))]
+    #avicii_labels = [f"Avicii - Segment {i+1}" for i in range(len(avicii_segments))]
     combs_labels = [f"Luke Combs - Segment {i+1}" for i in range(len(combs_segments))]
     jeremiah_labels = [f"Jeremiah - Segment {i+1}" for i in range(len(jeremiah_segments))]
-    segment_labels = avicii_labels + combs_labels + jeremiah_labels
+    #segment_labels = avicii_labels + combs_labels + jeremiah_labels
+    segment_labels = combs_labels + jeremiah_labels
 
     # Create segment numbers (e.g., Segment 1, Segment 2, ...)
-    segment_numbers = [f"Segment {i+1}" for i in range(len(avicii_segments))] * 3
+    segment_numbers = [f"Segment {i+1}" for i in range(len(combs_segments))] * 2
 
     # Add segment names and numbers to the DataFrame
     cluster_df['segment_name'] = segment_labels
@@ -162,15 +174,16 @@ def demo_visualize():
 
     
     # Create temporary audio files
-    avicii_files = create_audio_files(avicii_segments)
+    #avicii_files = create_audio_files(avicii_segments)
     combs_files = create_audio_files(combs_segments)
     jeremiah_files = create_audio_files(jeremiah_segments)
 
     # Create audio URLs
-    avicii_audio_urls = [audio_file_to_data_url(file) for file in avicii_files]
+    #avicii_audio_urls = [audio_file_to_data_url(file) for file in avicii_files]
     combs_audio_urls = [audio_file_to_data_url(file) for file in combs_files]
     jeremiah_audio_urls = [audio_file_to_data_url(file) for file in jeremiah_files]
-    audio_urls = avicii_audio_urls + combs_audio_urls + jeremiah_audio_urls
+    #audio_urls = avicii_audio_urls + combs_audio_urls + jeremiah_audio_urls
+    audio_urls = combs_audio_urls + jeremiah_audio_urls
 
     col1, col2 = st.columns([1.75, 1], gap='large')
 
@@ -179,19 +192,22 @@ def demo_visualize():
         st.text("")
         st.text("")
         st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
+        # Display the original clips
+        # Convert the clips to bytes using librosa
+       
+        st.markdown("**Original Audio Clips:**")
+        jeremiah_bytes = librosa.to_mono(jeremiah_signal)
+        combs_bytes = librosa.to_mono(combs_signal)
+        st.markdown("**Luke Combs**")
+        st.audio(combs_bytes, format='audio/wav', start_time=0, sample_rate=16000)
+        st.markdown("**Jeremiah Harmon**")
+        st.audio(jeremiah_bytes, format='audio/wav', start_time=0, sample_rate=16000)
         selected_artists = st.multiselect(
         "Select Artists to Display:",
-        options=['Avicii', 'Luke Combs', 'Jeremiah'],
-        default=['Avicii', 'Luke Combs', 'Jeremiah'],
+        #options=['Avicii', 'Luke Combs', 'Jeremiah'],
+        #default=['Avicii', 'Luke Combs', 'Jeremiah'],
+        options=['Luke Combs', 'Jeremiah'],
+        default=['Luke Combs', 'Jeremiah'],
         )
         # Filter the DataFrame based on selected artists
         filtered_cluster_df = cluster_df[cluster_df['segment_name'].str.contains('|'.join(selected_artists))]
@@ -214,7 +230,8 @@ def demo_visualize():
         # Let the user choose which artist to play
         selected_artist = st.selectbox(
         "Select Artist:",
-        options=['Avicii', 'Luke Combs', 'Jeremiah'],
+        #options=['Avicii', 'Luke Combs', 'Jeremiah'],
+        options = ['Luke Combs', 'Jeremiah'],
         )
       
         selected_segment = f"{selected_artist} - {segment_options}"
@@ -236,7 +253,7 @@ def demo_visualize():
         z='PC3',
         color='segment_number',
         color_continuous_scale='rainbow',
-        title='3D Representation of Vocal Features',
+        title='3D Representation of Vocal Features -- Luke Combs and Jeremiah Harmon',
         text='segment_name',
     )
 
@@ -257,20 +274,21 @@ def demo_visualize():
     )
         st.plotly_chart(fig, use_container_width=True)
             
-    st.markdown("""
-                ***If you are interested in viewing even more granular details of the audio, you can
-                click the button below.***
-                """)
+    #st.markdown("""
+    #            ***If you are interested in viewing even more granular details of the audio, you can
+    #            click the button below.***
+    #            """)
         # Create a button for showing the detailed audio features
-    detailed_features_button = st.button("Show Detailed Audio Features", type="primary", use_container_width=True)
-    if detailed_features_button:
-        switch_page("Detailed Vocal Features")
+    #detailed_features_button = st.button("Show Detailed Audio Features", type="primary", use_container_width=True)
+    #if detailed_features_button:
+    #    switch_page("Detailed Vocal Features")
     st.markdown("""---""")
     st.markdown("""
                  **So What Does This Mean for Music, Security, and the Future of the Industry?**
 
     1. **Understanding the Voice**: By analyzing these features, we can create a "Melodic Voiceprint,"
-                 a unique signature of an artist's voice. It's like a fingerprint for their voice, capturing the subtle nuances that make their voice distinctly theirs.
+                a unique signature of an artist's voice. It's like a fingerprint for their voice,
+                capturing the subtle nuances that make their voice distinctly theirs.
 
     2. **Protecting Authenticity**: The Melodic Voiceprint can be used to determine whether a piece of
         audio is genuinely from the claimed artist or not. It's a powerful tool to detect deepfakes,
@@ -292,7 +310,7 @@ def demo_visualize():
 
     st.text("")
     st.markdown("""
-                By securing the Melodic Voiceprint through NFTs, or non-fungible tokens,
+                **By securing the Melodic Voiceprint through NFTs**, or non-fungible tokens,
                 Vocalockr ensures unique and protected ownership. An NFT represents a binding
                 contract between an artist and an owner, whether a record label, streaming
                 service, or fan. Without owning the NFT, usage of the artist's voice is
@@ -300,7 +318,8 @@ def demo_visualize():
                 guarantees that it's used in line with their wishes, offering a powerful
                 tool in the evolving digital landscape of music.
                 """)
-    mint_nft_button = st.button("Mint an NFT", type="primary", use_container_width=True)
+    st.text("")
+    mint_nft_button = st.button("Mint an MV NFT", type="primary", use_container_width=True)
     if mint_nft_button:
         st.session_state.nft_demo_page = "nft_demo_home"
         switch_page("Generate NFT")
