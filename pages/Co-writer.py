@@ -3,6 +3,7 @@ import uuid
 import streamlit as st
 from streamlit_chat import message
 from streamlit_extras.switch_page_button import switch_page
+from PIL import Image
 from utils.chat_utils import add_message, get_artist_response
 
 # Define the page config
@@ -16,14 +17,38 @@ if "user_name" not in st.session_state:
     st.session_state.user_name = ""
 
 def chat_home():
+    """ Home page for chat with training pipeline image """
+    # Insert the training pipeline image
+    training_pipeline_image = Image.open("images/training_pipeline.png")
+    st.image(training_pipeline_image, use_column_width=True)
+
+    st.text("")
+    st.markdown("**Above we can see the basic training pipeline for creating\
+                boutique LLMs that are tailored to the specific artist and can\
+                be used downtstream for a variety of applications.**")
+    
+    st.markdown("**For a simple demo, we have created a chatbot that takes\
+                on the persona of the artist Luke Combs.  You can engage\
+                with Luke to get his thoughts on your songwriting.  Obviously,\
+                the uniquely trained model would be much more robust, but\
+                this demo should give you a sense of the potential.**")
+    # Create the button to start the chat
+    start_chat_button = st.button("Start Co-writing with Luke", type="primary",
+                                  use_container_width=True)
+    if start_chat_button:
+        # Switch to the chat intro page
+        st.session_state.chat_page = "chat_intro"
+        st.experimental_rerun()
+
+def chat_intro():
     """ The home page for the artist chat interactions """
     st.markdown("##### Welcome to Co-writer!  Luke Combs\
                 is here to help guide you and encourage you\
                 as you write your next hit song!")
     st.markdown("---")
     # Display an initial greeting from the artist
-    initial_greeting = "Hi there!  I'm Luke Combs, and I'm\
-                        here to help!  Why don't you tell me\
+    initial_greeting = "Hey there!  I'm Luke Combs, and I'm\
+                        excited to co-write with you!  Why don't you tell me\
                         about the song you're working on?"
     message(initial_greeting, avatar_style="initials", seed="LC")
    
@@ -41,6 +66,7 @@ def chat_home():
             # Set the session state to display the chat history
             st.session_state.chat_page = "display_chat"
             st.experimental_rerun()    
+    
 
 def display_chat():
     """ Display the ongoing chat """
@@ -92,5 +118,7 @@ def display_chat():
 # Set the flow of the page
 if st.session_state.chat_page == "chat_home":
     chat_home()
+elif st.session_state.chat_page == "chat_intro":
+    chat_intro()
 elif st.session_state.chat_page == "display_chat":
     display_chat()

@@ -98,7 +98,7 @@ def demo_visualize():
     The segments are grouped by color, highlighting similarities and differences between the artists.  By\
     securing their MV with Vocalockr on the blockchain, artists can ensure that their voiceprint is protected.
                 
-    **It's worth noting that** these two clips illustrate two primary use cases for Vocallockr.  The rendition\
+    **It's worth noting that** these two clips illustrate two primary use cases for Vocalockr.  The rendition\
                 of "Happy Birthday" illustrates the possibilities for personalized content generation for fans,\
                 just one of many implementations that could produce previously unimaginable revenue streams for artists.\
                 The other tune, however, shows just how easy it would be for anyone to create a personal and PR\
@@ -109,8 +109,8 @@ def demo_visualize():
 
     # Read and preprocess audio signals
     #avicii_signal = read_audio('./audio_samples/avicii1.wav')
-    combs_signal = read_audio('./audio_samples/combs_fcar1.wav')
-    jeremiah_signal = read_audio('./audio_samples/jeremiah_fcar1.wav')
+    combs_signal = read_audio('./audio_samples/happy_bday.wav')
+    jeremiah_signal = read_audio('./audio_samples/jeremiah2.wav')
     min_length = min(len(combs_signal), len(jeremiah_signal))
     #avicii_signal = avicii_signal[:min_length]
     combs_signal = combs_signal[:min_length]
@@ -159,7 +159,7 @@ def demo_visualize():
 
    # Create labels for the segments
     #avicii_labels = [f"Avicii - Segment {i+1}" for i in range(len(avicii_segments))]
-    combs_labels = [f"Luke Combs - Segment {i+1}" for i in range(len(combs_segments))]
+    combs_labels = [f"User - Segment {i+1}" for i in range(len(combs_segments))]
     jeremiah_labels = [f"Jeremiah - Segment {i+1}" for i in range(len(jeremiah_segments))]
     #segment_labels = avicii_labels + combs_labels + jeremiah_labels
     segment_labels = combs_labels + jeremiah_labels
@@ -198,7 +198,7 @@ def demo_visualize():
         st.markdown("**Original Audio Clips:**")
         jeremiah_bytes = librosa.to_mono(jeremiah_signal)
         combs_bytes = librosa.to_mono(combs_signal)
-        st.markdown("**Luke Combs**")
+        st.markdown("**User**")
         st.audio(combs_bytes, format='audio/wav', start_time=0, sample_rate=16000)
         st.markdown("**Jeremiah Harmon**")
         st.audio(jeremiah_bytes, format='audio/wav', start_time=0, sample_rate=16000)
@@ -206,8 +206,8 @@ def demo_visualize():
         "Select Artists to Display:",
         #options=['Avicii', 'Luke Combs', 'Jeremiah'],
         #default=['Avicii', 'Luke Combs', 'Jeremiah'],
-        options=['Luke Combs', 'Jeremiah'],
-        default=['Luke Combs', 'Jeremiah'],
+        options=['User', 'Jeremiah'],
+        default=['User', 'Jeremiah'],
         )
         # Filter the DataFrame based on selected artists
         filtered_cluster_df = cluster_df[cluster_df['segment_name'].str.contains('|'.join(selected_artists))]
@@ -231,7 +231,7 @@ def demo_visualize():
         selected_artist = st.selectbox(
         "Select Artist:",
         #options=['Avicii', 'Luke Combs', 'Jeremiah'],
-        options = ['Luke Combs', 'Jeremiah'],
+        options = ['User', 'Jeremiah'],
         )
       
         selected_segment = f"{selected_artist} - {segment_options}"
