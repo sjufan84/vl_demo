@@ -18,6 +18,5 @@ torch
 torchaudio
 web3
 python-dotenv
-pydantic
-chromadb
-pysqlite3
+pinecone-client
+```
