@@ -4,7 +4,8 @@ import streamlit as st
 from streamlit_chat import message
 from streamlit_extras.switch_page_button import switch_page
 from PIL import Image
-from utils.chat_utils import add_message, get_artist_response
+from utils.chat_utils import add_message
+from utils.model_utils import get_luke_response 
 
 # Define the page config
 st.set_page_config(page_title="Luke Combs Chat", initial_sidebar_state="collapsed")
@@ -62,7 +63,7 @@ def chat_intro():
     if send_question_button:
         with st.spinner("Luke is writing..."):
             # Get the artist's response
-            get_artist_response(user_question)
+            get_luke_response(user_question)
             # Set the session state to display the chat history
             st.session_state.chat_page = "display_chat"
             st.experimental_rerun()    
@@ -77,7 +78,7 @@ def display_chat():
     if send_question_button:
         with st.spinner("Luke is typing..."):
             # Get the artist's response
-            get_artist_response(user_question)
+            get_luke_response(user_question)
             # Set the session state to display the chat history
             st.session_state.chat_page = "display_chat"
             user_question = ""
@@ -89,7 +90,7 @@ def display_chat():
         for chat_message in st.session_state.chat_history[-2:]:
             # If the role is "ai", display the message on the left
             if chat_message['role'] == "assistant":
-                message(chat_message['content'], avatar_style="initials", seed="LC",
+                message(chat_message['content']['result'], avatar_style="initials", seed="LC",
                         key = f'{uuid.uuid4()}')
             # If the role is "user", display the message on the right
             elif chat_message['role'] == "user":
