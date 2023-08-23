@@ -17,3 +17,4 @@ streamlit_extras==0.3.0
 torch==2.0.1
 torchaudio==2.0.2
 web3==6.8.0
+python-dotenv
