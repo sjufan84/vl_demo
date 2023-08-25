@@ -14,15 +14,14 @@ def bplan_intro():
     """ Page to introduce the business plan chat """
     st.markdown("""### Business Plan Chat""")
     st.markdown("---")
-    st.markdown("##### We propose a new way to interact with business plans.\
-                By utilizing a vectorstore as a retriever, we can ask questions\
-                about the business plan, locate the relevant information, and then\
-                pass that information to a LLM that can utilize it to more\
-                intelligently answer the question.  The business plan and this integratin\
-                are both works in progress, but we hope this demo gives you a sense\
-                of the potential, and of course we are happy to dig in to the details\
-                with you if you are interested in learning more.")
-    start_bplan_chat_button = st.button("Start Business Plan Chat", type="primary", use_container_width=True)
+    st.markdown(""" ###### At Vocalockr, we're pioneering an interactive approach
+                to our business plan by using a vectorstore retriever and an LLM
+                for contextual answers. Though this technology is new, it promises
+                a more engaging experience. We're eager to discuss more in person!"""
+                )
+    st.text("")
+    start_bplan_chat_button = st.button("Start Business Plan Chat", type="primary",
+                                         use_container_width=True)
     if start_bplan_chat_button:
         st.session_state.bplan_chat_page = "bplan_chat_main"
         st.experimental_rerun()
