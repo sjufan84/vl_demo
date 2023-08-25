@@ -19,13 +19,21 @@ load_dotenv() # Load the .env file
 openai.api_key = os.getenv("OPENAI_API_KEY")
 # Read in the openai organization id from the .env file
 openai.organization = os.getenv("OPENAI_ORG")
-pinecone.init(api_key = os.getenv("PINECONE_KEY"), environment=os.getenv("PINECONE_ENV")) # Initialize pinecone
+pinecone.init(api_key = os.getenv("PINECONE_KEY2"), environment=os.getenv("PINECONE_ENV2")) # Initialize pinecone
+
+from langchain.embeddings.openai import OpenAIEmbeddings
+
+embed = OpenAIEmbeddings(
+    model="text-embedding-ada-002",
+    openai_api_key = openai.api_key,
+    disallowed_special=()
+)
 
 
-def create_pinecone_vectorstore(documents):
-    """Create the pinecone index from the documents"""
-    vectorstore = Pinecone.from_documents(documents, OpenAIEmbeddings(),
-                                           index_name = "combs-data") # Create the vectorstore
+
+def get_vectorstore(index_name='vocalockr-bplan', embeddings = embed):
+    """Get the vectorstore from Pinecone"""
+    vectorstore = Pinecone.from_existing_index(index_name, embeddings)
     
     return vectorstore
 
@@ -44,21 +52,7 @@ def load_lyrics():
     return data
 
 @st.cache_data
-def create_prompt():
-    """Create the prompt for the chatbot"""
-    template = """You are Luke Combs, the famous country music singer, 
-    helping a fan as their 'co-writer'. Use the following pieces of context
-    containing lyrics to your songs to help guide the fan in writing their
-    song, bringing your own unique style and voice to the sesssion.  Keep
-    your answers concise and focused on helping the fan write their song.
-    Reference one of your own songs or lyrics to help the fan understand
-    what you mean and relate to your advice if it seems appropriate.
-    {context}
-    Question: {question}
-    Helpful Answer:"""
-    qa_chain_prompt = PromptTemplate.from_template(template)
 
-    return qa_chain_prompt
 
 def get_luke_response(question:str):
     """Get a response from Luke Combs to the question"""
@@ -77,3 +71,54 @@ def get_luke_response(question:str):
     add_message(ai_answer.role, ai_answer.content)
 
     return response
+
+def get_bplan_response(question: str):
+    """Get a response from the business plan to the question"""
+    vectorstore = get_vectorstore()
+    context = get_context(vectorstore, question)
+    messages = [
+        {
+            "role": "system", "content": f"""You are a master busines advisor
+            and start-up strategist answering a question {question} about 
+            an early stage company's business plan.  The relevant information
+            from the business plan is {context}.  Your chat history so far is
+            {st.session_state.chat_history}."""
+        },
+        {
+            "role": "user", "content": f"""Please answer my {question} about the 
+            business plan."""
+        },
+    ]
+    models = ["gpt-3.5-turbo-16k-0613", "gpt-3.5-turbo-16k", "gpt-3.5-turbo-0613, gpt-3.5-turbo"] # Set list of models to iterate through
+    for model in models:
+        try:
+            response = openai.ChatCompletion.create(
+                model=model,
+                messages = messages,
+                max_tokens=500,
+                frequency_penalty=0.5,
+                presence_penalty=0.5,
+                temperature=1,
+                n=1
+            )
+            answer = response.choices[0].message.content
+            add_message("user", question)
+            # Format the user question and the AI answer into ChatMessage objects
+            ai_answer = ChatMessage(answer, "ai")
+            # Add the user question and AI answer to the chat history
+            add_message(ai_answer.role, ai_answer.content)
+
+            return answer
+        
+        except Exception as e:
+            print(e)
+            continue
+
+def get_context(vectorstore, question: str):
+    """Get the context from the vectorstore"""
+    context = vectorstore.similarity_search(
+    query=question,
+    k=3
+    )
+
+    return context
