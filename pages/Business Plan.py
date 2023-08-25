@@ -14,10 +14,10 @@ def bplan_intro():
     """ Page to introduce the business plan chat """
     st.markdown("""### Business Plan Chat""")
     st.markdown("---")
-    st.markdown(""" ###### At Vocalockr, we're pioneering an interactive approach
-                to our business plan by using a vectorstore retriever and an LLM
-                for contextual answers. Though this technology is new, it promises
-                a more engaging experience. We're eager to discuss more in person!"""
+    st.markdown("###### At Vocalockr, we're pioneering an interactive approach\
+                to our business plan by using a vectorstore retriever and an LLM\
+                for contextual answers. Though this technology is new, it promises\
+                a more engaging experience. We're eager to discuss more in person!"
                 )
     st.text("")
     start_bplan_chat_button = st.button("Start Business Plan Chat", type="primary",
