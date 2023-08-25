@@ -31,7 +31,7 @@ def bplan_chat_main():
     # Initial greeting from the ai
     initial_greeting = "Welcome to Vocalockr Business Plan Chat!  I'm their virtual\
         advisor and start-up strategist.  What questions do you have about their\
-        business plan?"
+        plan?"
     if len(st.session_state.chat_history) == 0:
         message(initial_greeting, avatar_style="initials", seed="AI")
     # Get the user's next question
