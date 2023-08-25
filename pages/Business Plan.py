@@ -12,6 +12,7 @@ if "chat_history" not in st.session_state:
 
 def bplan_intro():
     """ Page to introduce the business plan chat """
+    st.session_state.chat_history = [] # Clear the chat history
     st.markdown("""### Business Plan Chat""")
     st.markdown("---")
     st.markdown("###### At Vocalockr, we're pioneering an interactive approach\
@@ -33,7 +34,7 @@ def bplan_chat_main():
         advisor and start-up strategist.  What questions do you have about their\
         plan?"
     if len(st.session_state.chat_history) == 0:
-        message(initial_greeting, avatar_style="initials", seed="AI")
+        message(initial_greeting, avatar_style="miniavs", seed="Socks")
     # Get the user's next question
     user_question = st.text_area("Your question", height=100)
     # Create a button to send the question to the artist
@@ -53,11 +54,11 @@ def bplan_chat_main():
         for chat_message in st.session_state.chat_history[-2:]:
             # If the role is "ai", display the message on the left
             if chat_message['role'] == "assistant":
-                message(chat_message['content'], avatar_style="initials", seed="LC",
+                message(chat_message['content'], avatar_style="miniavs", seed="Socks",
                         key = f'{uuid.uuid4()}')
             # If the role is "user", display the message on the right
             elif chat_message['role'] == "user":
-                message(chat_message['content'], avatar_style="initials", seed="You",
+                message(chat_message['content'], avatar_style="miniavs", seed="Felix",
                         is_user=True, key=f'{uuid.uuid4()}')
                 
     new_chat_button = st.button("Start New Chat Session", type="primary", use_container_width=True)

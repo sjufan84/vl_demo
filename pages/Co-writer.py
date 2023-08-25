@@ -16,6 +16,8 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "user_name" not in st.session_state:
     st.session_state.user_name = ""
+if "context" not in st.session_state:
+    st.session_state.context = []
 
 def chat_home():
     """ Home page for chat with training pipeline image """
@@ -42,6 +44,7 @@ def chat_home():
         st.experimental_rerun()
 
 def chat_intro():
+    st.session_state.chat_history = []
     """ The home page for the artist chat interactions """
     st.markdown("##### Welcome to Co-writer!  Luke Combs\
                 is here to help guide you and encourage you\
@@ -90,11 +93,11 @@ def display_chat():
         for chat_message in st.session_state.chat_history[-2:]:
             # If the role is "ai", display the message on the left
             if chat_message['role'] == "assistant":
-                message(chat_message['content']['result'], avatar_style="initials", seed="LC",
+                message(chat_message['content'], avatar_style="initials", seed="LC",
                         key = f'{uuid.uuid4()}')
             # If the role is "user", display the message on the right
             elif chat_message['role'] == "user":
-                message(chat_message['content'], avatar_style="initials", seed="You",
+                message(chat_message['content'], avatar_style="miniavs", seed="Socks",
                         is_user=True, key=f'{uuid.uuid4()}')
 
     st.markdown("---")
