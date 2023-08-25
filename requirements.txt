@@ -19,3 +19,4 @@ torchaudio
 web3
 python-dotenv
 pinecone-client
+tiktoken
