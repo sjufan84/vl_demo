@@ -59,8 +59,7 @@ def bplan_chat_main():
             elif chat_message['role'] == "user":
                 message(chat_message['content'], avatar_style="initials", seed="You",
                         is_user=True, key=f'{uuid.uuid4()}')
-
-    st.markdown("---")
+                
     new_chat_button = st.button("Start New Chat Session", type="primary", use_container_width=True)
     if new_chat_button:
         st.session_state.chat_history = []
