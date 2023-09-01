@@ -24,7 +24,7 @@ def load_audio(audio_path: str) -> Tuple[torch.Tensor, int]:
     waveform, sample_rate = torchaudio.load(audio_path)
     # Flatten the tensor if it's multi-channel
     if waveform.ndim > 1:
-        waveform = torch.mean(waveform, dim=0, keepdim=True)
+        waveform = torch.mean(waveform, dim=0, keepdim=True) # Average the channels
     return waveform, sample_rate
 
 @st.cache_data

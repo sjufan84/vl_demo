@@ -1,0 +1,61 @@
+,file,segment_id,start_time,end_time,encoded_audio,audio_codes,Song Title
+0,./audio_files/artist_main\lc_beautiful_crazy.wav,0,0,15,"EncodecEncoderOutput(audio_codes=tensor([[[[ 62,  62,  62,  ..., 879, 133, 855],
+          [913, 424, 424,  ...,  87, 741, 740]]]]), audio_scales=[None])","tensor([[[[ 62,  62,  62,  ..., 879, 133, 855],
+          [913, 424, 424,  ...,  87, 741, 740]]]])",Crazy Beautiful
+1,./audio_files/artist_main\lc_beautiful_crazy.wav,1,15,30,"EncodecEncoderOutput(audio_codes=tensor([[[[855, 904, 999,  ..., 923, 489, 534],
+          [302, 200, 646,  ..., 410, 809, 133]]]]), audio_scales=[None])","tensor([[[[855, 904, 999,  ..., 923, 489, 534],
+          [302, 200, 646,  ..., 410, 809, 133]]]])",Crazy Beautiful
+2,./audio_files/artist_main\lc_beautiful_crazy.wav,2,30,45,"EncodecEncoderOutput(audio_codes=tensor([[[[124, 698, 534,  ..., 967, 393, 561],
+          [520, 842, 133,  ..., 865, 877,  37]]]]), audio_scales=[None])","tensor([[[[124, 698, 534,  ..., 967, 393, 561],
+          [520, 842, 133,  ..., 865, 877,  37]]]])",Crazy Beautiful
+3,./audio_files/artist_main\lc_beautiful_crazy.wav,3,45,60,"EncodecEncoderOutput(audio_codes=tensor([[[[1010,  751,  393,  ...,  828,  167,  723],
+          [ 394,  213,  373,  ...,  591,   46,  591]]]]), audio_scales=[None])","tensor([[[[1010,  751,  393,  ...,  828,  167,  723],
+          [ 394,  213,  373,  ...,  591,   46,  591]]]])",Crazy Beautiful
+4,./audio_files/artist_main\lc_beautiful_crazy.wav,4,60,75,"EncodecEncoderOutput(audio_codes=tensor([[[[ 720,  778,  734,  ..., 1006,  462,  980],
+          [ 591,  591,  591,  ...,  259,  476,  730]]]]), audio_scales=[None])","tensor([[[[ 720,  778,  734,  ..., 1006,  462,  980],
+          [ 591,  591,  591,  ...,  259,  476,  730]]]])",Crazy Beautiful
+5,./audio_files/artist_main\lc_fastcar.wav,0,0,15,"EncodecEncoderOutput(audio_codes=tensor([[[[ 62,  62,  62,  ..., 219,  70, 363],
+          [913, 424, 424,  ..., 872, 835, 783]]]]), audio_scales=[None])","tensor([[[[ 62,  62,  62,  ..., 219,  70, 363],
+          [913, 424, 424,  ..., 872, 835, 783]]]])",Fast Car
+6,./audio_files/artist_main\lc_fastcar.wav,1,15,30,"EncodecEncoderOutput(audio_codes=tensor([[[[804, 949, 645,  ..., 977, 958, 495],
+          [  6, 938, 647,  ..., 219, 811, 752]]]]), audio_scales=[None])","tensor([[[[804, 949, 645,  ..., 977, 958, 495],
+          [  6, 938, 647,  ..., 219, 811, 752]]]])",Fast Car
+7,./audio_files/artist_main\lc_fastcar.wav,2,30,45,"EncodecEncoderOutput(audio_codes=tensor([[[[958, 916, 901,  ..., 923, 239, 974],
+          [604, 540, 598,  ...,  49, 132, 752]]]]), audio_scales=[None])","tensor([[[[958, 916, 901,  ..., 923, 239, 974],
+          [604, 540, 598,  ...,  49, 132, 752]]]])",Fast Car
+8,./audio_files/artist_main\lc_fastcar.wav,3,45,60,"EncodecEncoderOutput(audio_codes=tensor([[[[681, 815, 182,  ..., 193, 740, 921],
+          [415, 963, 297,  ..., 430, 582, 463]]]]), audio_scales=[None])","tensor([[[[681, 815, 182,  ..., 193, 740, 921],
+          [415, 963, 297,  ..., 430, 582, 463]]]])",Fast Car
+9,./audio_files/artist_main\lc_fastcar.wav,4,60,75,"EncodecEncoderOutput(audio_codes=tensor([[[[ 969, 1008,  761,  ...,  342,  689,  637],
+          [ 960,  422,  496,  ...,   34,  638,  553]]]]), audio_scales=[None])","tensor([[[[ 969, 1008,  761,  ...,  342,  689,  637],
+          [ 960,  422,  496,  ...,   34,  638,  553]]]])",Fast Car
+10,./audio_files/artist_main\lc_growinup_gettinold.wav,0,0,15,"EncodecEncoderOutput(audio_codes=tensor([[[[ 62,  62,  62,  ..., 936, 955, 921],
+          [913, 424, 424,  ..., 829, 403, 601]]]]), audio_scales=[None])","tensor([[[[ 62,  62,  62,  ..., 936, 955, 921],
+          [913, 424, 424,  ..., 829, 403, 601]]]])",Growin' up and Gettin' Old
+11,./audio_files/artist_main\lc_growinup_gettinold.wav,1,15,30,"EncodecEncoderOutput(audio_codes=tensor([[[[ 921,  942, 1004,  ...,   18,  884,  939],
+          [ 146,  146,  524,  ...,   14,  308,  545]]]]), audio_scales=[None])","tensor([[[[ 921,  942, 1004,  ...,   18,  884,  939],
+          [ 146,  146,  524,  ...,   14,  308,  545]]]])",Growin' up and Gettin' Old
+12,./audio_files/artist_main\lc_growinup_gettinold.wav,2,30,45,"EncodecEncoderOutput(audio_codes=tensor([[[[120, 914, 584,  ..., 345, 345,  33],
+          [678, 749, 749,  ..., 212, 536, 987]]]]), audio_scales=[None])","tensor([[[[120, 914, 584,  ..., 345, 345,  33],
+          [678, 749, 749,  ..., 212, 536, 987]]]])",Growin' Up and Gettin' Old
+13,./audio_files/artist_main\lc_growinup_gettinold.wav,3,45,60,"EncodecEncoderOutput(audio_codes=tensor([[[[345,  33, 901,  ..., 970, 654, 715],
+          [672, 164, 136,  ...,  57, 505, 245]]]]), audio_scales=[None])","tensor([[[[345,  33, 901,  ..., 970, 654, 715],
+          [672, 164, 136,  ...,  57, 505, 245]]]])",Growin' Up and Gettin' Old
+14,./audio_files/artist_main\lc_growinup_gettinold.wav,4,60,75,"EncodecEncoderOutput(audio_codes=tensor([[[[202,  34, 527,  ..., 485, 652, 601],
+          [555, 215, 919,  ..., 704, 814,  48]]]]), audio_scales=[None])","tensor([[[[202,  34, 527,  ..., 485, 652, 601],
+          [555, 215, 919,  ..., 704, 814,  48]]]])",Growin' Up and Gettin' Old
+15,./audio_files/artist_main\lc_hurricane.wav,0,0,15,"EncodecEncoderOutput(audio_codes=tensor([[[[ 62,  62,  62,  ..., 582, 814, 613],
+          [913, 424, 424,  ..., 483,  49, 827]]]]), audio_scales=[None])","tensor([[[[ 62,  62,  62,  ..., 582, 814, 613],
+          [913, 424, 424,  ..., 483,  49, 827]]]])",Hurricane
+16,./audio_files/artist_main\lc_hurricane.wav,1,15,30,"EncodecEncoderOutput(audio_codes=tensor([[[[167, 613, 613,  ..., 976, 953, 293],
+          [352, 335, 598,  ..., 765, 204, 597]]]]), audio_scales=[None])","tensor([[[[167, 613, 613,  ..., 976, 953, 293],
+          [352, 335, 598,  ..., 765, 204, 597]]]])",Hurricane
+17,./audio_files/artist_main\lc_hurricane.wav,2,30,45,"EncodecEncoderOutput(audio_codes=tensor([[[[862, 263, 926,  ..., 141,  85, 908],
+          [908, 620, 629,  ..., 889, 727, 457]]]]), audio_scales=[None])","tensor([[[[862, 263, 926,  ..., 141,  85, 908],
+          [908, 620, 629,  ..., 889, 727, 457]]]])",Hurricane
+18,./audio_files/artist_main\lc_hurricane.wav,3,45,60,"EncodecEncoderOutput(audio_codes=tensor([[[[750, 800, 801,  ..., 894, 776, 776],
+          [182, 205, 981,  ..., 421, 965,  98]]]]), audio_scales=[None])","tensor([[[[750, 800, 801,  ..., 894, 776, 776],
+          [182, 205, 981,  ..., 421, 965,  98]]]])",Hurricane
+19,./audio_files/artist_main\lc_hurricane.wav,4,60,75,"EncodecEncoderOutput(audio_codes=tensor([[[[671, 431, 431,  ...,  57, 994, 914],
+          [926, 421, 966,  ...,  82, 408, 901]]]]), audio_scales=[None])","tensor([[[[671, 431, 431,  ...,  57, 994, 914],
+          [926, 421, 966,  ...,  82, 408, 901]]]])",Hurricane

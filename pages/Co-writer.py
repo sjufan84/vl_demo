@@ -1,11 +1,12 @@
 """ UI for the user to be able to interact with the artist Luke Combs """
 import uuid
+import numpy as np
 import streamlit as st
 from streamlit_chat import message
 from streamlit_extras.switch_page_button import switch_page
 from PIL import Image
 from utils.chat_utils import add_message
-from utils.model_utils import get_luke_response 
+from utils.model_utils import get_luke_response, get_audio_sample, get_inputs_from_llm
 
 # Define the page config
 st.set_page_config(page_title="Luke Combs Chat", initial_sidebar_state="collapsed")
@@ -18,6 +19,11 @@ if "user_name" not in st.session_state:
     st.session_state.user_name = ""
 if "context" not in st.session_state:
     st.session_state.context = []
+if "output" not in st.session_state:
+    st.session_state.output = None
+if "prompt" not in st.session_state:
+    st.session_state.prompt = ""
+
 
 def chat_home():
     """ Home page for chat with training pipeline image """
@@ -44,8 +50,8 @@ def chat_home():
         st.experimental_rerun()
 
 def chat_intro():
-    st.session_state.chat_history = []
     """ The home page for the artist chat interactions """
+    st.session_state.chat_history = []
     st.markdown("##### Welcome to Co-writer!  Luke Combs\
                 is here to help guide you and encourage you\
                 as you write your next hit song!")
@@ -74,6 +80,19 @@ def chat_intro():
 
 def display_chat():
     """ Display the ongoing chat """
+    st.markdown("##### :blue[@Joel - these are the prompts that\
+                the model is generating based on the conversation\
+                for reference ---]")
+    st.markdown(f"**Generated Prompts:** {st.session_state.prompt}")
+    st.warning("""**The way this is currently set up, the user
+               can chat with Luke and receive text / lyric guidance,
+               etc. by clicking the "Send Message to Luke" button.
+               The conversation will continue as long as the user
+               likes.  If at any point the user would like to generate
+               an audio clip based on the chat, they can click the
+               "Request Audio Sample" button.**""")
+    st.text("")
+    st.text("")
     # Get the user's next question
     user_question = st.text_area("Your message for Luke", height=100)
     # Create a button to send the question to the artist
@@ -86,7 +105,26 @@ def display_chat():
             st.session_state.chat_page = "display_chat"
             user_question = ""
             st.experimental_rerun()
+     # Create a button to request an audio sample
+    request_audio_button = st.button("Request Audio Sample", type="primary",
+                                     use_container_width=True)
+    if request_audio_button:
+        with st.spinner("Luke is composing... This will take\
+                        a minute"):
+            st.session_state.output = None
+            add_message("user", user_question)
+            # Get the artist's response
+            prompt = get_inputs_from_llm()
+            output = get_audio_sample(prompt)
+            st.session_state.output = output
+            # Set the session state to display the chat history
+            st.session_state.chat_page = "display_chat"
+            st.experimental_rerun()
     st.markdown("---")
+    if st.session_state.output:
+        st.markdown("**Current Audio Sample**")
+        # Convert the audio sample to a streamlit audio object
+        st.audio(np.array(st.session_state.output), format='audio/wav', start_time=0, sample_rate=22050)
     chat_container = st.container()
     with chat_container:
         # Display the chat history
@@ -100,12 +138,15 @@ def display_chat():
                 message(chat_message['content'], avatar_style="miniavs", seed="Socks",
                         is_user=True, key=f'{uuid.uuid4()}')
 
+
     st.markdown("---")
     # Create a button to start a new chat
     new_chat_button = st.button("New Chat", type="primary", use_container_width=True)
     if new_chat_button:
         # Clear the chat history
         st.session_state.chat_history = []
+        # Reset the output
+        st.session_state.output = None
         # Switch to the chat home page
         st.session_state.chat_page = "chat_home"
         st.experimental_rerun()
