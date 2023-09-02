@@ -80,9 +80,6 @@ def chat_intro():
 
 def display_chat():
     """ Display the ongoing chat """
-    st.markdown("##### :blue[@Joel - these are the prompts that\
-                the model is generating based on the conversation\
-                for reference ---]")
     st.markdown(f"**Generated Prompts:** {st.session_state.prompt}")
     st.warning("""**The way this is currently set up, the user
                can chat with Luke and receive text / lyric guidance,
