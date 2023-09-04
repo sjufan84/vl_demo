@@ -10,7 +10,7 @@ import openai
 import streamlit as st
 from huggingface_hub import InferenceClient
 from dotenv import load_dotenv
-from utils.chat_utils import add_message, ChatMessage
+from utils.chat_utils import add_message
 
 
 load_dotenv() # Load the .env file
@@ -25,13 +25,22 @@ embed = OpenAIEmbeddings(
     openai_api_key = openai.api_key,
     disallowed_special=()
 )
+# Initialize the session state
+def init_session_variables():
+    """Initialize session state variables"""
+    session_vars = [
+       'context', 'output', 'prompt'
+    ]
+    default_values = [
+        [], None, ""
+    ]
 
-if "context" not in st.session_state:
-    st.session_state.context = []
-if "output" not in st.session_state:
-    st.session_state.output = None
-if "prompt" not in st.session_state:
-    st.session_state.prompt = ""
+    for var, default_value in zip(session_vars, default_values):
+        if var not in st.session_state:
+            st.session_state[var] = default_value
+
+# Initialize the session variables
+init_session_variables()
 
 
 def get_vectorstore(index_name='vocalockr-bplan', embeddings = embed):
