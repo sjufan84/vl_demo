@@ -34,7 +34,8 @@ for message in st.session_state.chat_history:
         with st.chat_message("assistant", avatar="🎸"):
             st.markdown(message["content"])
 
-response_type = st.sidebar.radio("Choose your response type", ("Standard Chat", "Musical Chat"))
+response_type = st.sidebar.radio("Choose your response type",
+                                ("Standard Chat", "Musical Chat"))
 
 def get_text_response():
     """ Get a response from Luke Combs in the form of text."""
@@ -48,7 +49,8 @@ def get_text_response():
                 environment=os.getenv("PINECONE_ENV")) # Initialize pinecone
                 vectorstore = get_vectorstore(index_name = 'combs-data')
                 context = get_context(vectorstore, prompt)
-                context_dict = [{"Song Name" : context.page_content, "lyrics" : context.metadata} for context in context]
+                context_dict = [{"Song Name" : context.page_content,
+                                "lyrics" : context.metadata} for context in context]
                 context = context_dict
                 st.session_state.context = context
                 messages = [
@@ -60,7 +62,8 @@ def get_text_response():
                         lyrics to help you relate to the user's question {prompt}.  Feel free
                         to mention a specific song or lyrics of yours when guiding the users along.
                         Your chat history so far is {st.session_state.chat_history}.  This will
-                        be a back and forth chat, so make sure to leave your responses open-ended."""
+                        be a back and forth chat, so make sure to leave your responses
+                        open-ended."""
                     },
                     {
                         "role": "user", "content": f"""Please answer my {prompt} about 
@@ -69,7 +72,9 @@ def get_text_response():
                 ]
                 message_placeholder = st.empty()
                 full_response = ""
-                models = ["gpt-3.5-turbo-16k-0613", "gpt-3.5-turbo-16k", "gpt-3.5-turbo-0613", "gpt-3.5-turbo"] # Set list of models to iterate through
+                # Set list of models to iterate through
+                models = ["gpt-3.5-turbo-16k-0613", "gpt-3.5-turbo-16k",
+                        "gpt-3.5-turbo-0613", "gpt-3.5-turbo"] 
                 for model in models:
                     try:
                         for response in openai.ChatCompletion.create(
@@ -94,7 +99,6 @@ def get_text_response():
             message_placeholder.markdown(full_response)
         st.session_state.chat_history.append({"role": "assistant", "content": full_response})
   
-
 def get_music_response():
     """ Get a response from Luke Combs in the form of an audio clip.
     We generate the clip by calling ChatGPT to create inputs based on 
@@ -111,7 +115,8 @@ def get_music_response():
                 inputs = get_inputs_from_llm()
                 output = get_audio_sample(inputs)
                 message_placeholder.audio(np.array(output), sample_rate=22050)
-            st.session_state.chat_history.append({"role": "assistant", "content": full_response})
+            st.session_state.chat_history.append({"role": "assistant",
+                                                "content": full_response})
 
 # Create a button to reset the chat history
 reset_button = st.sidebar.button("Reset Chat History", type="primary", use_container_width=True)
@@ -124,4 +129,3 @@ if response_type == "Standard Chat":
 else:
     get_music_response()
            
-                
