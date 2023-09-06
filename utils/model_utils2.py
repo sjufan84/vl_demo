@@ -2,12 +2,14 @@
 import os
 #import logging
 import pandas as pd
+import numpy as np
 import pinecone
 from langchain.document_loaders import DataFrameLoader
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
 import openai
 import streamlit as st
+from typing import Union
 from huggingface_hub import InferenceClient
 from dotenv import load_dotenv
 from utils.chat_utils import add_message
@@ -43,12 +45,21 @@ def init_session_variables():
 init_session_variables()
 
 
-def get_vectorstore(index_name='vocalockr-bplan', embeddings = embed):
+def get_lyrics_vectorstore(index_name='combs-data', embeddings = embed):
     """Get the vectorstore from Pinecone"""
     vectorstore = Pinecone.from_existing_index(index_name, embeddings)
     
     return vectorstore
 
+def get_music_vectorstore(index_name='combs-clips'):
+    """Get the vectorstore from Pinecone"""
+    api_key = os.getenv("PINECONE_KEY2")
+    environment = os.getenv("PINECONE_ENV2")
+    pinecone.init(api_key = api_key, environment=environment)
+    music_vectorstore = pinecone.Index(index_name)
+
+    return music_vectorstore
+    
 def custom_csv_loader(file_path):
     """ Load the csv file and return a dataframe """
     return pd.read_csv(file_path, encoding='utf-8') 
@@ -69,7 +80,7 @@ def get_luke_response(question:str):
     """Get a response from Luke Combs to the question"""
     pinecone.init(api_key = os.getenv("PINECONE_KEY"),
     environment=os.getenv("PINECONE_ENV"))  # Initialize pinecone
-    vectorstore = get_vectorstore(index_name='combs-data')
+    vectorstore = get_lyrics_vectorstore(index_name='combs-data')
     context = get_context(vectorstore, question)
     context_dict = [{"Song Name": context.page_content, "lyrics": context.metadata} for context in context]
     st.session_state.context = context_dict  # Cache the context
@@ -113,8 +124,6 @@ def get_luke_response(question:str):
         except Exception as e:
             print(e)
             continue
-
-
 
 def get_context(vectorstore, question: str):
     """Get the context from the vectorstore"""
@@ -172,9 +181,12 @@ def get_inputs_from_llm():
             continue
 
 
-def get_audio_sample(inputs: str):
+def get_audio_sample(inputs: str, audio_file: Union[str, bytes] = None):
     """Get an audio sample from the music gen model
     based on the chat history"""
+    if audio_file:
+        print("Audio file provided")
+    
     client = InferenceClient(model = "https://sz8hb6gcq2ersref.us-east-1.aws.endpoints.huggingface.cloud",
                         token=os.getenv("INFERENCE_KEY")) # Initialize the inference client
     # We want the LLM to decide on the prompts
@@ -187,4 +199,14 @@ def get_audio_sample(inputs: str):
     st.session_state.output = output
 
     return output
-    
+
+def get_similar_audio_clips(audio_vector: Union[list, np.array]):
+    """Get the most similar audio clips from the music vectorstore"""
+    music_vectorstore = get_music_vectorstore(index_name='combs-clips')
+    similar_audio = music_vectorstore.query(
+        vector=audio_vector,
+        k=3, 
+        include_metadata=True
+    )
+
+    return similar_audio

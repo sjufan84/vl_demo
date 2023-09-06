@@ -1,8 +1,7 @@
 """ Utility functions for encoding audio files using the Encodec model. """
 import os
 import logging
-import numpy as np
-import soundfile as sf
+from io import BytesIO
 from transformers import EncodecModel, AutoProcessor
 import pandas as pd
 from sklearn.decomposition import PCA
@@ -12,19 +11,21 @@ import librosa
 # If you want to enable logging
 logging.basicConfig(level=logging.INFO)
 
-def chunk_and_encode_encodec(audio_file_path, model_name="facebook/encodec_24khz",
+def chunk_and_encode_encodec(audio_file_path=None, audio_bytes=None,
+                            model_name="facebook/encodec_24khz",
                             processor_name="facebook/encodec_24khz"):
-    """Chunk and encode an audio file using the Encodec model."""
+    """Chunk and encode an audio file or bytes using the Encodec model."""
     # Initialize the Encodec model and processor
     model = EncodecModel.from_pretrained(model_name)
     processor = AutoProcessor.from_pretrained(processor_name)
     
-    print("Processor feature size:", processor.feature_size)  # Debugging line
-    
-    # Load the audio file
-    audio_data, sr = librosa.load(audio_file_path, mono=True, sr=24000)
-
-    print(f"Audio data shape after loading: {audio_data.shape}")  # Debugging line
+    # Determine the source of the audio: file path or bytes
+    if audio_file_path:
+        audio_data, sr = librosa.load(audio_file_path, mono=True, sr=24000)
+    elif audio_bytes:
+        audio_data, sr = librosa.load(BytesIO(audio_bytes), mono=True, sr=24000)
+    else:
+        raise ValueError("Either audio_file_path or audio_bytes must be provided.")
     
     # Check for empty audio data
     if not audio_data.size:

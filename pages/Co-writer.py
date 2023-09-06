@@ -6,7 +6,8 @@ import numpy as np
 import openai
 import pinecone
 import streamlit as st
-from utils.model_utils2 import get_vectorstore, get_context, get_inputs_from_llm, get_audio_sample
+from utils.model_utils2 import get_context, get_lyrics_vectorstore, get_inputs_from_llm, get_audio_sample, get_similar_audio_clips
+from utils.encoder_utils import chunk_and_encode_encodec
 
 
 if "chat_history" not in st.session_state:
@@ -47,7 +48,7 @@ def get_text_response():
             with st.chat_message("assistant", avatar = "🎸"):
                 pinecone.init(api_key = os.getenv("PINECONE_KEY"),
                 environment=os.getenv("PINECONE_ENV")) # Initialize pinecone
-                vectorstore = get_vectorstore(index_name = 'combs-data')
+                vectorstore = get_lyrics_vectorstore(index_name = 'combs-data')
                 context = get_context(vectorstore, prompt)
                 context_dict = [{"Song Name" : context.page_content,
                                 "lyrics" : context.metadata} for context in context]
@@ -100,6 +101,36 @@ def get_text_response():
         st.session_state.chat_history.append({"role": "assistant", "content": full_response})
   
 def get_music_response():
+    """ Get a response from Luke Combs in the form of an audio clip. """
+  
+    # Audio File Upload
+    uploaded_file = st.file_uploader("Upload your audio file", type=["mp3", "wav"])
+  
+    if uploaded_file is not None:
+        audio_bytes = uploaded_file.read()
+  
+        # Audio Vector Encoding
+        encoded_chunks = chunk_and_encode_encodec(audio_bytes)  # Replace with your actual encoding function
+        audio_vector = np.mean(encoded_chunks, axis=0)
+
+        
+        # User Choice: Find Similar Songs or Generate Music
+        user_choice = st.selectbox("What would you like to do next?", ["Find Similar Songs", "Generate Music"])
+        
+        if user_choice == "Find Similar Songs":
+            # Similarity Search
+            similar_clips = get_similar_audio_clips(audio_vector)  # Replace with your actual query function
+            if similar_clips:
+                st.write("Found similar clips from the artist:")
+                # Display similar clips - this part depends on how your data is structured
+            
+        elif user_choice == "Generate Music":
+            # Music Generation
+            generated_music = generate_music(audio_vector)  # Replace with your actual music generation function
+            st.audio(generated_music, format='audio/wav')
+
+    # ... (Rest of your existing code)
+
     """ Get a response from Luke Combs in the form of an audio clip.
     We generate the clip by calling ChatGPT to create inputs based on 
     the chat history that are then fed into the MusicGen model to create
@@ -117,6 +148,7 @@ def get_music_response():
                 message_placeholder.audio(np.array(output), sample_rate=22050)
             st.session_state.chat_history.append({"role": "assistant",
                                                 "content": full_response})
+                                                
 
 # Create a button to reset the chat history
 reset_button = st.sidebar.button("Reset Chat History", type="primary", use_container_width=True)
