@@ -1,17 +1,28 @@
 """ This file contains the code for the co-writer page.  This page allows
 the user to chat with Luke Combs and receive guidance on their song writing.
 This can be in the form of text or audio."""
+import logging
+import base64
 import os
+import asyncio
 import numpy as np
 import openai
 import pinecone
 import streamlit as st
-from utils.model_utils2 import get_context, get_lyrics_vectorstore, get_inputs_from_llm, get_audio_sample, get_similar_audio_clips
-from utils.encoder_utils import chunk_and_encode_encodec
+from utils.model_utils2 import (
+    get_context, get_lyrics_vectorstore,
+    get_inputs_from_llm, get_audio_sample
+)
 
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
+if "similar_clips" not in st.session_state:
+    st.session_state.similar_clips = []
+if "current_audio_clip" not in st.session_state:
+    st.session_state.current_audio_clip = None
+if "original_audio_clip" not in st.session_state:
+    st.session_state.original_audio_clip = None
 
 if not st.session_state.chat_history:
     st.success("**Welcome to co-writer!  There are two options for the chat:**\
@@ -40,7 +51,7 @@ response_type = st.sidebar.radio("Choose your response type",
 
 def get_text_response():
     """ Get a response from Luke Combs in the form of text."""
-    if prompt := st.chat_input("Your message for Luke:"):
+    if prompt := st.chat_input("Your message for Luke:", key="chat_input1"):
         with st.spinner("Luke is writing..."):
             st.session_state.chat_history.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
@@ -74,8 +85,7 @@ def get_text_response():
                 message_placeholder = st.empty()
                 full_response = ""
                 # Set list of models to iterate through
-                models = ["gpt-3.5-turbo-16k-0613", "gpt-3.5-turbo-16k",
-                        "gpt-3.5-turbo-0613", "gpt-3.5-turbo"] 
+                models = ["ft:gpt-3.5-turbo-0613:david-thomas::7wEhz4EL"] 
                 for model in models:
                     try:
                         for response in openai.ChatCompletion.create(
@@ -94,48 +104,27 @@ def get_text_response():
                                 break
                         break 
                     except Exception as e:
-                        print(e)
+                        logging.log(logging.ERROR, e)
                         continue
                 
             message_placeholder.markdown(full_response)
         st.session_state.chat_history.append({"role": "assistant", "content": full_response})
   
-def get_music_response():
+async def get_music_response():
     """ Get a response from Luke Combs in the form of an audio clip. """
-  
     # Audio File Upload
-    uploaded_file = st.file_uploader("Upload your audio file", type=["mp3", "wav"])
+    uploaded_file = st.sidebar.file_uploader("Upload your audio file", type=["mp3", "wav"])
   
     if uploaded_file is not None:
-        audio_bytes = uploaded_file.read()
-  
-        # Audio Vector Encoding
-        encoded_chunks = chunk_and_encode_encodec(audio_bytes)  # Replace with your actual encoding function
-        audio_vector = np.mean(encoded_chunks, axis=0)
+        # Use the "load and split" function to load the audio and split it into segments
+        # This is necessary for the musicgen model to use it as a prompt
+        # Set the current audio clip to the audio file
+        st.session_state.original_audio_clip = uploaded_file.read()
+        audio_data = base64.b64encode(uploaded_file.read()).decode("utf-8")
+        st.audio(st.session_state.original_audio_clip, format="audio/mp3", start_time=0)
+        st.audio(st.session_state.current_audio_clip, format="audio/wav", start_time=0)
 
-        
-        # User Choice: Find Similar Songs or Generate Music
-        user_choice = st.selectbox("What would you like to do next?", ["Find Similar Songs", "Generate Music"])
-        
-        if user_choice == "Find Similar Songs":
-            # Similarity Search
-            similar_clips = get_similar_audio_clips(audio_vector)  # Replace with your actual query function
-            if similar_clips:
-                st.write("Found similar clips from the artist:")
-                # Display similar clips - this part depends on how your data is structured
-            
-        elif user_choice == "Generate Music":
-            # Music Generation
-            generated_music = generate_music(audio_vector)  # Replace with your actual music generation function
-            st.audio(generated_music, format='audio/wav')
-
-    # ... (Rest of your existing code)
-
-    """ Get a response from Luke Combs in the form of an audio clip.
-    We generate the clip by calling ChatGPT to create inputs based on 
-    the chat history that are then fed into the MusicGen model to create
-    an audio clip.  The audio clip is then returned to the user."""
-    if prompt := st.chat_input("Your message for Luke:"):
+    if prompt := st.chat_input("Your message for Luke:", key="chat_input_music"):
         with st.spinner("Luke is composing... This will take a minute"):
             st.session_state.chat_history.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
@@ -143,13 +132,16 @@ def get_music_response():
             with st.chat_message("assistant", avatar = "🎸"):
                 message_placeholder = st.empty()
                 full_response = ""
-                inputs = get_inputs_from_llm()
-                output = get_audio_sample(inputs)
-                message_placeholder.audio(np.array(output), sample_rate=22050)
+                inputs = await get_inputs_from_llm()
+                audio = audio_data
+                output = await get_audio_sample(inputs, audio)
+                if output:
+                    st.markdown("**Current audio sample:**")
+                    message_placeholder.audio(np.array(output), sample_rate=32000)
+                    st.session_state.current_audio_clip = output
             st.session_state.chat_history.append({"role": "assistant",
                                                 "content": full_response})
-                                                
-
+       
 # Create a button to reset the chat history
 reset_button = st.sidebar.button("Reset Chat History", type="primary", use_container_width=True)
 if reset_button:
@@ -159,5 +151,5 @@ if reset_button:
 if response_type == "Standard Chat":
     get_text_response()
 else:
-    get_music_response()
+    asyncio.run(get_music_response())
            

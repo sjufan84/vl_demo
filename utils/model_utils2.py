@@ -1,6 +1,7 @@
 """ Loading lyrics and providing model context for the chatbot """
 import os
-#import logging
+from typing import Union
+import logging
 import pandas as pd
 import numpy as np
 import pinecone
@@ -9,7 +10,6 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
 import openai
 import streamlit as st
-from typing import Union
 from huggingface_hub import InferenceClient
 from dotenv import load_dotenv
 from utils.chat_utils import add_message
@@ -64,7 +64,6 @@ def custom_csv_loader(file_path):
     """ Load the csv file and return a dataframe """
     return pd.read_csv(file_path, encoding='utf-8') 
 
-@st.cache_data
 def load_lyrics():
     """Load the lyrics from the csv file"""
     df = pd.read_csv('./lyrics/combs_lyrics.csv', encoding='utf-8')
@@ -74,7 +73,6 @@ def load_lyrics():
 
     return data
 
-@st.cache_data
 
 def get_luke_response(question:str):
     """Get a response from Luke Combs to the question"""
@@ -82,26 +80,27 @@ def get_luke_response(question:str):
     environment=os.getenv("PINECONE_ENV"))  # Initialize pinecone
     vectorstore = get_lyrics_vectorstore(index_name='combs-data')
     context = get_context(vectorstore, question)
-    context_dict = [{"Song Name": context.page_content, "lyrics": context.metadata} for context in context]
+    context_dict = [{"Song Name": context.page_content,
+                    "lyrics": context.metadata} for context in context]
     st.session_state.context = context_dict  # Cache the context
-    
     messages = [
         {
-            "role": "system", "content": f"""You are Luke Combs, the famous
+            "role": "system", "content": f'''You are Luke Combs, or "LC", the famous
             country music singer, helping a fan out in a "co-writing" session
             where you are giving them advice based on your own style to help 
             them write songs. You have context {context_dict} pulled from your 
             song lyrics to help you relate to the user's question {question}. 
             Feel free to mention a specific song or lyrics of yours when guiding the users along.
             Your chat history so far is {st.session_state.chat_history}. 
-            This will be a back and forth chat, so make sure to leave your responses open-ended."""
+            This will be a back and forth chat, so make sure to leave your responses open-ended.'''
         },
         {
             "role": "user", "content": f"Please answer my {question} about song writing."
         }
     ]
     
-    models = ["gpt-3.5-turbo-16k-0613", "gpt-3.5-turbo-16k", "gpt-3.5-turbo-0613", "gpt-3.5-turbo"]
+    #models = ["gpt-3.5-turbo-16k-0613", 'ft:gpt-3.5-turbo-0613:david-thomas::7wEhz4EL', "gpt-3.5-turbo-16k", "gpt-3.5-turbo-0613", "gpt-3.5-turbo"]
+    models = ["ft:gpt-3.5-turbo-0613:david-thomas::7wEhz4EL"]
     full_response = ""
     
     for model in models:
@@ -134,7 +133,7 @@ def get_context(vectorstore, question: str):
 
     return context
 
-def get_inputs_from_llm():
+async def get_inputs_from_llm():
     """ We want the LLM to decide on the prompts for the 
     music generation model"""
     messages = [
@@ -181,16 +180,15 @@ def get_inputs_from_llm():
             continue
 
 
-def get_audio_sample(inputs: str, audio_file: Union[str, bytes] = None):
+async def get_audio_sample(inputs: str, audio_data = None):
     """Get an audio sample from the music gen model
     based on the chat history"""
-    if audio_file:
-        print("Audio file provided")
     
     client = InferenceClient(model = "https://sz8hb6gcq2ersref.us-east-1.aws.endpoints.huggingface.cloud",
                         token=os.getenv("INFERENCE_KEY")) # Initialize the inference client
     # We want the LLM to decide on the prompts
-    json = {"inputs": inputs}
+    json = {"inputs": inputs,
+            "audio_data": audio_data}
     response = client.post(json=json)
     # response looks like this b'[{"generated_text":[[-0.182352,-0.17802449, ...]]}]
     output = eval(response)[0]["generated_audio"]
@@ -200,13 +198,17 @@ def get_audio_sample(inputs: str, audio_file: Union[str, bytes] = None):
 
     return output
 
-def get_similar_audio_clips(audio_vector: Union[list, np.array]):
+async def get_similar_audio_clips(audio_vector: Union[list, np.array]):
     """Get the most similar audio clips from the music vectorstore"""
+    pinecone_key = os.getenv("PINECONE_KEY2")
+    pinecone_env = os.getenv("PINECONE_ENV2")
+    pinecone.init(api_key = pinecone_key, environment=pinecone_env)
     music_vectorstore = get_music_vectorstore(index_name='combs-clips')
     similar_audio = music_vectorstore.query(
-        vector=audio_vector,
-        k=3, 
+        # Convert the audio vector to a list
+        vector=audio_vector.tolist(),
+        top_k=1, 
         include_metadata=True
     )
-
     return similar_audio
+    #audio_values = model.decode(similar_audio

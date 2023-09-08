@@ -34,6 +34,11 @@ def chunk_and_encode_encodec(audio_file_path=None, audio_bytes=None,
     # Process and chunk the audio file
     chunk_size = int(sr * 15)  # 15 seconds, adjust as needed
     n_chunks = len(audio_data) // chunk_size
+    # If n_chunks <= 1, pad the audio data
+    if n_chunks <= 1:
+        n_chunks = 1
+        audio_data = librosa.util.pad_center(data=audio_data, size=chunk_size)
+
     encoded_chunks = [None] * n_chunks
     
     for i in range(0, len(audio_data), chunk_size):
@@ -168,3 +173,21 @@ def encode_and_upsert(folder_path):
     # You can now upsert this into your vector database
 
     return df
+
+def flatten_chunks(encoded_chunks):
+    """ Encode all audio files in a folder and upsert to a vector database."""
+    # Expected dimensionality (replace this with the actual dimensionality you expect)
+    expected_dim = 2250
+
+    # Flatten and validate each chunk
+    flat_chunks = []
+    for chunk in encoded_chunks:
+        flat_chunk = chunk.flatten().cpu().numpy()
+        
+        if flat_chunk.size != expected_dim:
+            logging.warning(f"Skipping chunk due to unexpected dimensionality: {flat_chunk.size}")
+            continue
+        
+        flat_chunks.append(flat_chunk)
+    
+    return flat_chunks

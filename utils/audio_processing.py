@@ -1,14 +1,17 @@
 """ Audio processing, feature extraction, and visualization using torch and librosa"""
 from typing import Tuple
+import base64
+from io import BytesIO
 from IPython.display import Audio
+import numpy as np
 import librosa
+import soundfile as sf
 import torch
 import torchaudio
 import torchaudio.functional as F
 import torchaudio.transforms as T
 import plotly.express as px
 import plotly.graph_objects as go
-import streamlit as st
 
 # Global constants
 N_FFT = 1024
@@ -18,7 +21,7 @@ HOP_LENGTH = 512
 # Set the torchaudio backend to soundfile
 torchaudio.set_audio_backend("soundfile")
 
-@st.cache_data
+
 def load_audio(audio_path: str) -> Tuple[torch.Tensor, int]:
     """ Load audio from the specified path """
     waveform, sample_rate = torchaudio.load(audio_path)
@@ -27,7 +30,6 @@ def load_audio(audio_path: str) -> Tuple[torch.Tensor, int]:
         waveform = torch.mean(waveform, dim=0, keepdim=True) # Average the channels
     return waveform, sample_rate
 
-@st.cache_data
 def plot_waveform(_waveform: torch.Tensor, sr: int, title: str = "Waveform") -> go.Figure:
     """ Plot the waveform using plotly """
     num_channels, num_frames = _waveform.shape
@@ -44,12 +46,11 @@ def plot_waveform(_waveform: torch.Tensor, sr: int, title: str = "Waveform") -> 
     
     return fig
 
-@st.cache_data
+
 def play_audio(file) -> Audio:
     """ Play the audio waveform using IPython.display.Audio """
     return Audio(filename=file, rate=22050)
 
-@st.cache_data
 def get_spectrogram(_waveform):
     """ Get the spectrogram from the waveform """
     n_fft = 1024
@@ -67,7 +68,6 @@ def get_spectrogram(_waveform):
 
     return spectrogram(_waveform)
 
-@st.cache_data
 def plot_spectrogram(_specgram, title="Spectrogram", ylabel="freq_bin"):
     """ Plot the spectrogram using plotly"""
     # Squeeze the first dimension if it's of size 1
@@ -79,7 +79,6 @@ def plot_spectrogram(_specgram, title="Spectrogram", ylabel="freq_bin"):
     
     return fig
 
-@st.cache_data
 def generate_mel_spectrogram(_waveform, sample_rate):
     """ Generate the mel spectrogram from the waveform """
     n_fft = 1024
@@ -106,7 +105,6 @@ def generate_mel_spectrogram(_waveform, sample_rate):
 
     return melspec
 
-@st.cache_data
 def get_mfcc(_waveform, sample_rate):
     """ Get the MFCC from the waveform """
     n_fft = 2048
@@ -129,7 +127,6 @@ def get_mfcc(_waveform, sample_rate):
 
     return mfcc
 
-@st.cache_data
 def get_lfcc(_waveform, sample_rate):
     """ Get the LFCC from the waveform """
     n_fft = 2048
@@ -151,14 +148,12 @@ def get_lfcc(_waveform, sample_rate):
 
     return lfcc
 
-@st.cache_data
 def get_pitch(_waveform, sample_rate):
     """ Get the pitch from the waveform """
     pitch = F.detect_pitch_frequency(_waveform, sample_rate)
 
     return pitch
 
-@st.cache_data
 def plot_pitch(_waveform, sr, _pitch):
     """ Plot the waveform and pitch using plotly """
     waveform = _waveform.numpy()
@@ -182,7 +177,6 @@ def plot_pitch(_waveform, sr, _pitch):
 
     return fig
 
-@st.cache_data
 def plot_mfcc(_mfcc):
     """ Plot the MFCC using plotly """
     mfcc = _mfcc
@@ -190,10 +184,21 @@ def plot_mfcc(_mfcc):
     fig.update_layout(title="MFCC")
     return fig
 
-@st.cache_data  
 def plot_lfcc(_lfcc):
     """ Plot the LFCC using plotly """
     lfcc = _lfcc
     fig = px.imshow(lfcc.squeeze().numpy(), origin="lower", labels={'x': 'Frame', 'y': 'Coefficients', 'color': 'Value'})
     fig.update_layout(title="LFCC")
     return fig
+
+async def convert_audio_to_str(received_audio: np.array, sr: int = None):
+    """ Convert audio to a base64 string """
+    # Convert numpy array to bytes
+    audio_buffer = BytesIO()
+    sf.write(audio_buffer, received_audio, sr, format="wav")
+    audio_bytes = audio_buffer.getvalue()
+
+    # Convert audio bytes to base64 string
+    audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
+    
+    return audio_base64
