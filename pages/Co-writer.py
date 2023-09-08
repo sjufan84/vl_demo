@@ -51,6 +51,8 @@ response_type = st.sidebar.radio("Choose your response type",
 
 def get_text_response():
     """ Get a response from Luke Combs in the form of text."""
+    openai.api_key = os.getenv("OPENAI_KEY2")
+    openai.organization = os.getenv("OPENAI_ORG2")
     if prompt := st.chat_input("Your message for Luke:", key="chat_input1"):
         with st.spinner("Luke is writing..."):
             st.session_state.chat_history.append({"role": "user", "content": prompt})
