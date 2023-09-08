@@ -122,7 +122,8 @@ async def get_music_response():
         st.session_state.original_audio_clip = uploaded_file.read()
         audio_data = base64.b64encode(uploaded_file.read()).decode("utf-8")
         st.audio(st.session_state.original_audio_clip, format="audio/mp3", start_time=0)
-        st.audio(np.array(st.session_state.current_audio_clip), sample_rate=32000)
+        if st.session_state.current_audio_clip:
+            st.audio(np.array(st.session_state.current_audio_clip), sample_rate=32000)
 
     if prompt := st.chat_input("Your message for Luke:", key="chat_input_music"):
         with st.spinner("Luke is composing... This will take a minute"):
