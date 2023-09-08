@@ -127,23 +127,42 @@ async def get_music_response():
         if st.session_state.current_audio_clip:
             st.audio(np.array(st.session_state.current_audio_clip), sample_rate=32000)
 
-    if prompt := st.chat_input("Your message for Luke:", key="chat_input_music"):
-        with st.spinner("Luke is composing... This will take a minute"):
-            st.session_state.chat_history.append({"role": "user", "content": prompt})
-            with st.chat_message("user"):
-                st.markdown(prompt)
-            with st.chat_message("assistant", avatar = "🎸"):
-                message_placeholder = st.empty()
-                full_response = ""
-                inputs = await get_inputs_from_llm()
-                audio = audio_data
-                output = await get_audio_sample(inputs, audio)
-                if output:
-                    st.markdown("**Current audio sample:**")
-                    message_placeholder.audio(np.array(output), sample_rate=32000)
-                    st.session_state.current_audio_clip = output
-            st.session_state.chat_history.append({"role": "assistant",
-                                                "content": full_response})
+        if prompt := st.chat_input("Your message for Luke:", key="chat_input_music"):
+            with st.spinner("Luke is composing... This will take a minute"):
+                st.session_state.chat_history.append({"role": "user", "content": prompt})
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+                with st.chat_message("assistant", avatar = "🎸"):
+                    message_placeholder = st.empty()
+                    full_response = ""
+                    inputs = await get_inputs_from_llm()
+                    audio = audio_data
+                    output = await get_audio_sample(inputs, audio)
+                    if output:
+                        st.markdown("**Current audio sample:**")
+                        message_placeholder.audio(np.array(output), sample_rate=32000)
+                        st.session_state.current_audio_clip = output
+                st.session_state.chat_history.append({"role": "assistant",
+                                                    "content": full_response})
+                
+    else:
+         if prompt := st.chat_input("Your message for Luke:", key="chat_input_music"):
+            with st.spinner("Luke is composing... This will take a minute"):
+                st.session_state.chat_history.append({"role": "user", "content": prompt})
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+                with st.chat_message("assistant", avatar = "🎸"):
+                    message_placeholder = st.empty()
+                    full_response = ""
+                    inputs = await get_inputs_from_llm()
+                    output = await get_audio_sample(inputs)
+                    if output:
+                        st.markdown("**Current audio sample:**")
+                        message_placeholder.audio(np.array(output), sample_rate=32000)
+                        st.session_state.current_audio_clip = output
+                st.session_state.chat_history.append({"role": "assistant",
+                                                    "content": full_response})
+
        
 # Create a button to reset the chat history
 reset_button = st.sidebar.button("Reset Chat History", type="primary", use_container_width=True)
