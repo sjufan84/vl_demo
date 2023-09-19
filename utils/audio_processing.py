@@ -191,14 +191,11 @@ def plot_lfcc(_lfcc):
     fig.update_layout(title="LFCC")
     return fig
 
-async def convert_audio_to_str(received_audio: np.array, sr: int = None):
+async def convert_audio_to_str(received_audio, sr: int = 32000):
     """ Convert audio to a base64 string """
-    # Convert numpy array to bytes
-    audio_buffer = BytesIO()
-    sf.write(audio_buffer, received_audio, sr, format="wav")
-    audio_bytes = audio_buffer.getvalue()
+    # Load the audio with librosa
+    audio_data, sr = librosa.load(BytesIO(received_audio), mono=True, sr=sr)
+    # Convert the audio to a base64 string
+    audio_base64 = base64.b64encode(audio_data).decode("utf-8")
 
-    # Convert audio bytes to base64 string
-    audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
-    
     return audio_base64

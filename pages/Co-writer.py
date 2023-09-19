@@ -2,9 +2,11 @@
 the user to chat with Luke Combs and receive guidance on their song writing.
 This can be in the form of text or audio."""
 import logging
+from io import BytesIO
 import base64
 import os
 import asyncio
+import wave
 import numpy as np
 import openai
 import pinecone
@@ -13,8 +15,6 @@ from utils.model_utils2 import (
     get_context, get_lyrics_vectorstore,
     get_inputs_from_llm, get_audio_sample
 )
-
-
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "similar_clips" not in st.session_state:
@@ -23,6 +23,8 @@ if "current_audio_clip" not in st.session_state:
     st.session_state.current_audio_clip = None
 if "original_audio_clip" not in st.session_state:
     st.session_state.original_audio_clip = None
+if "current_audio_string" not in st.session_state:
+    st.session_state.current_audio_string = None
 
 if not st.session_state.chat_history:
     st.success("**Welcome to co-writer!  There are two options for the chat:**\
@@ -46,8 +48,15 @@ for message in st.session_state.chat_history:
         with st.chat_message("assistant", avatar="🎸"):
             st.markdown(message["content"])
 
+# @TODO Create an "agent" LLM that can be used to pick up on the user's
+# intent and then choose the appropriate model to respond with, i.e.
+# music gen, encode / decode, or standard chat
 response_type = st.sidebar.radio("Choose your response type",
                                 ("Standard Chat", "Musical Chat"))
+if st.session_state.current_audio_clip:
+    st.write("Current audio clip: ")
+    st.audio(np.array(st.session_state.current_audio_clip), sample_rate=32000)
+    st.session_state.use_audio = st.sidebar.radio("Use current audio clip as input?", ("Yes", "No"))
 
 def get_text_response():
     """ Get a response from Luke Combs in the form of text."""
@@ -71,13 +80,16 @@ def get_text_response():
                     {
                         "role": "system", "content": f"""You are Luke Combs, the famous
                         country music singer, helping a fan out in a "co-writing" session
-                        where you are giving them advice based on your own style to help 
+                        where you are giving them advicAe based on your own style to help 
                         them write songs.  You have context {context} pulled from your song
                         lyrics to help you relate to the user's question {prompt}.  Feel free
                         to mention a specific song or lyrics of yours when guiding the users along.
-                        Your chat history so far is {st.session_state.chat_history}.  This will
-                        be a back and forth chat, so make sure to leave your responses
-                        open-ended."""
+                        Your chat history so far is {st.session_state.chat_history}.  Continually
+                        gauge the tone of the question, and if based on the chat history as well you
+                        think the user is asking for a song lyric, feel free to respond with one.
+                        The goal is to be interactive, engaging, empathetic, and helpful.  Keep
+                        the conversation going until it is clear the user is ready to end the chat.
+                        """
                     },
                     {
                         "role": "user", "content": f"""Please answer my {prompt} about 
@@ -93,9 +105,9 @@ def get_text_response():
                         for response in openai.ChatCompletion.create(
                             model=model,
                             messages = messages,
-                            max_tokens=250,
-                            frequency_penalty=0.5,
-                            presence_penalty=0.5,
+                            max_tokens=350,
+                            frequency_penalty=0.75,
+                            presence_penalty=0.75,
                             temperature=1,
                             n=1,
                             stream=True
@@ -117,15 +129,11 @@ async def get_music_response():
     # Audio File Upload
     uploaded_file = st.sidebar.file_uploader("Upload your audio file", type=["mp3", "wav"])
   
-    if uploaded_file is not None:
-        # Use the "load and split" function to load the audio and split it into segments
-        # This is necessary for the musicgen model to use it as a prompt
-        # Set the current audio clip to the audio file
+    if uploaded_file:
         st.session_state.original_audio_clip = uploaded_file.read()
         audio_data = base64.b64encode(uploaded_file.read()).decode("utf-8")
         st.audio(st.session_state.original_audio_clip, format="audio/mp3", start_time=0)
-        if st.session_state.current_audio_clip:
-            st.audio(np.array(st.session_state.current_audio_clip), sample_rate=32000)
+        
 
         if prompt := st.chat_input("Your message for Luke:", key="chat_input_music"):
             with st.spinner("Luke is composing... This will take a minute"):
@@ -135,13 +143,38 @@ async def get_music_response():
                 with st.chat_message("assistant", avatar = "🎸"):
                     message_placeholder = st.empty()
                     full_response = ""
+                    # @TODO Specially train a model to get the llm inputs
                     inputs = await get_inputs_from_llm()
-                    audio = audio_data
+                    if st.session_state.current_audio_string is not None and st.session_state.use_audio == "Yes":
+                        audio = st.session_state.current_audio_string
+                    else:
+                        audio = audio_data
                     output = await get_audio_sample(inputs, audio)
                     if output:
                         st.markdown("**Current audio sample:**")
                         message_placeholder.audio(np.array(output), sample_rate=32000)
                         st.session_state.current_audio_clip = output
+                        
+                        # Step 1: Convert NumPy array to byte stream
+                        byte_stream = BytesIO()
+
+                        # Prepare wave file settings
+                        n_channels = 1
+                        sampwidth = 2  # Number of bytes
+                        framerate = 32000
+                        n_frames = len(output)
+
+                        with wave.open(byte_stream, 'wb') as wav_file:
+                            wav_file.setnchannels(n_channels)
+                            wav_file.setsampwidth(sampwidth)
+                            wav_file.setframerate(framerate)
+                            wav_file.writeframes(np.array(output).astype(np.int16).tobytes())
+
+                        # Step 2: Base64 encode the byte stream
+                        byte_stream.seek(0)
+                        base64_audio = base64.b64encode(byte_stream.read()).decode('utf-8')
+                        st.session_state.current_audio_string = base64_audio
+
                 st.session_state.chat_history.append({"role": "assistant",
                                                     "content": full_response})
                 
@@ -155,11 +188,37 @@ async def get_music_response():
                     message_placeholder = st.empty()
                     full_response = ""
                     inputs = await get_inputs_from_llm()
-                    output = await get_audio_sample(inputs)
+                    if st.session_state.current_audio_string is not None and st.session_state.use_audio == "Yes":
+                        audio = st.session_state.current_audio_string
+                    else:
+                        audio = None
+                    output = await get_audio_sample(inputs, audio)
                     if output:
                         st.markdown("**Current audio sample:**")
                         message_placeholder.audio(np.array(output), sample_rate=32000)
                         st.session_state.current_audio_clip = output
+                        # Step 1: Convert NumPy array to byte stream
+                        byte_stream = BytesIO()
+
+                        # Prepare wave file settings
+                        n_channels = 1
+                        sampwidth = 2  # Number of bytes
+                        framerate = 32000
+                        n_frames = len(output)
+
+                        with wave.open(byte_stream, 'wb') as wav_file:
+                            wav_file.setnchannels(n_channels)
+                            wav_file.setsampwidth(sampwidth)
+                            wav_file.setframerate(framerate)
+                            wav_file.writeframes(np.array(output).astype(np.int16).tobytes())
+
+
+                        # Step 2: Base64 encode the byte stream
+                        byte_stream.seek(0)
+                        base64_audio = base64.b64encode(byte_stream.read()).decode('utf-8')
+                        st.session_state.current_audio_string = base64_audio
+
+
                 st.session_state.chat_history.append({"role": "assistant",
                                                     "content": full_response})
 

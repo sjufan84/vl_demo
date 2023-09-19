@@ -1,7 +1,6 @@
 """ Loading lyrics and providing model context for the chatbot """
 import os
 from typing import Union
-import logging
 import pandas as pd
 import numpy as np
 import pinecone
@@ -18,9 +17,9 @@ from utils.chat_utils import add_message
 load_dotenv() # Load the .env file
 
 # Read in the openai api key from the .env file
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = os.getenv("OPENAI_KEY2")
 # Read in the openai organization id from the .env file
-openai.organization = os.getenv("OPENAI_ORG")
+openai.organization = os.getenv("OPENAI_ORG2")
 
 embed = OpenAIEmbeddings(
     model="text-embedding-ada-002",
@@ -143,23 +142,31 @@ async def get_inputs_from_llm():
             where you are giving them advice based on your own style to help 
             them write songs.  The user would like you to help them create an
             audio sample based on your chat history {st.session_state.chat_history}
-            so far.  Based on the chat history, create a short text prompt that
+            so far.  Based on the chat history, create a text prompt that
             would best identify to the music generation model what kind of song
-            to create.  For example, if the chat history is about love and heartbreak,
-            you could say "love, heartbreak, slow, country" to the music generation
-            model.  Also include any specific instruments, beats, or other details
-            that the user wants to specify in the prompt.  Assume that the style of the
-            song will be based on your own style, unless otherwise noted.  The prompt
-            should be formatted as a string of attributes separated by commas.  For example,
-            "love, heartbreak, slow, country, guitar, piano, drums, bass, upbeat, sad, happy.
-            Do not return anything other than the prompt."""
+            to create.  Remember you are Luke Combs when contemplating your answer.Think through
+            how you can best represent the song you are helping the user create in your prompt."""
+        },
+        # Give some examples of prompts
+        {
+            "role": "system" , "content": '''Here are some examples of prompts for the music  
+            generation model:
+            1) "Pop dance track with catchy melodies, tropical percussion, and upbeat rhythms,
+                perfect for the beach."
+            2) "A grand orchestral arrangement with thunderous percussion, epic brass fanfares, and
+                soaring strings, creating a cinematic atmosphere fit for a heroic battle."
+            3) "reggaeton track, with a booming 808 kick, synth melodies layered with
+            Latin percussion elements, uplifting and energizing"
+            4) "a light and cheerly EDM track, with syncopated drums, aery pads, and strong emotions"
+            '''
         },
         {
-            "role": "user", "content": f"""Please help me create a prompt for the
+            "role": "user", "content": """Please help me create a prompt for the
             music generation model based on our chat history."""
         },
     ]
-    models = ["gpt-3.5-turbo-16k-0613", "gpt-3.5-turbo-16k", "gpt-3.5-turbo-0613, gpt-3.5-turbo"] # Set list of models to iterate through
+    models = ["ft:gpt-3.5-turbo-0613:david-thomas::7wEhz4EL","gpt-3.5-turbo-16k-0613",
+    "gpt-3.5-turbo-16k", "gpt-3.5-turbo-0613"] # Set list of models to iterate through
     for model in models:
         try:
             response = openai.ChatCompletion.create(
@@ -180,7 +187,7 @@ async def get_inputs_from_llm():
             continue
 
 
-async def get_audio_sample(inputs: str, audio_data = None):
+async def get_audio_sample(inputs: str, audio_data: str): # Audio data is a base64 string
     """Get an audio sample from the music gen model
     based on the chat history"""
     

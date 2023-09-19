@@ -108,28 +108,27 @@ def demo_visualize():
     """)
 
     # Read and preprocess audio signals
-    #avicii_signal = read_audio('./audio_samples/avicii1.wav')
-    combs_signal = read_audio('./audio_samples/happy_bday.wav')
-    jeremiah_signal = read_audio('./audio_samples/jeremiah2.wav')
-    min_length = min(len(combs_signal), len(jeremiah_signal))
-    #avicii_signal = avicii_signal[:min_length]
-    combs_signal = combs_signal[:min_length]
-    jeremiah_signal = jeremiah_signal[:min_length]
+    jenny_signal = read_audio('./audio_samples/lc_fcar.wav')
+    lc_signal = read_audio('./audio_samples/jenny_fcar.wav')
+    joel_signal = read_audio('./audio_samples/joel_fcar.wav')
+    min_length = min(len(jenny_signal), len(lc_signal), len(joel_signal))
+    jenny_signal = jenny_signal[:min_length]
+    lc_signal = lc_signal[:min_length]
+    joel_signal = joel_signal[:min_length]
     
 
     # Extract features
-    #avicii_features = extract_features(avicii_signal)
-    combs_features = extract_features(combs_signal)
-    jeremiah_features = extract_features(jeremiah_signal)
+    jenny_features = extract_features(jenny_signal)
+    lc_features = extract_features(lc_signal)
+    joel_features = extract_features(joel_signal)
 
     # Transpose to have features as columns
-    #avicii_features = avicii_features.T
-    combs_features = combs_features.T
-    jeremiah_features = jeremiah_features.T
+    jenny_features = jenny_features.T
+    lc_features = lc_features.T
+    joel_features = joel_features.T
 
     # Create a DataFrame by concatenating the two feature sets
-    #df = pd.concat([pd.DataFrame(avicii_features), pd.DataFrame(combs_features), pd.DataFrame(jeremiah_features)], axis=0)
-    df = pd.concat([pd.DataFrame(combs_features), pd.DataFrame(jeremiah_features)], axis=0)
+    df = pd.concat([pd.DataFrame(jenny_features), pd.DataFrame(lc_features), pd.DataFrame(joel_features)], axis=0)
     # Standardize the data before applying PCA and KMeans
     scaler = StandardScaler()
     scaled_df = scaler.fit_transform(df)
@@ -151,21 +150,19 @@ def demo_visualize():
     #cluster_df = cluster_df.iloc[::2, :]
 
     # Create segments (you may need to adjust this to match your actual segmentation logic)
-    #avicii_segments = np.array_split(avicii_signal, len(cluster_df)//3)
-    combs_segments = np.array_split(combs_signal, len(cluster_df)//2)
-    jeremiah_segments = np.array_split(jeremiah_signal, len(cluster_df)//2)
-    #total_segments = avicii_segments + combs_segments + jeremiah_segments
-    total_segments = combs_segments + jeremiah_segments
+    jenny_segments = np.array_split(jenny_signal, len(cluster_df)//3)
+    lc_segments = np.array_split(lc_signal, len(cluster_df)//3)
+    joel_segments = np.array_split(joel_signal, len(cluster_df)//3)
+    total_segments = jenny_segments + lc_segments + joel_segments
 
    # Create labels for the segments
-    #avicii_labels = [f"Avicii - Segment {i+1}" for i in range(len(avicii_segments))]
-    combs_labels = [f"User - Segment {i+1}" for i in range(len(combs_segments))]
-    jeremiah_labels = [f"Jeremiah - Segment {i+1}" for i in range(len(jeremiah_segments))]
-    #segment_labels = avicii_labels + combs_labels + jeremiah_labels
-    segment_labels = combs_labels + jeremiah_labels
+    jenny_labels = [f"Jenny - Segment {i+1}" for i in range(len(jenny_segments))]
+    lc_labels = [f"LC - Segment {i+1}" for i in range(len(lc_segments))]
+    joel_labels = [f"Joel - Segment {i+1}" for i in range(len(joel_segments))]
+    segment_labels = jenny_labels + lc_labels + joel_labels
 
     # Create segment numbers (e.g., Segment 1, Segment 2, ...)
-    segment_numbers = [f"Segment {i+1}" for i in range(len(combs_segments))] * 2
+    segment_numbers = [f"Segment {i+1}" for i in range(len(lc_segments))] * 3
 
     # Add segment names and numbers to the DataFrame
     cluster_df['segment_name'] = segment_labels
@@ -174,16 +171,16 @@ def demo_visualize():
 
     
     # Create temporary audio files
-    #avicii_files = create_audio_files(avicii_segments)
-    combs_files = create_audio_files(combs_segments)
-    jeremiah_files = create_audio_files(jeremiah_segments)
+    jenny_files = create_audio_files(jenny_segments)
+    lc_files = create_audio_files(lc_segments)
+    joel_files = create_audio_files(joel_segments)
 
     # Create audio URLs
-    #avicii_audio_urls = [audio_file_to_data_url(file) for file in avicii_files]
-    combs_audio_urls = [audio_file_to_data_url(file) for file in combs_files]
-    jeremiah_audio_urls = [audio_file_to_data_url(file) for file in jeremiah_files]
-    #audio_urls = avicii_audio_urls + combs_audio_urls + jeremiah_audio_urls
-    audio_urls = combs_audio_urls + jeremiah_audio_urls
+    jenny_audio_urls = [audio_file_to_data_url(file) for file in jenny_files]
+    lc_audio_urls = [audio_file_to_data_url(file) for file in lc_files]
+    joel_audio_urls = [audio_file_to_data_url(file) for file in joel_files]
+    audio_urls = jenny_audio_urls + lc_audio_urls + joel_audio_urls
+    audio_urls = lc_audio_urls + joel_audio_urls
 
     col1, col2 = st.columns([1.75, 1], gap='large')
 
@@ -196,53 +193,22 @@ def demo_visualize():
         # Convert the clips to bytes using librosa
        
         st.markdown("**Original Audio Clips:**")
-        jeremiah_bytes = librosa.to_mono(jeremiah_signal)
-        combs_bytes = librosa.to_mono(combs_signal)
-        st.markdown("**User Happy Birthday**")
-        st.audio(combs_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        st.markdown("**Jeremiah Harmon Happy Birthday**")
-        st.audio(jeremiah_bytes, format='audio/wav', start_time=0, sample_rate=16000)
+        joel_bytes = librosa.to_mono(joel_signal)
+        lc_bytes = librosa.to_mono(lc_signal)
+        jenny_bytes = librosa.to_mono(jenny_signal)
+        st.markdown("**LC Fast Car**")
+        st.audio(lc_bytes, format='audio/wav', start_time=0, sample_rate=16000)
+        st.markdown("**Joel Fast Car**")
+        st.audio(joel_bytes, format='audio/wav', start_time=0, sample_rate=16000)
+        st.markdown("**Jenny Fast Car**")
+        st.audio(jenny_bytes, format='audio/wav', start_time=0, sample_rate=16000)
         selected_artists = st.multiselect(
         "Select Artists to Display:",
-        #options=['Avicii', 'Luke Combs', 'Jeremiah'],
-        #default=['Avicii', 'Luke Combs', 'Jeremiah'],
-        options=['User', 'Jeremiah'],
-        default=['User', 'Jeremiah'],
+        options=['Jenny', 'LC', 'Joel'],
+        default=['Jenny', 'LC', 'Joel'],
         )
         # Filter the DataFrame based on selected artists
         filtered_cluster_df = cluster_df[cluster_df['segment_name'].str.contains('|'.join(selected_artists))]
-
-        st.text("")
-        st.text("")
-
-        st.success("""**To drill down even further, select a segment to play the audio clip\
-                 that corresponds to that segment.**""")
-        # Create a selectbox to allow the users to choose the segment to play
-        # We only want to show the unique segment names apart from the artist name
-        # For example, we want to show "Segment 1" instead of "Avicii - Segment 1"
-        unique_segment_names = list(set([segment.split(' - ')[1] for segment in cluster_df['segment_name']]))
-        # List the unique segment names in ascending order of the segment number
-        unique_segment_names.sort(key=lambda x: int(x.split(' ')[1]))
-        segment_options = st.selectbox(
-        "Select Segment:",
-        options=unique_segment_names,
-        )
-        # Let the user choose which artist to play
-        selected_artist = st.selectbox(
-        "Select Artist:",
-        #options=['Avicii', 'Luke Combs', 'Jeremiah'],
-        options = ['User', 'Jeremiah'],
-        )
-      
-        selected_segment = f"{selected_artist} - {segment_options}"
-        # Convert the selected artist to the corresponding audio URL
-        # Get the index of the selected label in the segment_labels list
-        selected_index = segment_labels.index(selected_segment)
-
-        # Convert the audio from bytes to a playable file using librosa
-        audio_bytes = librosa.to_mono(total_segments[selected_index].T)
-        st.audio(audio_bytes, format='audio/ogg', start_time=0, sample_rate=16000)
-
 
 
     with col1:# Plot using the filtered DataFrame
@@ -253,7 +219,7 @@ def demo_visualize():
         z='PC3',
         color='segment_number',
         color_continuous_scale='rainbow',
-        title='3D Representation of Vocal Features -- Luke Combs and Jeremiah Harmon',
+        title='3D Representation of Vocal Features -- LC, Joel, Jenny',
         text='segment_name',
     )
 

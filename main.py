@@ -56,9 +56,7 @@ def home():
                 <h5>Vocalockr responds to this challenge by empowering artists.</h5>
                 Utilizing the technology behind <i>deepfake creations</i>, Vocalockr enables
                 artists to generate <b>Melodic Voiceprints</b> and store them securely on the
-                <b>blockchain</b>. By doing so, we place control over voice licensing firmly
-                in the hands of the creators themselves in this rapidly evolving world
-                of content generation. <br><br>
+                <b>blockchain</b>. By doing so, we place control over voice lic
                 <h5>In this demo, we will guide you through the MV
                 capture process and explore the wide-ranging applications of this
                 groundbreaking technology.</h5> Join us as we showcase how <b>Vocalockr</b>
