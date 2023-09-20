@@ -60,16 +60,16 @@ def home():
 
   <br>
 
-  <h5 style="color:#5046B1;">Vocalockr responds to this challenge by empowering artists.</h5>
+  <h5 style="color:#5046B1;"><i>Vocalockr responds to this challenge by empowering artists.</i></h5>
   <br>
   <h5>
       The reality is, it is relatively easy, with the right technical skills,
       to take less than <i>30 seconds</i> of an artist's vocals and create
       an AI model that can "swap" any other person's vocals for the artist's.</h5>
     <br>
-    <h5 style="color:#5046B1">We aim to protect artists by giving them the tools to not
+    <h5 style="color:#5046B1"><i>We aim to protect artists by giving them the tools to not
     only protect themselves and their legacy, but also open up new and exciting revenue
-    streams in this brave new world.</h5></div>""", unsafe_allow_html=True)
+    streams in this brave new world.</i></h5></div>""", unsafe_allow_html=True)
 
     st.markdown('---')
     get_started_button = st.button("Get Started", type='primary', use_container_width=True)

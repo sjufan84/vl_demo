@@ -1,19 +1,15 @@
-""" Demo page for visualizing audio features """
-import tempfile
-import base64   
+""" Demo page for visualizing audio features """ 
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from sklearn.cluster import KMeans
 import plotly.express as px
 import librosa
 import numpy as np
-import soundfile as sf
 import streamlit as st
-import streamlit.components.v1 as components
 from streamlit_extras.switch_page_button import switch_page
 
-st.set_page_config(page_title="Voice Lockr Demo", page_icon=":microphone:", initial_sidebar_state="collapsed", layout="wide")
+st.set_page_config(page_title="Voice Lockr Demo", page_icon=":microphone:",
+                initial_sidebar_state="collapsed", layout="wide")
 
 # Initialize the session state
 def init_session_variables():
@@ -32,209 +28,18 @@ def init_session_variables():
 # Initialize the session variables
 init_session_variables()    
 
-def audio_player_component():
-    """ Audio player component """
-    # specify directory and initialize st_audiorec object functionality
-    audio_player = components.declare_component("audio_player", url="http://localhost:3001")
 
-    return audio_player
-
-def read_audio(file_path):
-    """ Read an audio file and return the signal """
-    signal, _ = librosa.load(file_path, sr=16000)
-    return signal
-
-# Create temporary audio files for the segments
-def create_audio_files(segments, sr=16000):
-    """ Create temporary audio files for the segments """
-    files = []
-    for segment in segments:
-        tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
-        sf.write(tmp_file.name, segment, samplerate=sr)
-        files.append(tmp_file)
-    return files
-
-# Create a data URL for an audio file
-def audio_file_to_data_url(file):
-    """ Create a data URL for an audio file """
-    audio_encoded = base64.b64encode(file.read())
-    return "data:audio/wav;base64," + audio_encoded.decode()
-
-def extract_features(signal):
-    """ Extract features from an audio signal """
-    # Compute MFCCs
-    mfccs = librosa.feature.mfcc(y=signal, sr=16000, n_mfcc=13).T
-    # Compute spectral contrast
-    contrast = librosa.feature.spectral_contrast(y=signal, sr=16000).T
-    # Compute chroma features
-    chroma = librosa.feature.chroma_stft(y=signal, sr=16000).T
-    # Concatenate all the features (vertically)
-    return np.hstack([mfccs, contrast, chroma])
-
-def create_audio_urls(segments):
-    """ Create data URLs for the audio segments """
-    urls = []
-    for segment in segments:
-        tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
-        librosa.output.write_wav(tmp_file.name, segment, sr=16000)
-        with open(tmp_file.name, "rb") as file:
-            audio_encoded = base64.b64encode(file.read())
-        urls.append("data:audio/wav;base64," + audio_encoded.decode())
-    return urls
-
-@st.cache
-def get_3d_chart_ghost():
-    """ Get the 3D chart for Fast Car """
-    # Read and preprocess audio signals
-    jenny_signal = read_audio('./audio_samples/jenny_ghost.wav')
-    lc_signal = read_audio('./audio_samples/jenny_ghost.wav')
-    joel_signal = read_audio('./audio_samples/joel_ghost.wav')
-    min_length = min(len(jenny_signal), len(lc_signal), len(joel_signal))
-    jenny_signal = jenny_signal[:min_length]
-    lc_signal = lc_signal[:min_length]
-    joel_signal = joel_signal[:min_length]
-    
-
-    # Extract features
-    jenny_features = extract_features(jenny_signal)
-    lc_features = extract_features(lc_signal)
-    joel_features = extract_features(joel_signal)
-
-    # Transpose to have features as columns
-    jenny_features = jenny_features.T
-    lc_features = lc_features.T
-    joel_features = joel_features.T
-
-    # Create a DataFrame by concatenating the two feature sets
-    df = pd.concat([pd.DataFrame(jenny_features), pd.DataFrame(lc_features), pd.DataFrame(joel_features)], axis=0)
-    # Standardize the data before applying PCA and KMeans
-    scaler = StandardScaler()
-    scaled_df = scaler.fit_transform(df)
-
-    # Perform PCA to capture 95% of the variance
-    pca = PCA(n_components=3)
-    pca_df = pca.fit_transform(scaled_df)
-
-    # Perform KMeans clustering
-    kmeans = KMeans(n_clusters=4, random_state=40)
-    kmeans.fit(pca_df)
-    clusters = kmeans.predict(pca_df)
-
-    # Create a DataFrame for plotting
-    cluster_df = pd.DataFrame(pca_df, columns=['PC1', 'PC2', 'PC3'])
-    cluster_df['cluster'] = clusters
-
-    # Keep every other row for each artist
-    #cluster_df = cluster_df.iloc[::2, :]
-
-    # Create segments (you may need to adjust this to match your actual segmentation logic)
-    jenny_segments = np.array_split(jenny_signal, len(cluster_df)//3)
-    lc_segments = np.array_split(lc_signal, len(cluster_df)//3)
-    joel_segments = np.array_split(joel_signal, len(cluster_df)//3)
-    total_segments = jenny_segments + lc_segments + joel_segments
-
-   # Create labels for the segments
-    jenny_labels = [f"Jenny - Segment {i+1}" for i in range(len(jenny_segments))]
-    lc_labels = [f"LC - Segment {i+1}" for i in range(len(lc_segments))]
-    joel_labels = [f"Joel - Segment {i+1}" for i in range(len(joel_segments))]
-    segment_labels = jenny_labels + lc_labels + joel_labels
-
-    # Create segment numbers (e.g., Segment 1, Segment 2, ...)
-    segment_numbers = [f"Segment {i+1}" for i in range(len(lc_segments))] * 3
-
-    # Add segment names and numbers to the DataFrame
-    cluster_df['segment_name'] = segment_labels
-    cluster_df['segment_number'] = segment_numbers
-
-
-    
-    # Create temporary audio files
-    jenny_files = create_audio_files(jenny_segments)
-    lc_files = create_audio_files(lc_segments)
-    joel_files = create_audio_files(joel_segments)
-
-    # Create audio URLs
-    jenny_audio_urls = [audio_file_to_data_url(file) for file in jenny_files]
-    lc_audio_urls = [audio_file_to_data_url(file) for file in lc_files]
-    joel_audio_urls = [audio_file_to_data_url(file) for file in joel_files]
-    audio_urls = jenny_audio_urls + lc_audio_urls + joel_audio_urls
-    audio_urls = lc_audio_urls + joel_audio_urls
-
-    col1, col2 = st.columns([1.75, 1], gap='large')
-
-
-    with col2:# Add a Streamlit multiselect widget to allow users to select artists
-        st.text("")
-        st.text("")
-        st.text("")
-        # Display the original clips
-        # Convert the clips to bytes using librosa
-       
-        st.markdown("**Original Audio Clips:**")
-        joel_bytes = librosa.to_mono(joel_signal)
-        lc_bytes = librosa.to_mono(lc_signal)
-        jenny_bytes = librosa.to_mono(jenny_signal)
-        st.markdown("**LC Fast Car**")
-        st.audio(lc_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        st.markdown("**Joel Fast Car**")
-        st.audio(joel_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        st.markdown("**Jenny Fast Car**")
-        st.audio(jenny_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        selected_artists = st.multiselect(
-        "Select Artists to Display:",
-        options=['Jenny', 'LC', 'Joel'],
-        default=['Jenny', 'LC', 'Joel'],
-        )
-        # Filter the DataFrame based on selected artists
-        filtered_cluster_df = cluster_df[cluster_df['segment_name'].str.contains('|'.join(selected_artists))]
-
-
-    with col1:# Plot using the filtered DataFrame
-        fig = px.scatter_3d(
-        filtered_cluster_df,
-        x='PC1',
-        y='PC2',
-        z='PC3',
-        color='segment_number',
-        color_continuous_scale='rainbow',
-        title='3D Representation of Vocal Features -- LC, Joel, Jenny',
-        text='segment_name',
-    )
-
-        fig.update_layout(
-            width=750,  # Width of the plot in pixels
-            height=750,  # Height of the plot in pixels
-            scene=dict(
-                xaxis=dict(title='PC1'),
-                yaxis=dict(title='PC2'),
-                zaxis=dict(title='PC3')
-            ),
-            showlegend=False,
-        )
-        fig.update_traces(
-        textposition='top center',  # Position of the text labels
-        textfont_size=10,
-        marker_size=8            # Font size of the text labels
-    )
-        st.plotly_chart(fig, use_container_width=True)
-            
-
+        
 def demo_visualize():
     """ Demo page for visualizing audio features via Kmeans clustering """
     st.markdown("""
-    ### Melodic Voiceprint: A Harmony of Science, Art, and Security
+    ### :blue[Melodic Voiceprint: A Harmony of Science, Art, and Security]
                 
     **The logical first question to ask is:**  How do these deepfake audio clips work,\
     and what can artists do to protect themselves?  The answer lies in securing the\
     Melodic Voiceprint of the artist that is being used to train the models\
     that make these deepfakes possible.
 
-    **The 3D chart below** visualizes the unique features that compose the voice of two different artists.
-    Each point represents a segment of a song, and the position of the points reflects various
-    characteristics of the voice such as pitch, rhythm, and timbre.
-    The segments are grouped by color, highlighting similarities and differences between the artists.  By\
-    securing their MV with Vocalockr on the blockchain, artists can ensure that their voiceprint is protected.
-                
     **First let's establish a ground truth for each of our models.  Both Jenny and Joel's models were trained\
                 on *less than 10 minutes* of clips of their vocals.  We can now swap out their voices for another
                 artist's, even though neither Joel nor Jenny sang any part of the songs we used in this demo.
@@ -253,149 +58,23 @@ def demo_visualize():
         jenny_train_signal = read_audio('./audio_samples/jenny_train.wav')
         st.audio(jenny_train_signal, sample_rate=16000)
     st.markdown("""---""")
-    """ Get the 3D chart for Fast Car """
-    # Read and preprocess audio signals
-    jenny_signal = read_audio('./audio_samples/lc_fcar.wav')
-    lc_signal = read_audio('./audio_samples/jenny_fcar.wav')
-    joel_signal = read_audio('./audio_samples/joel_fcar.wav')
-    min_length = min(len(jenny_signal), len(lc_signal), len(joel_signal))
-    jenny_signal = jenny_signal[:min_length]
-    lc_signal = lc_signal[:min_length]
-    joel_signal = joel_signal[:min_length]
-    
+    continue_3d_button = st.button("Continue", type="primary", use_container_width=True)
+    if continue_3d_button:
+        switch_page("Voice Swaps")
 
-    # Extract features
-    jenny_features = extract_features(jenny_signal)
-    lc_features = extract_features(lc_signal)
-    joel_features = extract_features(joel_signal)
-
-    # Transpose to have features as columns
-    jenny_features = jenny_features.T
-    lc_features = lc_features.T
-    joel_features = joel_features.T
-
-    # Create a DataFrame by concatenating the two feature sets
-    df = pd.concat([pd.DataFrame(jenny_features), pd.DataFrame(lc_features), pd.DataFrame(joel_features)], axis=0)
-    # Standardize the data before applying PCA and KMeans
-    scaler = StandardScaler()
-    scaled_df = scaler.fit_transform(df)
-
-    # Perform PCA to capture 95% of the variance
-    pca = PCA(n_components=3)
-    pca_df = pca.fit_transform(scaled_df)
-
-    # Perform KMeans clustering
-    kmeans = KMeans(n_clusters=4, random_state=40)
-    kmeans.fit(pca_df)
-    clusters = kmeans.predict(pca_df)
-
-    # Create a DataFrame for plotting
-    cluster_df = pd.DataFrame(pca_df, columns=['PC1', 'PC2', 'PC3'])
-    cluster_df['cluster'] = clusters
-
-    # Keep every other row for each artist
-    #cluster_df = cluster_df.iloc[::2, :]
-
-    # Create segments (you may need to adjust this to match your actual segmentation logic)
-    jenny_segments = np.array_split(jenny_signal, len(cluster_df)//3)
-    lc_segments = np.array_split(lc_signal, len(cluster_df)//3)
-    joel_segments = np.array_split(joel_signal, len(cluster_df)//3)
-    total_segments = jenny_segments + lc_segments + joel_segments
-
-   # Create labels for the segments
-    jenny_labels = [f"Jenny - Segment {i+1}" for i in range(len(jenny_segments))]
-    lc_labels = [f"LC - Segment {i+1}" for i in range(len(lc_segments))]
-    joel_labels = [f"Joel - Segment {i+1}" for i in range(len(joel_segments))]
-    segment_labels = jenny_labels + lc_labels + joel_labels
-
-    # Create segment numbers (e.g., Segment 1, Segment 2, ...)
-    segment_numbers = [f"Segment {i+1}" for i in range(len(lc_segments))] * 3
-
-    # Add segment names and numbers to the DataFrame
-    cluster_df['segment_name'] = segment_labels
-    cluster_df['segment_number'] = segment_numbers
-
-
-    
-    # Create temporary audio files
-    jenny_files = create_audio_files(jenny_segments)
-    lc_files = create_audio_files(lc_segments)
-    joel_files = create_audio_files(joel_segments)
-
-    # Create audio URLs
-    jenny_audio_urls = [audio_file_to_data_url(file) for file in jenny_files]
-    lc_audio_urls = [audio_file_to_data_url(file) for file in lc_files]
-    joel_audio_urls = [audio_file_to_data_url(file) for file in joel_files]
-    audio_urls = jenny_audio_urls + lc_audio_urls + joel_audio_urls
-    audio_urls = lc_audio_urls + joel_audio_urls
-
-    col1, col2 = st.columns([1.75, 1], gap='large')
-
-
-    with col2:# Add a Streamlit multiselect widget to allow users to select artists
-        st.text("")
-        st.text("")
-        st.text("")
-        # Display the original clips
-        # Convert the clips to bytes using librosa
-       
-        st.markdown("**Original Audio Clips:**")
-        joel_bytes = librosa.to_mono(joel_signal)
-        lc_bytes = librosa.to_mono(lc_signal)
-        jenny_bytes = librosa.to_mono(jenny_signal)
-        st.markdown("**LC Fast Car**")
-        st.audio(lc_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        st.markdown("**Joel Fast Car**")
-        st.audio(joel_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        st.markdown("**Jenny Fast Car**")
-        st.audio(jenny_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        selected_artists = st.multiselect(
-        "Select Artists to Display:",
-        options=['Jenny', 'LC', 'Joel'],
-        default=['Jenny', 'LC', 'Joel'],
-        )
-        # Filter the DataFrame based on selected artists
-        filtered_cluster_df = cluster_df[cluster_df['segment_name'].str.contains('|'.join(selected_artists))]
-
-
-    with col1:# Plot using the filtered DataFrame
-        fig = px.scatter_3d(
-        filtered_cluster_df,
-        x='PC1',
-        y='PC2',
-        z='PC3',
-        color='segment_number',
-        color_continuous_scale='rainbow',
-        title='3D Representation of Vocal Features -- LC, Joel, Jenny',
-        text='segment_name',
-    )
-
-        fig.update_layout(
-            width=750,  # Width of the plot in pixels
-            height=750,  # Height of the plot in pixels
-            scene=dict(
-                xaxis=dict(title='PC1'),
-                yaxis=dict(title='PC2'),
-                zaxis=dict(title='PC3')
-            ),
-            showlegend=False,
-        )
-        fig.update_traces(
-        textposition='top center',  # Position of the text labels
-        textfont_size=10,
-        marker_size=8            # Font size of the text labels
-    )
-        st.plotly_chart(fig, use_container_width=True)
+    st.markdown("""**Now let's see what happens when we swap out the voices of Joel and Jenny for another artist's.
+                There are two clips we have used for this demo.  The first is Luke Combs's rendition of "Fast Car", 
+                and the other is Ella Henderson's "Ghost".  We can swap out male for female voices
+                by utilizing the same methodology of other voice clones and simply adjust the pitch to create the best
+                version.  This proves that this technology is here today, evolving, and constantly getting more 
+                powerful.**""")
+    # Create a selectbox to allow the user to select which song to visualize
+    song = st.selectbox("Select a Song to Visualize:", ["Fast Car", "Ghost"])
+    if song == "Fast Car":
+        get_3d_chart_fcar()
+    else:
+        get_3d_chart_ghost()
             
-
-    #st.markdown("""
-    #            ***If you are interested in viewing even more granular details of the audio, you can
-    #            click the button below.***
-    #            """)
-        # Create a button for showing the detailed audio features
-    #detailed_features_button = st.button("Show Detailed Audio Features", type="primary", use_container_width=True)
-    #if detailed_features_button:
-    #    switch_page("Detailed Vocal Features")
     st.markdown("""---""")
     st.markdown("""
                  **So What Does This Mean for Music, Security, and the Future of the Industry?**
