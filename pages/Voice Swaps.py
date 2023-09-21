@@ -7,33 +7,17 @@ import librosa
 import numpy as np
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
+from utils.audio_processing import read_audio, extract_features
 
 st.set_page_config(page_title="Voice Lockr Demo", page_icon=":microphone:",
                 initial_sidebar_state="collapsed", layout="wide")
 
-def read_audio(file_path):
-    """ Read an audio file and return the signal """
-    signal, _ = librosa.load(file_path, sr=16000)
-    return signal
 
-def extract_features(signal):
-    """ Extract features from an audio signal """
-    # Compute MFCCs
-    mfccs = librosa.feature.mfcc(y=signal, sr=16000, n_mfcc=13).T
-    # Compute spectral contrast
-    contrast = librosa.feature.spectral_contrast(y=signal, sr=16000).T
-    # Compute chroma features
-    chroma = librosa.feature.chroma_stft(y=signal, sr=16000).T
-    # Concatenate all the features (vertically)
-    return np.hstack([mfccs, contrast, chroma])
-
-
-@st.cache
 def get_3d_chart_ghost():
     """ Get the 3D chart for Fast Car """
     # Read and preprocess audio signals
     jenny_signal = read_audio('./audio_samples/jenny_ghost.wav')
-    lc_signal = read_audio('./audio_samples/jenny_ghost.wav')
+    lc_signal = read_audio('./audio_samples/ella_ghost.wav')
     joel_signal = read_audio('./audio_samples/joel_ghost.wav')
     min_length = min(len(jenny_signal), len(lc_signal), len(joel_signal))
     jenny_signal = jenny_signal[:min_length]
@@ -72,7 +56,7 @@ def get_3d_chart_ghost():
 
    # Create labels for the segments
     jenny_labels = [f"Jenny - Segment {i+1}" for i in range(len(jenny_segments))]
-    lc_labels = [f"LC - Segment {i+1}" for i in range(len(lc_segments))]
+    lc_labels = [f"EH - Segment {i+1}" for i in range(len(lc_segments))]
     joel_labels = [f"Joel - Segment {i+1}" for i in range(len(joel_segments))]
     segment_labels = jenny_labels + lc_labels + joel_labels
 
@@ -97,16 +81,16 @@ def get_3d_chart_ghost():
         joel_bytes = librosa.to_mono(joel_signal)
         lc_bytes = librosa.to_mono(lc_signal)
         jenny_bytes = librosa.to_mono(jenny_signal)
-        st.markdown("**LC Fast Car**")
+        st.markdown("**Ella Henderson**")
         st.audio(lc_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        st.markdown("**Joel Fast Car**")
+        st.markdown("**Joel**")
         st.audio(joel_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        st.markdown("**Jenny Fast Car**")
+        st.markdown("**Jenny**")
         st.audio(jenny_bytes, format='audio/wav', start_time=0, sample_rate=16000)
         selected_artists = st.multiselect(
         "Select Artists to Display:",
-        options=['Jenny', 'LC', 'Joel'],
-        default=['Jenny', 'LC', 'Joel'],
+        options=['Jenny', 'EH', 'Joel'],
+        default=['Jenny', 'EH', 'Joel'],
         )
         # Filter the DataFrame based on selected artists
         filtered_plot_df = plot_df[plot_df['segment_name'].str.contains('|'.join(selected_artists))]
@@ -120,7 +104,7 @@ def get_3d_chart_ghost():
         z='PC3',
         color='segment_number',
         color_continuous_scale='rainbow',
-        title='3D Representation of Vocal Features -- LC, Joel, Jenny',
+        title='3D Representation of Vocal Features "Ghost" -- EH, Joel, Jenny',
         text='segment_name',
     )
 
@@ -253,12 +237,36 @@ def get_3d_chart_fcar():
 def voice_swap_home():
     """ Home page for voice swap visuals """
     st.markdown("""
-                ##### :blue[Melodic Voiceprint: A Harmony of Science, Art, and Security]
-                
-                So what does this voice swap look like in practice?  Below are two examples of voice swaps
-                that were generated using the same model that was trained on Jenny and Joel's voices.
-                We have two examples: 1) a voice swap of Jenny and Joel's voice singing a clip from Luke
-                Combs's "Fast Car", and 2) a voice swap of Jenny and Joel's voice singing a clip from
-                Ella Henderson's "Ghost".  While it might seem difficult to swap a male voice to a female voice,
-                or vice versa, in reality it is not too much more difficult than like to like, thus further
-                widening the scope of the problem.""")
+                ##### :blue[How it Works]
+                """)
+
+    st.markdown("""**Now let's see what happens when we swap out the voices of Joel and Jenny for another artist's.
+    There are two clips we have used for this demo.  The first is Luke Combs's rendition of "Fast Car", 
+    and the other is Ella Henderson's "Ghost".  We can swap out male for female voices
+    by utilizing the same methodology of other voice clones and simply adjust the pitch to create the best
+    version.  This proves that this technology is here today, evolving, and constantly getting more 
+    powerful.**""")
+    st.text("")
+    st.markdown("""**The 3d Chart below illustrates each artist's vocal print at different points
+                in the song.  The segments are color coded by artist, and the labels on the chart indicate the
+                artist and segment number.  In order to visualize the differences in the vocal prints, we have
+                used a technique called Principal Component Analysis (PCA) to reduce the dimensionality of the
+                data.  The actual number of features is much higher, but using PCA allows us to capture most of the
+                variance in the data with just 3 features.  Even though they are singing the same song, there
+                distinct characteristics for each voice.  For a better visual on different clusters, the chart
+                can be rotated and panned.**
+                """)
+    # Create a selectbox to allow the user to select which song to visualize
+    song = st.selectbox("Select a Song to Visualize:", ["Fast Car", "Ghost"])
+    if song == "Fast Car":
+        get_3d_chart_fcar()
+    else:
+        get_3d_chart_ghost()
+
+    # Create a button to switch to the next page
+    continue_to_mv_button = st.button("Continue", type="primary", use_container_width=True)
+    if continue_to_mv_button:
+        switch_page("Voiceprint Demo")
+
+if __name__ == "__main__":
+    voice_swap_home()

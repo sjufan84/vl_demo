@@ -199,3 +199,20 @@ async def convert_audio_to_str(received_audio, sr: int = 32000):
     audio_base64 = base64.b64encode(audio_data).decode("utf-8")
 
     return audio_base64
+
+
+def read_audio(file_path):
+    """ Read an audio file and return the signal """
+    signal, _ = librosa.load(file_path, sr=16000)
+    return signal
+
+def extract_features(signal):
+    """ Extract features from an audio signal """
+    # Compute MFCCs
+    mfccs = librosa.feature.mfcc(y=signal, sr=16000, n_mfcc=13).T
+    # Compute spectral contrast
+    contrast = librosa.feature.spectral_contrast(y=signal, sr=16000).T
+    # Compute chroma features
+    chroma = librosa.feature.chroma_stft(y=signal, sr=16000).T
+    # Concatenate all the features (vertically)
+    return np.hstack([mfccs, contrast, chroma])
