@@ -22,11 +22,11 @@ def init_session_variables():
         'audio_files', 'record_audio_page', 'upload_audio_page','embeddings', 'home_page',
         'av_feature_dict', 'lc_feature_dict', 'demo_visualize_page', "detailed_vocal_features_page",
         'nft_demo_page', 'token_id', 'contract_address', 'latest_nft', 'nft_metadata', 'chat_history'
-        'chat_page', 'user_name'
+        'chat_page', 'user_name', 'bplan_chat_page'
     ]
     default_values = [
         {}, 'record_audio', 'upload_audio', {},'home', {}, {}, 'demo_visualize_home', "detailed_home",
-        'nft_demo_home', 0, '', 0, {}, [], 'chat_home', ''
+        'nft_demo_home', 0, '', 0, {}, [], 'chat_home', '', 'bplan_home'
     ]
 
     for var, default_value in zip(session_vars, default_values):
@@ -70,11 +70,20 @@ def home():
     <h5 style="color:#5046B1"><i>We aim to protect artists by giving them the tools to not
     only protect themselves and their legacy, but also open up new and exciting revenue
     streams in this brave new world.</i></h5></div>""", unsafe_allow_html=True)
+    st.text("")
 
-    st.markdown('---')
     get_started_button = st.button("Get Started", type='primary', use_container_width=True)
     if get_started_button:
         switch_page("Demo Visualize")
+    st.markdown('---')
+    st.markdown("""
+                **Curious about the business plan?  Click here to interact with the
+                business plan assistant!**
+                """)
+    bplan_button = st.button("Business Plan", type='primary', use_container_width=True)
+    if bplan_button:
+        st.session_state.bplan_chat_page = 'bplan_home'
+        switch_page("Business Plan")
 
 def audio_home():
     """ Capture audio from the user's microphone or uploaded that will then

@@ -33,6 +33,7 @@ def add_message(role, content):
         role (str): The role of the message.  Should be one of "user", "ai", or "system"
         content (str): The content of the message
     """
+    
     # If the role is user, we will add a user message formatted as a HumanMessage
     if role == "user":
         message = {"role": "user", "content": content}

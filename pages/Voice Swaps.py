@@ -190,12 +190,12 @@ def get_3d_chart_fcar():
         joel_bytes = librosa.to_mono(joel_signal)
         lc_bytes = librosa.to_mono(lc_signal)
         jenny_bytes = librosa.to_mono(jenny_signal)
-        st.markdown("**LC Fast Car**")
-        st.audio(lc_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        st.markdown("**Joel Fast Car**")
-        st.audio(joel_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        st.markdown("**Jenny Fast Car**")
+        st.markdown("**:blue[LC Fast Car]**")
         st.audio(jenny_bytes, format='audio/wav', start_time=0, sample_rate=16000)
+        st.markdown("**:blue[Joel Fast Car]**")
+        st.audio(joel_bytes, format='audio/wav', start_time=0, sample_rate=16000)
+        st.markdown("**:blue[Jenny Fast Car]**")
+        st.audio(lc_bytes, format='audio/wav', start_time=0, sample_rate=16000)
         selected_artists = st.multiselect(
         "Select Artists to Display:",
         options=['Jenny', 'LC', 'Joel'],
@@ -240,7 +240,7 @@ def voice_swap_home():
                 ##### :blue[How it Works]
                 """)
 
-    st.markdown("""**Now let's see what happens when we swap out the voices of Joel and Jenny for another artist's.
+    st.markdown("""**Now, let's see what happens when we swap out the voices of Joel and Jenny for another artist's.
     There are two clips we have used for this demo.  The first is Luke Combs's rendition of "Fast Car", 
     and the other is Ella Henderson's "Ghost".  We can swap out male for female voices
     by utilizing the same methodology of other voice clones and simply adjust the pitch to create the best
@@ -252,9 +252,9 @@ def voice_swap_home():
                 artist and segment number.  In order to visualize the differences in the vocal prints, we have
                 used a technique called Principal Component Analysis (PCA) to reduce the dimensionality of the
                 data.  The actual number of features is much higher, but using PCA allows us to capture most of the
-                variance in the data with just 3 features.  Even though they are singing the same song, there
-                distinct characteristics for each voice.  For a better visual on different clusters, the chart
-                can be rotated and panned.**
+                variance in the data with just 3 features.  Even though they are singing the same song, there are
+                distinct characteristics for each voice, and those differences are what makes each voiceprint unique.  
+                For a better visual on different clusters, the chart can be rotated and panned.**
                 """)
     # Create a selectbox to allow the user to select which song to visualize
     song = st.selectbox("Select a Song to Visualize:", ["Fast Car", "Ghost"])

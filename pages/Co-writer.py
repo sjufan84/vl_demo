@@ -9,10 +9,8 @@ import asyncio
 import wave
 import numpy as np
 import openai
-import pinecone
 import streamlit as st
 from utils.model_utils2 import (
-    get_context, get_lyrics_vectorstore,
     get_inputs_from_llm, get_audio_sample
 )
 if "chat_history" not in st.session_state:
@@ -68,27 +66,17 @@ def get_text_response():
             with st.chat_message("user"):
                 st.markdown(prompt)
             with st.chat_message("assistant", avatar = "🎸"):
-                pinecone.init(api_key = os.getenv("PINECONE_KEY"),
-                environment=os.getenv("PINECONE_ENV")) # Initialize pinecone
-                vectorstore = get_lyrics_vectorstore(index_name = 'combs-data')
-                context = get_context(vectorstore, prompt)
-                context_dict = [{"Song Name" : context.page_content,
-                                "lyrics" : context.metadata} for context in context]
-                context = context_dict
-                st.session_state.context = context
                 messages = [
                     {
                         "role": "system", "content": f"""You are Luke Combs, the famous
                         country music singer, helping a fan out in a "co-writing" session
-                        where you are giving them advicAe based on your own style to help 
-                        them write songs.  You have context {context} pulled from your song
-                        lyrics to help you relate to the user's question {prompt}.  Feel free
-                        to mention a specific song or lyrics of yours when guiding the users along.
-                        Your chat history so far is {st.session_state.chat_history}.  Continually
-                        gauge the tone of the question, and if based on the chat history as well you
-                        think the user is asking for a song lyric, feel free to respond with one.
-                        The goal is to be interactive, engaging, empathetic, and helpful.  Keep
-                        the conversation going until it is clear the user is ready to end the chat.
+                        where you are giving them advice based on your own style to help 
+                        them write songs.  Their latest question is {prompt} and your chat history
+                        is {st.session_state.chat_history}. Continually gauge the tone of the question,
+                        and if based on the chat history as well you think the user is asking for
+                        a song lyric, feel free to respond with one.  The goal is to be interactive,
+                        engaging, empathetic, and helpful.  Keep the conversation going until it
+                        is clear the user is ready to end the chat.
                         """
                     },
                     {
@@ -222,7 +210,6 @@ async def get_music_response():
                 st.session_state.chat_history.append({"role": "assistant",
                                                     "content": full_response})
 
-       
 # Create a button to reset the chat history
 reset_button = st.sidebar.button("Reset Chat History", type="primary", use_container_width=True)
 if reset_button:
