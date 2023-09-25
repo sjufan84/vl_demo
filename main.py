@@ -22,7 +22,7 @@ def init_session_variables():
         'audio_files', 'record_audio_page', 'upload_audio_page','embeddings', 'home_page',
         'av_feature_dict', 'lc_feature_dict', 'demo_visualize_page', "detailed_vocal_features_page",
         'nft_demo_page', 'token_id', 'contract_address', 'latest_nft', 'nft_metadata', 'chat_history'
-        'chat_page', 'user_name', 'bplan_chat_page'
+        'chat_page', 'user_name'
     ]
     default_values = [
         {}, 'record_audio', 'upload_audio', {},'home', {}, {}, 'demo_visualize_home', "detailed_home",
@@ -41,7 +41,7 @@ def home():
     """ Landing page for the application. """
     # Display the description
     st.markdown("""<div>
-                <h4 style="font-family: 'Montserrat', sans-serif; color: #2F3A56; font-size: 40px; font-weight: 550;">
+                <h4 style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 40px; font-weight: 550;">
                 Vocalockr: Empowering Artists in the Age of AI</h4>
                 </div>""", unsafe_allow_html=True)
     st.markdown("---")
@@ -60,14 +60,14 @@ def home():
 
   <br>
 
-  <h5 style="color:#5046B1;"><i>Vocalockr responds to this challenge by empowering artists.</i></h5>
+  <h5 style="color:#EDC480;"><i>Vocalockr responds to this challenge by empowering artists.</i></h5>
   <br>
   <h5>
       The reality is, it is relatively easy, with the right technical skills,
       to take less than <i>30 seconds</i> of an artist's vocals and create
       an AI model that can "swap" any other person's vocals for the artist's.</h5>
     <br>
-    <h5 style="color:#5046B1"><i>We aim to protect artists by giving them the tools to not
+    <h5 style="color:#EDC480"><i>We aim to protect artists by giving them the tools to not
     only protect themselves and their legacy, but also open up new and exciting revenue
     streams in this brave new world.</i></h5></div>""", unsafe_allow_html=True)
     st.text("")

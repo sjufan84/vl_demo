@@ -6,7 +6,10 @@ from streamlit_extras.switch_page_button import switch_page
 
 def voiceprint_visual():
     """ Voiceprint Homepage """
-    st.markdown("#### :blue[So now what?]")
+    st.markdown("""<div class="text-container">
+    <h4 style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 25px; font-weight: 550;">
+                So Now What?</h4>
+    </div>""", unsafe_allow_html=True)
     st.markdown('##### Now that we have our voiceprints for Joel and Jenny established,\
                 what can we do with them?  The first order of business is to secure them\
                 for the artist so that they can decide what features they would like to explore.\

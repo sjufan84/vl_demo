@@ -13,11 +13,18 @@ if "chat_history" not in st.session_state:
 def bplan_intro():
     """ Page to introduce the business plan chat """
     st.session_state.chat_history = [] # Clear the chat history
-    st.markdown("""### Business Plan Chat""")
-    st.markdown("##### At Vocalockr, we're pioneering an interactive approach\
-                to our business plan by using a vectorstore retriever and an LLM\
-                for contextual answers. Though this technology is new, it promises\
-                a more engaging experience. We're eager to discuss more in person!"
+    st.markdown("""
+                <p style="font-size: 20px; font-weight: bold; color: #EDC480;">
+                Vocalockr Business Plan Chat</p>
+                """, unsafe_allow_html=True)
+    
+    st.markdown("##### At Vocalockr, we're pioneering an innovative approach\
+                to engaging with our business plan. We use a large language model\
+                paired with a vectorstore that contains the plan to create a\
+                chatbot that can intelligently answer questions about the business.\
+                Though this technology is new, it promises a rich\
+                and interactive experience to learn more about Vocalockr and our\
+                plans for the future.  Of course, we're eager to discuss more in person as well!"
                 )
     st.text("")
     start_bplan_chat_button = st.button("Start Business Plan Chat", type="primary",

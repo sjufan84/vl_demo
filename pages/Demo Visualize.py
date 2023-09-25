@@ -27,10 +27,13 @@ init_session_variables()
         
 def demo_visualize():
     """ Demo page for visualizing audio features via Kmeans clustering """
-    st.markdown("""
-    ### :blue[Melodic Voiceprint: A Harmony of Science, Art, and Security]
+    st.markdown("""<div class="text-container">
+    <h4 style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 30px; font-weight: 550;">
+    Melodic Voiceprint: A Harmony of Science, Art, and Security</h4>
+    </div>""", unsafe_allow_html=True)
                 
-    **The logical first question to ask is:**  How do these deepfake audio clips work,\
+    st.markdown("""
+                **The logical first question to ask is:**  How do these deepfake audio clips work,\
     and what can artists do to protect themselves?  The answer lies in securing the\
     Melodic Voiceprint of the artist that is being used to train the models\
     that make these deepfakes possible.

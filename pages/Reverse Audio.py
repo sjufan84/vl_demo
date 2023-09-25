@@ -7,7 +7,12 @@ import numpy as np
 def reverse_audio():
     """ Reverse Audio Homepage """
     st.markdown("""
-                #### :blue[Reverse Audio Search]
+                <p style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 25px; font-weight: 550;">
+                Reverse Audio Search
+                </p>
+                """, unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown("""
                 **Now that we have our voiceprints for Joel and Jenny established,**
                 we can compare them to other audio files to see how similar they are.  This
                 will help us determine if the audio file is Joel or Jenny.  If it is, then we can

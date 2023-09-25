@@ -121,7 +121,7 @@ def get_3d_chart_ghost():
         fig.update_traces(
         textposition='top center',  # Position of the text labels
         textfont_size=10,
-        marker_size=8            # Font size of the text labels
+        marker_size=8,            # Font size of the text labels
     )
         st.plotly_chart(fig, use_container_width=True)
             
@@ -190,11 +190,20 @@ def get_3d_chart_fcar():
         joel_bytes = librosa.to_mono(joel_signal)
         lc_bytes = librosa.to_mono(lc_signal)
         jenny_bytes = librosa.to_mono(jenny_signal)
-        st.markdown("**:blue[LC Fast Car]**")
+        st.markdown("""
+        <p style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 15px; font-weight: 550;">
+                    LC Fast Car</p>
+                    """, unsafe_allow_html=True)
         st.audio(jenny_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        st.markdown("**:blue[Joel Fast Car]**")
+        st.markdown("""
+        <p style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 15px; font-weight: 550;">
+                    Joel Fast Car</p>
+                    """, unsafe_allow_html=True)
         st.audio(joel_bytes, format='audio/wav', start_time=0, sample_rate=16000)
-        st.markdown("**:blue[Jenny Fast Car]**")
+        st.markdown("""
+        <p style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 15px; font-weight: 550;">
+                    Jenny Fast Car</p>
+                    """, unsafe_allow_html=True)
         st.audio(lc_bytes, format='audio/wav', start_time=0, sample_rate=16000)
         selected_artists = st.multiselect(
         "Select Artists to Display:",
@@ -237,8 +246,11 @@ def get_3d_chart_fcar():
 def voice_swap_home():
     """ Home page for voice swap visuals """
     st.markdown("""
-                ##### :blue[How it Works]
-                """)
+                <div class="text-container">
+                <h4 style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 25px; font-weight: 550;">
+                How it Works</h4>
+                </div>""", unsafe_allow_html=True)
+                
 
     st.markdown("""**Now, let's see what happens when we swap out the voices of Joel and Jenny for another artist's.
     There are two clips we have used for this demo.  The first is Luke Combs's rendition of "Fast Car", 
