@@ -1,7 +1,7 @@
 """ Demo page for visualizing audio features """ 
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
-from utils.audio_processing import read_audio
+import soundfile as sf
 
 st.set_page_config(page_title="Voice Lockr Demo", page_icon=":microphone:",
                 initial_sidebar_state="collapsed", layout="wide")
@@ -22,6 +22,12 @@ def init_session_variables():
 
 # Initialize the session variables
 init_session_variables()    
+
+def read_audio(audio_file):
+    """ Read the audio file into a NumPy array
+    using soundfile"""
+    signal, _ = sf.read(audio_file)
+    return (signal, _)
 
 
         
@@ -50,11 +56,11 @@ def demo_visualize():
         st.markdown('**Joel "Happy Birthday"**')
         # Convert the clip to a useable format
         joel_train_signal = read_audio('./audio_samples/joel_train.wav')
-        st.audio(joel_train_signal, sample_rate=16000)
+        st.audio(joel_train_signal[0], sample_rate=joel_train_signal[1])
     with col2:
         st.markdown('**Jenny "B Major Scale"**')
         jenny_train_signal = read_audio('./audio_samples/jenny_train.wav')
-        st.audio(jenny_train_signal, sample_rate=16000)
+        st.audio(jenny_train_signal[0], sample_rate = jenny_train_signal[1])
     st.markdown("""---""")
     continue_3d_button = st.button("Continue", type="primary", use_container_width=True)
     if continue_3d_button:

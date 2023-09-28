@@ -7,7 +7,7 @@ import librosa
 import numpy as np
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
-from utils.audio_processing import read_audio, extract_features
+from utils.audio_processing import extract_features, read_audio
 
 st.set_page_config(page_title="Voice Lockr Demo", page_icon=":microphone:",
                 initial_sidebar_state="collapsed", layout="wide")
@@ -137,6 +137,10 @@ def get_3d_chart_fcar():
     joel_signal = joel_signal[:min_length]
     
     # Extract features
+    if len(jenny_signal) < 2048 or len(lc_signal) < 2048 or len(joel_signal) < 2048:
+        st.warning("One of the audio signals is too short for FFT. Skipping...")
+        return
+
     jenny_features = extract_features(jenny_signal)
     lc_features = extract_features(lc_signal)
     joel_features = extract_features(joel_signal)

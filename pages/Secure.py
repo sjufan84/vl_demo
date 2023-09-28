@@ -3,7 +3,7 @@
     of their voice and then generate a demo of the Melodic Voiceprint"""
 import io
 import time
-import soundfile as sf
+import librosa
 import numpy as np
 import streamlit as st
 from PIL import Image
@@ -33,7 +33,7 @@ if "secure_page" not in st.session_state:
 def read_audio(audio_bytes: bytes) -> np.ndarray:
     """ Read the audio bytes into a NumPy array """
     with io.BytesIO(audio_bytes) as f:
-        audio_array = sf.read(f)
+        audio_array = librosa.load(f)
     return audio_array[0] # Return the audio array
 
 def record_audio():
@@ -152,7 +152,7 @@ def secure_home():
                         </p>
                         """, unsafe_allow_html=True)
             st.audio(recorded_audio_bytes)
-            recorded_audio = sf.read(io.BytesIO(recorded_audio_bytes))
+            recorded_audio = librosa.load(io.BytesIO(recorded_audio_bytes))
             # Using soundfile to read the audio file into a NumPy array
             st.session_state.audio_bytes_list.append(recorded_audio)
 
@@ -165,7 +165,7 @@ def secure_home():
         if uploaded_file:
             with io.BytesIO(uploaded_file.getbuffer()) as f:
                 # Using soundfile to read the audio file into a NumPy array
-                audio = sf.read(f)
+                audio = librosa.load(f)
                 if audio:
                     st.audio(audio[0], sample_rate=audio[1])
                 st.session_state.audio_bytes_list.append(audio)
@@ -181,10 +181,11 @@ def secure_home():
         if len(st.session_state.audio_bytes_list) == 0:
             st.error("Please upload or record an audio clip.")
         else:# Generate the 3D plot
-            st.session_state.fig = generate_3d_plot()
-            # Switch to the plot page
-            st.session_state.secure_page = "secure_plot"
-            st.experimental_rerun()
+            with st.spinner("Generating your Melodic Voiceprint..."):
+                st.session_state.fig = generate_3d_plot()
+                # Switch to the plot page
+                st.session_state.secure_page = "secure_plot"
+                st.experimental_rerun()
 
 def secure_plot():
     """ Display the user generated Melodic Voiceprint """
