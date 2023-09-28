@@ -180,11 +180,11 @@ def secure_home():
     if generate_mv_button:
         if len(st.session_state.audio_bytes_list) == 0:
             st.error("Please upload or record an audio clip.")
-        # Generate the 3D plot
-        st.session_state.fig = generate_3d_plot()
-        # Switch to the plot page
-        st.session_state.secure_page = "secure_plot"
-        st.experimental_rerun()
+        else:# Generate the 3D plot
+            st.session_state.fig = generate_3d_plot()
+            # Switch to the plot page
+            st.session_state.secure_page = "secure_plot"
+            st.experimental_rerun()
 
 def secure_plot():
     """ Display the user generated Melodic Voiceprint """
