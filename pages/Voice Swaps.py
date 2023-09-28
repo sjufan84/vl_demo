@@ -278,7 +278,8 @@ def voice_swap_home():
     # Create a button to switch to the next page
     continue_to_mv_button = st.button("Continue", type="primary", use_container_width=True)
     if continue_to_mv_button:
-        switch_page("Voiceprint Demo")
+        st.session_state.secure_page = "secure_home"
+        switch_page("Secure")
 
 if __name__ == "__main__":
     voice_swap_home()

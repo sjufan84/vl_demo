@@ -13,12 +13,14 @@ def reverse_audio():
                 """, unsafe_allow_html=True)
     st.markdown("---")
     st.markdown("""
-                **Now that we have our voiceprints for Joel and Jenny established,**
-                we can compare them to other audio files to see how similar they are.  This
-                will help us determine if the audio file is Joel or Jenny.  If it is, then we can
-                search the artist's issued NFTs to confirm if the counterparty has access to the
-                voiceprint, and if not, we can proceed with issuing "cease and desist" or other
-                legal action.
+                **One of the primary use cases for a secure voiceprint is\
+                to identify potential copyright violations from generative content.\
+                With the speed at which these deep fakes can be created, it is imperative\
+                that the artist and other stakeholders have a quick and easy way to determine\
+                whether or not the content is a) their voice, and b) has been approved for use.\
+                By leveraging the high level math behind the voiceprint, we can quickly and\
+                easily determine the similarity between two audio clips for further investigation\
+                including the scan of the artist's issued NFTs to identify consent.**
                 """)
     st.markdown("---")
     # Create two columns, one to demonstrate generating similarity scores for Joel's voiceprint

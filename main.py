@@ -4,6 +4,7 @@ sample will then be used to generate the embeddings that will be used
 to create the NFT."""
 
 # Initial Imports
+import base64
 from streamlit_extras.switch_page_button import switch_page
 import streamlit as st
 from PIL import Image
@@ -15,6 +16,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+# Load in the custom CSS file
+with open("./src/styles.css") as f:
+    st.markdown('<style>{}</style>'.format(f.read()), unsafe_allow_html=True)
+    
 # Initialize the session state
 def init_session_variables():
     """Initialize session state variables"""
@@ -33,20 +38,40 @@ def init_session_variables():
         if var not in st.session_state:
             st.session_state[var] = default_value
 
+if "secure_page" not in st.session_state:
+    st.session_state["secure_page"] = "secure_home"
+
 # Initialize the session variables
 init_session_variables()    
+
+
+# Function to convert image to base64
+def img_to_base64(img_path):
+    with open(img_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+# Use the function
+img_path = "./resources/vlockr_grey.png"  # Replace with your image's path
+base64_string = img_to_base64(img_path)
+
+# Now, you can use `base64_string` in your Streamlit app as shown before
 
 
 def home():
     """ Landing page for the application. """
     # Display the description
-    st.markdown("""<div>
-                <h4 style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 40px; font-weight: 550;">
-                Vocalockr: Empowering Artists in the Age of AI</h4>
-                </div>""", unsafe_allow_html=True)
-    st.markdown("---")
+    st.markdown(f"""
+    <div style="display: flex; justify-content: center; align-items: center;">
+        <img src='data:image/png;base64,{base64_string}' style='height:95px; margin-right: 20px;'>
+        <h4 style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 35px; margin-top: 12px; font-weight: 550;">
+        Empowering Artists in the Age of AI</h4>
+    </div>
+    """, unsafe_allow_html=True)
 
-                
+
+
+    st.text("")       
+    st.text("")         
     st.markdown("""<div class="text-container">
   <h5>
     When a song imitating Drake and the Weeknd was released in April of this year
