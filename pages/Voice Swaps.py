@@ -280,6 +280,7 @@ def voice_swap_home():
     if continue_to_mv_button:
         st.session_state.secure_page = "secure_home"
         switch_page("Secure")
+        st.experimental_rerun() 
 
 if __name__ == "__main__":
     voice_swap_home()
