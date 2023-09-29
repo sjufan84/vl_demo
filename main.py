@@ -16,9 +16,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Load in the custom CSS file
-with open("./src/styles.css") as f:
-    st.markdown('<style>{}</style>'.format(f.read()), unsafe_allow_html=True)
     
 # Initialize the session state
 def init_session_variables():
@@ -59,14 +56,26 @@ base64_string = img_to_base64(img_path)
 
 def home():
     """ Landing page for the application. """
-    # Display the description
-    st.markdown(f"""
+    html_content = '''
     <div style="display: flex; justify-content: center; align-items: center;">
-        <img src='data:image/png;base64,{base64_string}' style='height:95px; margin-right: 20px;'>
-        <h4 style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 35px; margin-top: 12px; font-weight: 550;">
+        <img id="logo" src="data:image/png;base64,''' + base64_string + '''" style="height:50px; margin-right: 20px;">
+        <h4 id="headline" style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 20px; margin-top: 5px; font-weight: 550;">
         Empowering Artists in the Age of AI</h4>
     </div>
-    """, unsafe_allow_html=True)
+    <style>
+    @media (max-width: 600px) {
+        #logo {
+            height: 50px;
+        }
+        #headline {
+            font-size: 20px;
+        }
+    }
+    </style>
+    '''
+
+    st.markdown(html_content, unsafe_allow_html=True)
+
 
 
 
