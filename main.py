@@ -55,34 +55,20 @@ base64_string = img_to_base64(img_path)
 
 
 def home():
-    """ Landing page for the application. """
-    html_content = '''
-    <div style="display: flex; justify-content: center; align-items: center;">
-        <img id="logo" src="data:image/png;base64,''' + base64_string + '''" style="height:50px; margin-right: 20px;">
-        <h4 id="headline" style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 20px; margin-top: 5px; font-weight: 550;">
+    """ Home page for the application. Display the mechanism """
+    st.markdown(f"""
+    <div style='display: flex; justify-content: center; align-items: center; flex-direction: column;'>
+        <img id='logo' src='data:image/png;base64,{base64_string}' style='height:80px; margin: 0; margin-right: 45px'>
+        <h4 id='headline' style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 26px; font-weight: 550;
+        margin-bottom: -10px">
         Empowering Artists in the Age of AI</h4>
     </div>
-    <style>
-    @media (max-width: 600px) {
-        #logo {
-            height: 50px;
-        }
-        #headline {
-            font-size: 20px;
-        }
-    }
-    </style>
-    '''
-
-    st.markdown(html_content, unsafe_allow_html=True)
-
-
-
+    """, unsafe_allow_html=True)
 
     st.text("")       
     st.text("")         
     st.markdown("""<div class="text-container">
-  <h5>
+    <h5>
     When a song imitating Drake and the Weeknd was released in April of this year
     that was <a href="https://www.nytimes.com/2023/04/19/arts/music/ai-drake-the-weeknd-fake.html"
     style="color:#5046B1">
