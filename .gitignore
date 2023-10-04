@@ -166,3 +166,15 @@ cython_debug/
 
 # .npy files
 *.npy
+__pycache__/
+weights/
+TEMP/
+logs/
+csvdb/
+
+# Environment
+venv/
+
+# Models
+hubert_base.pt
+rmvpe.pt
