@@ -8,7 +8,7 @@ from streamlit_extras.switch_page_button import switch_page
 def reverse_audio():
     """ Reverse Audio Homepage """
     st.markdown("""
-                <p style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 25px; font-weight: 550;">
+                <p style="font-family: 'Montserrat', sans-serif; color: #3D82FF; font-size: 25px; font-weight: 550;">
                 Reverse Audio Search
                 </p>
                 """, unsafe_allow_html=True)

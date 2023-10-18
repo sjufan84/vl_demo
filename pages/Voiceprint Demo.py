@@ -31,7 +31,5 @@ def voiceprint_visual():
     if co_writer_button:
         switch_page("Co-writer")
 
-
-    
 if __name__ == "__main__":
     voiceprint_visual()
