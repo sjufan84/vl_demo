@@ -9,6 +9,7 @@ import os
 import librosa
 import numpy as np
 import openai
+from openai.error import APIConnectionError
 import streamlit as st
 from utils.model_utils import (
     get_inputs_from_llm, get_audio_sample
@@ -79,13 +80,14 @@ def get_text_response(artist:str = "Dave"):
                         "role": "system", "content": f"""You are Dave Matthews, the famous artist,
                         engaging in a co-writing session with a fellow musician the goal is to make
                         it as much like an actual co-writing session with Dave.  You should try to
-                        take on his personality when answering, and do not break character.
-                        Their latest question is {prompt} and your chat history
+                        take on his personality when answering, and do not break character.  Don't start
+                        each response with the same phrasing.  Respond as you are in the room with the
+                        musician. Their latest question is {prompt} and your chat history
                         is {st.session_state.chat_history}. Continually gauge the tone of the question,
                         and if based on the chat history as well you think the user is asking for
-                        a song lyric, feel free to respond with one.  The goal is to be interactive,
-                        engaging, empathetic, and helpful.  Keep the conversation going until it
-                        is clear the user is ready to end the chat.
+                        a song lyric, feel free to respond with one.  The goal is to be as
+                        engaging, empathetic, helpful and "Dave like" as you can be.  Keep the session going
+                        until it is clear the user is ready to end the chat.
                         """
                     },
                     {
@@ -96,7 +98,7 @@ def get_text_response(artist:str = "Dave"):
                 message_placeholder = st.empty()
                 full_response = ""
                 # Set list of models to iterate through
-                models = ["gpt-4-0613", "gpt-4", "ft:gpt-3.5-turbo-0613:david-thomas::7wEhz4EL"] 
+                models = ["gpt-4-0613", "gpt-4", "gpt-3.5-turbo-16k-0613","gpt-3.5-turbo-16k"]
                 for model in models:
                     try:
                         for response in openai.ChatCompletion.create(
@@ -105,7 +107,7 @@ def get_text_response(artist:str = "Dave"):
                             max_tokens=300,
                             frequency_penalty=0.75,
                             presence_penalty=0.75,
-                            temperature=1,
+                            temperature=0.7,
                             n=1,
                             stream=True
                         ):
@@ -113,8 +115,8 @@ def get_text_response(artist:str = "Dave"):
                             message_placeholder.markdown(full_response + "▌")
                             if response.choices[0].delta.get("stop"):
                                 break
-                        break 
-                    except TimeoutError as e:
+                        break
+                    except APIConnectionError as e:
                         logging.log(logging.ERROR, e)
                         continue
             message_placeholder.markdown(full_response)
@@ -126,15 +128,17 @@ def get_music_response():
     uploaded_file = st.sidebar.file_uploader("Upload your audio file", type=["mp3", "wav"])
     if st.session_state.inputs:
         st.write(st.session_state.inputs)
-    if st.session_state.input_audio:
-        st.write(st.session_state.input_audio[:100])
-    if st.session_state.output:
-        st.write(st.session_state.output)
+    #if st.session_state.input_audio:
+    #    st.write(st.session_state.input_audio[:100])
+    #st.write(st.session_state.output["audio_data"])
+
+
     if uploaded_file:
         st.session_state.original_audio_clip = uploaded_file.read()
         audio_data = uploaded_file.getvalue()
         audio, sr = librosa.load(BytesIO(audio_data), sr=32000)
         st.audio(st.session_state.original_audio_clip, format="audio/mp3", start_time=0)
+        st.write(st.session_state.output)
        
         
         if prompt := st.chat_input("Your message for Dave:", key="chat_input_music"):

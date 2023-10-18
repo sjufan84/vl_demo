@@ -116,7 +116,8 @@ def generate_3d_plot():
 
 def secure_home():
     """ The main app function for the Secure page """
-    st.markdown("""##### Upload an audio clip or record your voice below\
+    st.markdown("""##### In order to demonstrate the process of generating a\
+                Melodic Voiceprint,Upload an audio clip or record your voice below\
                 to generate a sample of your Melodic Voiceprint.  Obviously\
                 the actual training process is much more involved, but this\
                 will still provide a sense of how the process works.

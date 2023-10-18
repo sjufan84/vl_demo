@@ -354,39 +354,52 @@ def get_3d_chart_fcar():
     )
         st.plotly_chart(fig, use_container_width=True)
 
-def voice_swap_home():
-    """ Home page for voice swap visuals """
-    st.markdown("""
-                <div class="text-container">
-                <h4 style="font-family: 'Montserrat', sans-serif;
-                color: #3D82FF; font-size: 25px; font-weight: 550;">
-                So what's the problem?</h4>
+def home():
+    """ Home page for the application. Display the mechanism """
+    st.markdown(f"""
+    <div style='display: flex; justify-content: center; align-items: center; flex-direction: column;'>
+        <h4 id='headline' style="font-family: 'Montserrat', sans-serif; color: #3D82FF;
+        font-size: 26px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 3s;
+        -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
+        fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">So what's the problem?</h4>
+        <br>
+        <h3 id='body'style="font-family: 'Montserrat', sans-serif; color: #ecebe4;
+        font-size: 17px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 5s;
+        -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
+        fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">Never before has someone
+        been able to clone an artist's voice and then be able to <i>generate new content with it.</i>
+        This is not about simply copying and misusing actual recordings.  This is about
+        the ability to create vocals virtually <i>indistinguishable</i> from the artist's, and have them
+        "sing" literally anything, with no quick way to verify it's authenticity.  The stakes
+        in the age of social media, where disinformation spreads like wildfire and very few people
+        would even think to check whether or not a voice is authentic, could not be higher.</h3>
+        <h3 id='body'style="font-family: 'Montserrat', sans-serif; color: #ecebe4;
+        font-size: 17px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 3s;
+        -webkit-animation: fadeIn ease 5s; -moz-animation: fadeIn ease 8s; -o-animation:
+        fadeIn ease 8s; -ms-animation: fadeIn ease 8s;">In order to prove the point, we trained
+        models using Joel and Jenny's voices, with less than 10 minutes of data each.  We can then separate
+        vocals from Luke Comb's "Fast Car", feed it to our model, and within approximately 30 seconds
+        generate a deepfake.  While it isn't perfect, it's important to remember the little amount
+        of data we trained Joel and Jenny's models with, and with some fine-tuning and a little more
+        training time we could produce whole songs or even albums that could pass for an actual artist's.
+        </h3>
+    </div>
+    <style>
+        @keyframes fadeIn {{
+            from {{
+                opacity: 0;
+            }}
+            to {{
+                opacity: 1;
+            }}
+        }}
+    </style>
+    """, unsafe_allow_html=True)
+    st.markdown("""<div class="text-container;" style="animation: fadeIn ease 3s;
+                -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s;
+                -o-animation: fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">
                 </div>""", unsafe_allow_html=True)
-                
-
-    st.markdown("""**As illustrated below, we were able to take
-                a clip from Luke Combs's "Fast Car" and swap
-                out his voice for Jenny or Joel's.  Keep in mind
-                we only trained Joel and Jenny's models on less than 
-                10 minutes of audio.  This clearly presents some major
-                problems.  Anyone could sing anything and swap
-                an artist's voice out, and by the time they figured
-                it out, it may be too late to undo the damage
-                without some way to prove that it was not them and
-                they had not given permission to use their voice.**
-                """)
-    st.text("")
-    st.markdown("""**The 3d chart below takes the audio from each
-                person's "Fast Car" rendition, distills it down to the
-                primary 3 components using PCA (Principal Component Analysis)
-                and then plots it in 3d space.  As you can see,
-                each corresponding segment is clustered pretty
-                closely for each artist, but it is the *difference* that
-                constitutes each singer's unique Melodic Voiceprint.**""")
-    # Create a selectbox to allow the user to select which song to visualize
-    #song = st.selectbox("Select a Song to Visualize:", ["Fast Car"])
-    #if song == "Fast Car":
-    #    get_3d_chart_fcar()
+            
     get_3d_chart_fcar()
     # Create a button to navigate to hugging face
     st.markdown("""
@@ -397,4 +410,4 @@ def voice_swap_home():
                 target="_blank">Try it Yourself</a>
                 </div>""", unsafe_allow_html=True)
 if __name__ == "__main__":
-    voice_swap_home()
+    home()

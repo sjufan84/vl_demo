@@ -1,8 +1,6 @@
 """ Loading lyrics and providing model context for the chatbot """
 import os
-import logging
 from typing import Union
-import json
 import pandas as pd
 import requests
 import numpy as np
@@ -193,18 +191,14 @@ def get_inputs_from_llm(artist:str = "Dave Matthews"):
 def get_audio_sample(inputs: str, audio_data: np.array): # Audio data is a base64 string
     """Get an audio sample from the music gen model
     based on the chat history"""
-    # Convert the audio_data array to a file-like object
-    #audio_data = np.array(audio_data)
-    
-
     inputs = get_inputs_from_llm()
     API_TOKEN =  os.getenv("HUGGING_FACE_KEY")
-    API_URL = "https://api-inference.huggingface.co/models/facebook/musicgen-medium"
+    API_URL = "https://api-inference.huggingface.co/models/facebook/musicgen-small"
     headers = {"Authorization": f"Bearer {API_TOKEN}"}
      # We want the LLM to decide on the prompts
     data = {
         "text": inputs,
-        "audio_data": audio_data
+        "melody": (32000, audio_data)
     }
     response = requests.request("POST", API_URL, headers=headers, data=data, timeout=45)
     # Convert the tensor to a numpy array
