@@ -1,0 +1,46 @@
+{
+  "citation": "",
+  "description": "",
+  "features": {
+    "metadata": {
+      "album": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "artist": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "description": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "file_name": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "is_padded": {
+        "dtype": "bool",
+        "_type": "Value"
+      },
+      "lyrics": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "segment_num": {
+        "dtype": "int64",
+        "_type": "Value"
+      },
+      "source": {
+        "dtype": "string",
+        "_type": "Value"
+      },
+      "title": {
+        "dtype": "string",
+        "_type": "Value"
+      }
+    }
+  },
+  "homepage": "",
+  "license": ""
+}

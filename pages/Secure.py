@@ -191,14 +191,12 @@ def secure_plot():
     """ Display the user generated Melodic Voiceprint """
     st.markdown("""
     <div style="font-size: 15px">
-    <h5>
-    Congratulations!  You have successfully\
+    <h5> Congratulations!  You have successfully\
     generated your Melodic Voiceprint and it is ready\
-    to be secured.  The 3d plot below is a basic\
-    representation of your unique vocal signature,\
-    distilled down to three principal components for visualization\
-    purposes.  Of course, the actual voiceprint that is generated\
-    from longer training runs is much more robust.</h5>
+    to be secured.  Check out the 3d representation of your\
+    Melodic Voiceprint below.  Once we have your MV, we can\
+    store the trained model in a secure location so that only you\
+    can access it and license it out.</h5>
     <h5>
     When you are done reviewing the plot, secure your MV and proceed\
     to the next step! 
@@ -215,13 +213,22 @@ def secure_plot():
         # Count down from 3 to 1 and then display the secure message
         for i in range(3, 0, -1):
             time.sleep(1.5)
-            st.markdown(f"""
-            <div style="font-size: 30px;">
-            <h5 style="text-align: center">
-            {i}
-            </h5>
-            </div>
-            """, unsafe_allow_html=True)
+            if i == 3:
+                st.markdown(f"""
+                <div style="font-size: 30px;">
+                <h5 style="text-align: center">
+                Locking down in {i}
+                </h5>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div style="font-size: 30px;">
+                <h5 style="text-align: center">
+                {i}
+                </h5>
+                </div>
+                """, unsafe_allow_html=True)
         st.balloons()
         switch_page("Voiceprint Demo")
     create_new_mv_button = st.button("Create a new Melodic Voiceprint",

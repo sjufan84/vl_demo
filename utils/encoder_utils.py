@@ -1,193 +1,88 @@
 """ Utility functions for encoding audio files using the Encodec model. """
 import os
 import logging
-from io import BytesIO
+import torch
 from transformers import EncodecModel, AutoProcessor
-import pandas as pd
-from sklearn.decomposition import PCA
-import librosa
+import numpy as np
+import pinecone
+from dotenv import load_dotenv
+from utils.model_utils import get_similar_audio_clips
+
+# Load environment variables
+load_dotenv()
+
+# Initialize Pinecone
+pinecone.init(api_key=os.getenv("PINECONE_KEY"), environment=os.getenv("PINECONE_ENV"))
+index = pinecone.Index(index_name="musicgen")
 
 
 # If you want to enable logging
 logging.basicConfig(level=logging.INFO)
 
-def chunk_and_encode_encodec(audio_file_path=None, audio_bytes=None,
-                            model_name="facebook/encodec_24khz",
-                            processor_name="facebook/encodec_24khz"):
-    """Chunk and encode an audio file or bytes using the Encodec model."""
-    # Initialize the Encodec model and processor
-    model = EncodecModel.from_pretrained(model_name)
-    processor = AutoProcessor.from_pretrained(processor_name)
-    
-    # Determine the source of the audio: file path or bytes
-    if audio_file_path:
-        audio_data, sr = librosa.load(audio_file_path, mono=True, sr=24000)
-    elif audio_bytes:
-        audio_data, sr = librosa.load(BytesIO(audio_bytes), mono=True, sr=24000)
-    else:
-        raise ValueError("Either audio_file_path or audio_bytes must be provided.")
-    
+def chunk_audio(audio_array:np.array=None, sr:int=32000):
+    """Chunk the audio file into 15 second chunks"""
     # Check for empty audio data
-    if not audio_data.size:
+    if not audio_array.size:
         raise ValueError("Empty audio file")
-
+    audio_chunks = []
     # Process and chunk the audio file
-    chunk_size = int(sr * 15)  # 15 seconds, adjust as needed
-    n_chunks = len(audio_data) // chunk_size
-    # If n_chunks <= 1, pad the audio data
-    if n_chunks <= 1:
-        n_chunks = 1
-        audio_data = librosa.util.pad_center(data=audio_data, size=chunk_size)
+    if len(audio_array) < 15 * sr:
+        # Pad the audio data with zeros
+        audio_chunks = [np.pad(audio_array, (0, 15 * sr - len(audio_array)), "constant")]
+    else:
+        audio_chunks = np.array_split(audio_array, len(audio_array) // (15 * sr))
+        # If there are any chunks that are less than 15 seconds pad them with zeros
+        if len(audio_chunks[-1]) < 15 * sr:
+            audio_chunks[-1] = np.pad(audio_chunks[-1],
+            (0, 15 * sr - len(audio_chunks[-1])), "constant")
 
-    encoded_chunks = [None] * n_chunks
-    
-    for i in range(0, len(audio_data), chunk_size):
-        chunk_index = i // chunk_size
-        logging.info(f"Processing chunk {chunk_index + 1}/{n_chunks}")
+    return audio_chunks
 
-        chunk = audio_data[i:i + chunk_size]  # This line should come before you use 'chunk'
-        
-        print(f"Chunk shape before transposing: {chunk.shape}")  # Debugging line
-
-        # If the channels are not in the first dimension, you can transpose
-        chunk = chunk.T
-
-        print("Chunk shape after transposing:", chunk.shape)  # Debugging line
-
-        # Your existing code for processing the chunk
-        inputs = processor(raw_audio=chunk, sampling_rate=sr, return_tensors="pt")
-
+def encode_audio_chunks(audio:np.array=None, sr:int = 32000, model="facebook/encodec_32khz",
+                        processor="facebook/encodec_32khz"):
+    """Encode the audio chunks using the Encodec model """ 
+    # Load the model
+    model = EncodecModel.from_pretrained(model)
+    # Load the processor
+    processor = AutoProcessor.from_pretrained(processor)
+    audio_chunks = chunk_audio(audio, sr)
+    encoded_audio_chunks = []
+    for chunk in audio_chunks:
+        inputs = processor(raw_audio=chunk,
+        sampling_rate=processor.sampling_rate, return_tensors="pt")
         encoder_outputs = model.encode(inputs["input_values"], inputs["padding_mask"])
-        
-        # encoded_chunks[i // chunk_size] = encoder_outputs.audio_codes
+        encoded_audio_chunks.append(encoder_outputs.audio_codes.flatten().cpu().numpy())
 
-        if chunk_index < n_chunks:
-            encoded_chunks[chunk_index] = encoder_outputs.audio_codes
-        else:
-            # Handle partial chunk
-            logging.warning(f"Partial chunk detected. Ignored.")
-
-    return encoded_chunks
-
-def encode_pca_file_folder(folder_path):
-    """ Encode all audio files in a folder using PCA."""
-    # Initialize a list to collect all encoded chunks
-    all_encoded_chunks = []
+    # Ensure that the length of the encoded audio chunks is 3000.
+    # If it is not, pad it with zeros or slice it to 3000
+    if len(encoded_audio_chunks[-1]) < 3000:
+        encoded_audio_chunks[-1] = np.pad(encoded_audio_chunks[-1],
+        (0, 3000 - len(encoded_audio_chunks[-1])), "constant")
+    elif len(encoded_audio_chunks[-1]) > 3000:
+        encoded_audio_chunks[-1] = encoded_audio_chunks[-1][:3000]
     
-    # Initialize a DataFrame to hold all the data
-    df = pd.DataFrame()
+    similar_audio = get_similar_audio_clips(encoded_audio_chunks[-1])
+    codes = similar_audio["matches"][0]["values"]
+    # Convert the codes to a numpy array
+    codes_np = np.array(codes)
+    # Reshape the array to the correct shape
+    original_shape = (1, 1, 4, 750)
+    retrieved_audio_codes = np.reshape(codes_np, original_shape)
+
+    # Convert the retrieved audio codes to a tensor
+    codes_int = torch.tensor(retrieved_audio_codes).int()
+
+    # Step 4: Decode
+    decoded_audio = model.decode(
+        audio_codes=codes_int,
+        audio_scales=[None]  # Assuming this tensor is available from your encoding step
+        # Assuming this tensor is available from your encoding step
+    )  # Assuming you are interested in `audio_values`
+
+    # Convert the tensor to a numpy array
+    decoded = decoded_audio[0].cpu().detach().numpy()
+
+    # Flatten the numpy array to 2d
+    decoded = decoded.reshape(-1)
     
-    # Set the audio files to be all files in the folder
-    audio_files = os.listdir(folder_path)
-    
-    # First Pass: Collect all encoded chunks
-    for audio_file in audio_files:
-        full_path = os.path.join(folder_path, audio_file)
-        try:
-            # Extract and encode audio chunks
-            encoded_chunks = chunk_and_encode_encodec(full_path)
-            all_encoded_chunks.extend(encoded_chunks)
-            
-        except Exception as e:
-            print(f"Failed to process {audio_file}: {e}")
-    
-    # Fit PCA model
-    pca = PCA(n_components=1536)  # Adjust as needed
-    pca.fit(all_encoded_chunks)
-    
-    # Second Pass: Apply PCA and collect data
-    for audio_file in audio_files:
-        full_path = os.path.join(folder_path, audio_file)
-        try:
-            # Extract and encode audio chunks
-            encoded_chunks = chunk_and_encode_encodec(full_path)
-            
-            # Apply PCA to each chunk
-            reduced_chunks = [pca.transform(chunk) for chunk in encoded_chunks]
-            
-            # Create a DataFrame for this audio file
-            audio_df = pd.DataFrame({
-                'segment': range(len(reduced_chunks)),
-                'reduced_audio': reduced_chunks,
-                'song': [audio_file]*len(reduced_chunks)
-            })
-            
-            # Append to the master DataFrame
-            df = pd.concat([df, audio_df], ignore_index=True)
-            
-            print(f"Successfully processed {audio_file}")
-            
-        except Exception as e:
-            print(f"Failed to process {audio_file}: {e}")
-
-    return df
-
-def encode_and_upsert(folder_path):
-    """ Encode all audio files in a folder and upsert to a vector database."""
-    # Initialize a DataFrame to hold all the data
-    df = pd.DataFrame()
-
-    # Set the audio files to be all files in the folder
-    audio_files = os.listdir(folder_path)
-
-    # Expected dimensionality (replace this with the actual dimensionality you expect)
-    expected_dim = 2250
-
-    # Iterate through each audio file and apply the function
-    for audio_file in audio_files:
-        full_path = os.path.join(folder_path, audio_file)
-        try:
-            # Extract and encode audio chunks
-            encoded_chunks = chunk_and_encode_encodec(full_path)  # Assume this function returns encoded chunks
-                        
-            if encoded_chunks is None or not isinstance(encoded_chunks, (list, tuple)):
-                raise ValueError(f"Invalid or None value returned for encoded_chunks for {audio_file}")
-            
-            # Flatten and validate each chunk
-            flat_chunks = []
-            for chunk in encoded_chunks:
-                flat_chunk = chunk.flatten().cpu().numpy()
-                
-                if flat_chunk.size != expected_dim:
-                    logging.warning(f"Skipping chunk due to unexpected dimensionality: {flat_chunk.size}")
-                    continue
-                
-                flat_chunks.append(flat_chunk)
-
-            # Create a DataFrame for this audio file
-            audio_df = pd.DataFrame({
-                'segment': range(len(flat_chunks)),
-                'encoded_audio': flat_chunks,
-                'song': [audio_file] * len(flat_chunks)
-            })
-
-            # Append to the master DataFrame
-            df = pd.concat([df, audio_df], ignore_index=True)
-            
-            print(f"Successfully processed {audio_file}")
-
-        except Exception as e:
-            print(f"Failed to process {audio_file}: {e}")
-
-    # At this point, `df` contains the flattened, same-dimensionality encoded audio for each segment
-    # You can now upsert this into your vector database
-
-    return df
-
-def flatten_chunks(encoded_chunks):
-    """ Encode all audio files in a folder and upsert to a vector database."""
-    # Expected dimensionality (replace this with the actual dimensionality you expect)
-    expected_dim = 2250
-
-    # Flatten and validate each chunk
-    flat_chunks = []
-    for chunk in encoded_chunks:
-        flat_chunk = chunk.flatten().cpu().numpy()
-        
-        if flat_chunk.size != expected_dim:
-            logging.warning(f"Skipping chunk due to unexpected dimensionality: {flat_chunk.size}")
-            continue
-        
-        flat_chunks.append(flat_chunk)
-    
-    return flat_chunks
+    return decoded

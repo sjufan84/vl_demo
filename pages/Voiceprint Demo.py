@@ -16,13 +16,14 @@ def voiceprint_visual():
                 for trackability, security, and peace of mind.')
     st.text("")
     # Create buttons for the various use cases
-    nft_button = st.button("Explore NFTs", type = 'primary', use_container_width=True)
+    #nft_button = st.button("Explore NFTs", type = 'primary', use_container_width=True)
+    test_out_clone_button = st.button("Test Out Cloning for Yourself!", type = 'primary', use_container_width=True)
     reverse_audio_button = st.button("Reverse Audio Search", type = 'primary', use_container_width=True)
     co_writer_button = st.button("Co-writer", type = 'primary', use_container_width=True)
 
     # If the user clicks the "Issue NFT" button, switch to the NFT Demo page.
-    if nft_button:
-        switch_page("Generate NFT")
+    #if nft_button:
+    #    switch_page("Generate NFT")
     if reverse_audio_button:
         switch_page("Reverse Audio")
     if co_writer_button:
