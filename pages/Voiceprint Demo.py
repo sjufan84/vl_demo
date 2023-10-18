@@ -6,7 +6,7 @@ from streamlit_extras.switch_page_button import switch_page
 def voiceprint_visual():
     """ Voiceprint Homepage """
     st.markdown("""<div class="text-container">
-    <h4 style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 25px; font-weight: 550;">
+    <h4 style="font-family: 'Montserrat', sans-serif; color: #3D82FF; font-size: 25px; font-weight: 550;">
                 So Now What?</h4>
     </div>""", unsafe_allow_html=True)
     st.markdown('##### Now that we have our voiceprint secured,\
@@ -17,9 +17,11 @@ def voiceprint_visual():
     st.text("")
     # Create buttons for the various use cases
     #nft_button = st.button("Explore NFTs", type = 'primary', use_container_width=True)
-    test_out_clone_button = st.button("Test Out Cloning for Yourself!", type = 'primary', use_container_width=True)
     reverse_audio_button = st.button("Reverse Audio Search", type = 'primary', use_container_width=True)
     co_writer_button = st.button("Co-writer", type = 'primary', use_container_width=True)
+    st.text("")
+    st.markdown("Curious about the cloning process? [Test it out for yourself!](https://huggingface.co/spaces/dthomas84/RVC_RULE1)")
+
 
     # If the user clicks the "Issue NFT" button, switch to the NFT Demo page.
     #if nft_button:
