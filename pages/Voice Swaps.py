@@ -401,13 +401,6 @@ def home():
                 </div>""", unsafe_allow_html=True)
             
     get_3d_chart_fcar()
-    # Create a button to navigate to hugging face
-    st.markdown("""
-                <div class="text-container">
-                <a style="font-family: 'Montserrat', sans-serif; color:
-                #3D82FF; font-size: 25px; font-weight: 550;\
-                text-align: center;" href="https://huggingface.co/spaces/dthomas84/RVC_RULE1"
-                target="_blank">Try it Yourself</a>
-                </div>""", unsafe_allow_html=True)
+
 if __name__ == "__main__":
     home()
