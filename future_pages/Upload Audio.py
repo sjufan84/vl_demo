@@ -7,46 +7,127 @@ import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 
 
-def upload_audio():
-    """ Upload audio from the user's local machine. """
-    # Display the upload mechanism
-    st.warning('**Upload vocal recordings below to visualize Melodic Voiceprint features.\
-               These should be as high quality recordings as possible, vocals only, and ideally\
-                shorter than 10 seconds.  Longer clips can be accomodated, but will take longer to\
-                process.  Please ensure that the recordings are in .wav or .flac format.  If you would like\
-                to experiment with recording audio, you may choose to do so below.**')
-    uploaded_files = st.file_uploader("Upload recordings", type=["wav", "flac"], accept_multiple_files=True)
-    if uploaded_files:
-        upload_files_button = st.button("Upload File(s)", 
-                                        type='primary', use_container_width=True)
-        if upload_files_button:
-            # Append each uploaded file to the list
-            for uploaded_file in uploaded_files:
-                # Save the file to the session state
-                with open(uploaded_file.name, 'wb') as f:
-                    f.write(uploaded_file.getbuffer())
-                st.session_state.audio_files[uploaded_file.name] = uploaded_file
-            # Display a success message
-            st.success('**File(s) uploaded successfully!  You may now visualize the data\
-                       by clicking the button below**')
-                
-
-    st.markdown('---')
-    # Display buttons depending on whether or not the files were uploaded
-    record_audio_button = st.button("Record Audio", type='primary', use_container_width=True)
-    if record_audio_button:
-        switch_page("Record Audio")
-    visualize_data_button = st.button("Visualize Data", type='primary', use_container_width=True)
-    if visualize_data_button:
-        # Check to make sure that the user has uploaded at least one file
-        if st.session_state.audio_files:
-            st.session_state.visual_page = "has_audio"
-            switch_page("Visualize Data")
-        else:
-            st.warning('**Please upload at least one audio file before proceeding.**')
+st.text("")
+    st.text("")
+    # Create two columns, one for uploading, and one for recording
+    col1, col2 = st.columns(2, gap="large")
+    with col1:
+        mic_image = Image.open('./resources/studio_mic1_small.png')
+        st.image(mic_image, use_column_width=True)
+        st.text("")
+        st.text("")
+        st.text("")
+        st.text("")
         
+        col3, col4, col5 = st.columns([0.5, 1.5, 1])
+        with col3:
+            st.text("")
+        with col4:
+            st.markdown("Click to record: :green[Stopped] / \
+                        :red[Recording]")
+        with col5:
+            recorded_audio_bytes = audio_recorder(text="", icon_name="record-vinyl",
+            sample_rate=16000, neutral_color = "green", icon_size="3x")
+        st.text("")
+        st.text("")
+        st.text("")
+        if recorded_audio_bytes:
+            st.markdown("""
+                        <p style="color:#EDC480; font-size: 23px; text-align: center;">
+                        Recorded audio clip:
+                        </p>
+                        """, unsafe_allow_html=True)
+            st.audio(recorded_audio_bytes)
+            recorded_audio = librosa.load(io.BytesIO(recorded_audio_bytes))
+            # Using soundfile to read the audio file into a NumPy array
+            st.session_state.audio_bytes_list.append(recorded_audio)
 
+    with col2:
+        upload_image = Image.open('./resources/record_upload1_small.png')
+        st.image(upload_image, use_column_width=True)
+        st.text("")
+        uploaded_file = st.file_uploader("Upload an Audio File", type=['wav'],
+                                        key='upload_audio')
+        if uploaded_file:
+            with io.BytesIO(uploaded_file.getbuffer()) as f:
+                # Using soundfile to read the audio file into a NumPy array
+                audio = librosa.load(f)
+                if audio:
+                    st.audio(audio[0], sample_rate=audio[1])
+                st.session_state.audio_bytes_list.append(audio)
+
+    st.markdown("""
+                **Once you have uploaded and / or recorded your audio,\
+                click below to generate your Melodic Voiceprint.**
+                """)
     
+    generate_mv_button = st.button("Generate Melodic Voiceprint",
+    type='primary', use_container_width=True)
+    if generate_mv_button:
+        if len(st.session_state.audio_bytes_list) == 0:
+            st.error("Please upload or record an audio clip.")
+        else:# Generate the 3D plot
+            with st.spinner("Generating your Melodic Voiceprint..."):
+                st.session_state.fig = generate_3d_plot()
+                # Switch to the plot page
+                st.session_state.secure_page = "secure_plot"
+                st.experimental_rerun()
 
-if st.session_state.upload_audio_page == 'upload_audio':
-    upload_audio()
+def secure_plot():
+    """ Display the user generated Melodic Voiceprint """
+    st.markdown("""
+    <div style="font-size: 15px">
+    <h5> Congratulations!  You have successfully\
+    generated your Melodic Voiceprint and it is ready\
+    to be secured.  Check out the 3d representation of your\
+    Melodic Voiceprint below.  Once we have your MV, we can\
+    store the trained model in a secure location so that only you\
+    can access it and license it out.</h5>
+    <h5>
+    When you are done reviewing the plot, secure your MV and proceed\
+    to the next step! 
+    </h5>
+    </div>
+    """, unsafe_allow_html=True)
+    st.markdown("---")
+    # Display the 3D plot
+    st.plotly_chart(st.session_state.fig, use_container_width=True)
+
+    secure_button = st.button("Secure Your Voiceprint", type='primary',
+    use_container_width=True)
+    if secure_button:
+        # Count down from 3 to 1 and then display the secure message
+        for i in range(3, 0, -1):
+            time.sleep(1.5)
+            if i == 3:
+                st.markdown(f"""
+                <div style="font-size: 30px;">
+                <h5 style="text-align: center">
+                Locking down in {i}
+                </h5>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div style="font-size: 30px;">
+                <h5 style="text-align: center">
+                {i}
+                </h5>
+                </div>
+                """, unsafe_allow_html=True)
+        st.balloons()
+        switch_page("Voiceprint Demo")
+    create_new_mv_button = st.button("Create a new Melodic Voiceprint",
+    type='primary', use_container_width=True)
+    if create_new_mv_button:
+        st.session_state.audio_bytes_list = []
+        st.session_state.secure_page = "secure_home"
+        st.experimental_rerun()
+
+            
+
+            
+if st.session_state.secure_page == "secure_home":
+    secure_home()
+elif st.session_state.secure_page == "secure_plot":
+    secure_plot()

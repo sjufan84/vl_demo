@@ -2,7 +2,6 @@
 import os
 from typing import Union
 import pandas as pd
-import requests
 import numpy as np
 import pinecone
 from langchain.document_loaders import DataFrameLoader

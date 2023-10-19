@@ -11,7 +11,7 @@ from scipy.spatial import distance
 from scipy.spatial.distance import cosine
 from utils.audio_processing import extract_features, read_audio
 
-st.set_page_config(page_title="Voice Lockr Demo", page_icon=":microphone:",
+st.set_page_config(page_title="Artist Vault Demo", page_icon=":microphone:",
                 initial_sidebar_state="collapsed", layout="wide")
 
 
@@ -383,6 +383,14 @@ def home():
         of data we trained Joel and Jenny's models with, and with some fine-tuning and a little more
         training time we could produce whole songs or even albums that could pass for an actual artist's.
         </h3>
+        <br>
+        <h3 id='body'style="font-family: 'Montserrat', sans-serif; color: #ecebe4;
+        font-size: 17px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 3s;
+        -webkit-animation: fadeIn ease 5s; -moz-animation: fadeIn ease 8s; -o-animation:
+        fadeIn ease 8s; -ms-animation: fadeIn ease 8s;">In the 3d chart below, we have mapped out the high level
+            features of each artist's vocals.  You will notice that for each point in the song, the artists' voices
+            cluster together, but are not identical.  It is this difference that distinguishes each voiceprint
+            and allows for security measures to be taken to protect the artist and their autheticity.</h3>
     </div>
     <style>
         @keyframes fadeIn {{

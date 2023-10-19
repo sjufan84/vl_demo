@@ -1,240 +1,135 @@
 """ This file contains the code for the co-writer page.  This page allows
 the user to chat with Luke Combs and receive guidance on their song writing.
 This can be in the form of text or audio."""
-import logging
-from io import BytesIO
-import wave
-import base64
 import os
-import librosa
-import numpy as np
+import asyncio
 import openai
-from openai.error import APIConnectionError
 import streamlit as st
-from utils.model_utils import (
-    get_inputs_from_llm, get_audio_sample
-)
-from utils.encoder_utils import encode_audio_chunks
+import torchaudio
+from dotenv import load_dotenv
+from utils.model_utils import get_inputs_from_llm
+from utils.musicgen import get_music
 
-if "output" not in st.session_state:
-    st.session_state.output = None
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-if "similar_clips" not in st.session_state:
-    st.session_state.similar_clips = []
-if "current_audio_clip" not in st.session_state:
-    st.session_state.current_audio_clip = None
-if "original_audio_clip" not in st.session_state:
-    st.session_state.original_audio_clip = None
-if "current_audio_string" not in st.session_state:
-    st.session_state.current_audio_string = None
-if "inputs" not in st.session_state:
-    st.session_state.inputs = None
-if "input_audio" not in st.session_state:
-    st.session_state.input_audio = None
+# Load environment variables
+load_dotenv()
 
-if not st.session_state.chat_history:
-    st.success("**Welcome to co-writer!  There are two options for the chat:**\
-                The first option is a standard text chat back and forth where\
-                Luke can help you brainstorm ideas for your song.  The second\
-                allows you to request that Luke help you compose an audio clip\
-                based on your chat history and ideas generated.  You may switch\
-                back and forth at any time to test them out!  Check out the sidebar\
-                to make your selection.")
-    st.markdown("---")
-    with st.chat_message("assistant", avatar="🎸"):
-        st.markdown("Hello, friend.  I'm excited to get our co-writing\
-                    session started!  Why don't you tell me a little bit\
-                    about the song you are working on?")
+# Set OpenAI API key from Streamlit secrets
+openai.api_key = os.getenv("OPENAI_KEY2")
+openai.organization = os.getenv("OPENAI_ORG2")
 
-for message in st.session_state.chat_history:
-    if message["role"] == "user":
+# Create a function to initialize the session state variables
+def init_cowriter_session_variables():
+    """ Initialize session state variables """
+    # Initialize session state variables
+    session_vars = ["messages", "openai_model", "chat_state", "original_clip", "current_clip"
+    ]
+    default_values = [None, "gpt-4-0613", "text", None, None
+    ]
+    for var, default_value in zip(session_vars, default_values):
+        if var not in st.session_state:
+            st.session_state[var] = default_value
+
+# Initialize session state variables
+init_cowriter_session_variables()    
+
+async def chat_main():
+    """ Main function for the chat page """
+    new_prompt = [{"role": "system", "content" : f"""
+    You are Dave Matthews, the famous musician and songwriter, engaged in a
+    co-writing session with the user who could be a fellow musician or fan.  The goal
+    of the session is to help the user feel as though you are right alongside them,
+    helping them craft their song with Dave's style and personality.  Do not break character.
+    Your conversation so far is {st.session_state.messages}. 
+    """}]
+
+    # Set up the sidebar
+    st.session_state.chat_state = st.sidebar.radio("Chat Mode", ["text", "audio"])
+    st.text("")
+    if st.session_state.chat_state == "audio":
+        # Create a file uploader for the user to be able to upload their own audio
+        uploaded_audio = st.sidebar.file_uploader("Upload an audio clip", type=["wav", "mp3"])
+        if uploaded_audio:
+            st.session_state.original_clip = torchaudio.load(uploaded_audio.name, sr=32000)
+    if st.session_state.original_clip:
+        st.sidebar.markdown("Original Audio Clip:")
+        st.sidebar.audio(st.session_state.original_clip[0], format="audio/wav", start_time=0)
+    if not st.session_state.current_clip and st.session_state.original_clip:
+        st.session_state.current_clip = st.session_state.original_clip
+    if st.session_state.current_clip and st.session_state.current_clip != st.session_state.original_clip:
+        st.markdown("Current Audio Clip:")
+        st.sidebar.audio(st.session_state.current_clip, format="audio/wav", start_time=0)
+    if not st.session_state.messages:
+        st.session_state.messages = new_prompt
+
+    st.markdown(f"""
+    <div style='display: flex; justify-content: center; align-items: center; flex-direction: column;'>
+        <h4 id='headline' style="font-family: 'Montserrat', sans-serif; color: #3D82FF;
+        font-size: 26px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 3s;
+        -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
+        fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">Welcome to Co-writer!</h4>
+    <br>
+        <h3 id='body'style="font-family: 'Montserrat', sans-serif; color: #ecebe4;
+        font-size: 17px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 5s;
+        -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
+        fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">There are two primary ways to engage
+        with co-writer.  One is to carry on a text-based back and forth with the artist who
+        will help guide you through the song writing process.  The other is to engage with
+        audio as well by uploading your own audio clip.  The artist will then respond to you
+        not only with text, but also a completely new audio clip based on your conversation
+        and the clip you uploaded.  You can toggle back and forth on the sidebar.  Have fun!
+        </h3>
+    </div>
+    <style>
+        @keyframes fadeIn {{
+            from {{
+                opacity: 0;
+            }}
+            to {{
+                opacity: 1;
+            }}
+        }}
+    </style>
+    """, unsafe_allow_html=True)
+    st.markdown("""<div class="text-container;" style="animation: fadeIn ease 3s;
+                -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s;
+                -o-animation: fadeIn ease 3s; -ms-animation:
+                fadeIn ease 3s;">
+                </div>""", unsafe_allow_html=True)
+    st.text("")
+    # Display chat messages from history on app rerun
+    for message in st.session_state.messages:
+        if message["role"] == "assistant":
+            with st.chat_message(message["role"], avatar="🎸"):
+                st.markdown(message["content"])
+        elif message["role"] == "user":
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+    # Accept user input
+    if prompt := st.chat_input("Hey friend, let's start writing!"):
+        # Add user message to chat historys
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        # Display user message in chat message container
         with st.chat_message("user"):
-            st.markdown(message["content"])
-    else:
+            st.markdown(prompt)
+        # Load the prophet image for the avatar
+        # Display assistant response in chat message container
         with st.chat_message("assistant", avatar="🎸"):
-            st.markdown(message["content"])
+            message_placeholder = st.empty()
+            full_response = ""
+        for response in openai.ChatCompletion.create(
+            model=st.session_state["openai_model"],
+            messages= [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+            stream=True,
+            temperature=1,
+            max_tokens=200,
+            ):
+            full_response += response.choices[0].delta.get("content", "")
+            message_placeholder.markdown(full_response + "▌")
+        message_placeholder.markdown(full_response)
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
+        if st.session_state.chat_state == "audio":
+            with st.spinner("Composing your audio..."):
+                st.session_state.current_clip = await get_music(st.session_state.current_clip, get_inputs_from_llm())
 
-# @TODO Create an "agent" LLM that can be used to pick up on the user's
-# intent and then choose the appropriate model to respond with, i.e.
-# music gen, encode / decode, or standard chat
-response_type = st.sidebar.radio("Choose your response type",
-                                ("Standard Chat", "Musical Chat"))
-if st.session_state.current_audio_clip:
-    st.write("Current audio clip: ")
-    st.audio(np.array(st.session_state.current_audio_clip), sample_rate=32000)
-    st.session_state.use_audio = st.sidebar.radio("Use current audio clip as input?", ("Yes", "No"))
-
-def get_text_response(artist:str = "Dave"):
-    """ Get a response from the artist in the form of text."""
-    openai.api_key = os.getenv("OPENAI_KEY2")
-    openai.organization = os.getenv("OPENAI_ORG2")
-    if prompt := st.chat_input(f"Your message for {artist}:", key="chat_input1"):
-        with st.spinner(f"{artist} is writing..."):
-            st.session_state.chat_history.append({"role": "user", "content": prompt})
-            with st.chat_message("user"):
-                st.markdown(prompt)
-            with st.chat_message("assistant", avatar = "🎸"):
-                messages = [
-                    {
-                        "role": "system", "content": f"""You are Dave Matthews, the famous artist,
-                        engaging in a co-writing session with a fellow musician the goal is to make
-                        it as much like an actual co-writing session with Dave.  You should try to
-                        take on his personality when answering, and do not break character.  Don't start
-                        each response with the same phrasing.  Respond as you are in the room with the
-                        musician. Their latest question is {prompt} and your chat history
-                        is {st.session_state.chat_history}. Continually gauge the tone of the question,
-                        and if based on the chat history as well you think the user is asking for
-                        a song lyric, feel free to respond with one.  The goal is to be as
-                        engaging, empathetic, helpful and "Dave like" as you can be.  Keep the session going
-                        until it is clear the user is ready to end the chat.
-                        """
-                    },
-                    {
-                        "role": "user", "content": f"""Please answer my {prompt} about 
-                        song writing."""
-                    },
-                ]
-                message_placeholder = st.empty()
-                full_response = ""
-                # Set list of models to iterate through
-                models = ["gpt-4-0613", "gpt-4", "gpt-3.5-turbo-16k-0613","gpt-3.5-turbo-16k"]
-                for model in models:
-                    try:
-                        for response in openai.ChatCompletion.create(
-                            model=model,
-                            messages = messages,
-                            max_tokens=300,
-                            frequency_penalty=0.75,
-                            presence_penalty=0.75,
-                            temperature=0.7,
-                            n=1,
-                            stream=True
-                        ):
-                            full_response += response.choices[0].delta.get("content", "")
-                            message_placeholder.markdown(full_response + "▌")
-                            if response.choices[0].delta.get("stop"):
-                                break
-                        break
-                    except APIConnectionError as e:
-                        logging.log(logging.ERROR, e)
-                        continue
-            message_placeholder.markdown(full_response)
-        st.session_state.chat_history.append({"role": "assistant", "content": full_response})
-  
-def get_music_response():
-    """ Get a response from the artist in the form of an audio clip. """
-    # Audio File Upload
-    uploaded_file = st.sidebar.file_uploader("Upload your audio file", type=["mp3", "wav"])
-    if st.session_state.inputs:
-        st.write(st.session_state.inputs)
-    #if st.session_state.input_audio:
-    #    st.write(st.session_state.input_audio[:100])
-    #st.write(st.session_state.output["audio_data"])
-
-
-    if uploaded_file:
-        st.session_state.original_audio_clip = uploaded_file.read()
-        audio_data = uploaded_file.getvalue()
-        audio, sr = librosa.load(BytesIO(audio_data), sr=32000)
-        st.audio(st.session_state.original_audio_clip, format="audio/mp3", start_time=0)
-        st.write(st.session_state.output)
-       
-        
-        if prompt := st.chat_input("Your message for Dave:", key="chat_input_music"):
-            with st.spinner("Dave is composing... This will take a minute"):
-                st.session_state.chat_history.append({"role": "user", "content": prompt})
-                with st.chat_message("user"):
-                    st.markdown(prompt)
-                with st.chat_message("assistant", avatar = "🎸"):
-                    message_placeholder = st.empty()
-                    full_response = ""
-                    # @TODO Specially train a model to get the llm inputs
-                    inputs = get_inputs_from_llm()
-                    st.session_state.inputs = inputs
-                    input_audio = encode_audio_chunks(audio)
-                    st.session_state.input_audio = input_audio
-                    output = get_audio_sample(inputs, input_audio)
-                    st.session_state.output = output
-                        #st.markdown("**Current audio sample:**")
-                        #message_placeholder.audio(np.array(output), sample_rate=32000)
-                        #st.session_state.current_audio_clip = output
-                        
-                        # Step 1: Convert NumPy array to byte stream
-                        #byte_stream = BytesIO()
-
-                        # Prepare wave file settings
-                        #n_channels = 1
-                        #sampwidth = 2  # Number of bytes
-                        #framerate = 32000
-                        #n_frames = len(output)
-
-                        #with wave.open(byte_stream, 'wb') as wav_file:
-                        #    wav_file.setnchannels(n_channels)
-                        #    wav_file.setsampwidth(sampwidth)
-                        #    wav_file.setframerate(framerate)
-                        #    wav_file.writeframes(np.array(output).astype(np.int16).tobytes())
-
-                        # Step 2: Base64 encode the byte stream
-                        #byte_stream.seek(0)
-                        #base64_audio = base64.b64encode(byte_stream.read()).decode('utf-8')
-                        #st.session_state.current_audio_string = base64_audio
-
-                st.session_state.chat_history.append({"role": "assistant",
-                                                    "content": full_response})
-                
-    else:
-         if prompt := st.chat_input("Your message for Dave:", key="chat_input_music"):
-            with st.spinner("Dave is composing... This will take a minute"):
-                st.session_state.chat_history.append({"role": "user", "content": prompt})
-                with st.chat_message("user"):
-                    st.markdown(prompt)
-                with st.chat_message("assistant", avatar = "🎸"):
-                    message_placeholder = st.empty()
-                    full_response = ""
-                    inputs = get_inputs_from_llm()
-                    if st.session_state.current_audio_string is not None and st.session_state.use_audio == "Yes":
-                        audio = st.session_state.current_audio_string
-                    else:
-                        audio = None
-                    output = get_audio_sample(inputs, audio)
-                    if output:
-                        st.markdown("**Current audio sample:**")
-                        message_placeholder.audio(np.array(output), sample_rate=32000)
-                        st.session_state.current_audio_clip = output
-                        # Step 1: Convert NumPy array to byte stream
-                        byte_stream = BytesIO()
-
-                        # Prepare wave file settings
-                        n_channels = 1
-                        sampwidth = 2  # Number of bytes
-                        framerate = 32000
-                        n_frames = len(output)
-
-                        with wave.open(byte_stream, 'wb') as wav_file:
-                            wav_file.setnchannels(n_channels)
-                            wav_file.setsampwidth(sampwidth)
-                            wav_file.setframerate(framerate)
-                            wav_file.writeframes(np.array(output).astype(np.int16).tobytes())
-
-
-                        # Step 2: Base64 encode the byte stream
-                        byte_stream.seek(0)
-                        base64_audio = base64.b64encode(byte_stream.read()).decode('utf-8')
-                        st.session_state.current_audio_string = base64_audio
-
-
-                st.session_state.chat_history.append({"role": "assistant",
-                                                    "content": full_response})
-
-# Create a button to reset the chat history
-reset_button = st.sidebar.button("Reset Chat History", type="primary", use_container_width=True)
-if reset_button:
-    st.session_state.chat_history = []
-    st.experimental_rerun()
-
-if response_type == "Standard Chat":
-    get_text_response()
-else:
-    get_music_response()
-           
+asyncio.run(chat_main())

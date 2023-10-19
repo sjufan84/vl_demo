@@ -6,7 +6,6 @@ import time
 import librosa
 import numpy as np
 import streamlit as st
-from PIL import Image
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -17,232 +16,90 @@ from utils.audio_processing import extract_features
 
 # Set the page configuration
 st.set_page_config(
-    page_title="Melodic Voiceprint Demo",
+    page_title="Reverse Audio Search",
     page_icon="🎤",
     initial_sidebar_state="collapsed",
 )
 
-
-if "audio_bytes_list" not in st.session_state:
-    st.session_state["audio_bytes_list"] = []
-if "fig" not in st.session_state:
-    st.session_state["fig"] = None
-if "secure_page" not in st.session_state:
-    st.session_state["secure_page"] = "secure_home"
-
-def read_audio(audio_bytes: bytes) -> np.ndarray:
-    """ Read the audio bytes into a NumPy array """
-    with io.BytesIO(audio_bytes) as f:
-        audio_array = librosa.load(f)
-    return audio_array[0] # Return the audio array
-
-def record_audio():
-    """ Capture audio from the user's microphone. """
-    st.title("Record Audio")
-    audio_bytes = audio_recorder(text="Click to record")
-    st.audio(audio_bytes)
-
-def generate_3d_plot():
-    """ Generate a 3D plot of the Melodic Voiceprint for the artist """
-    # If there are 2 audio clips, concatenate them
-    total_signal = None
-    if len(st.session_state.audio_bytes_list) == 2:
-        # Convert the tuples to lists
-        st.session_state.audio_bytes_list[0] = list(st.session_state.audio_bytes_list[0])
-        st.session_state.audio_bytes_list[1] = list(st.session_state.audio_bytes_list[1])
-        # Flatten the audio clips if necessary 
-        for i in range(2):
-            if st.session_state.audio_bytes_list[i][0].ndim > 1:
-                st.session_state.audio_bytes_list[i][0] = np.mean(st.session_state.audio_bytes_list[i][0], axis=1)
-        total_signal = np.concatenate([st.session_state.audio_bytes_list[0][0],
-                                    st.session_state.audio_bytes_list[1][0]])
-    else:
-        total_signal = st.session_state.audio_bytes_list[0][0]
-
-    # Extract the features from the audio clip
-    features = extract_features(total_signal)
- 
-    # Transpose to have features as columns
-    signal_features = features.T
-
-    # Flatten the features to 2d if necessary
-    if signal_features.ndim > 2:
-        signal_features = signal_features.reshape(signal_features.shape[0], -1)
-
-    # Create a DataFrame from the features
-    df = pd.DataFrame(signal_features)
-    # Standardize the data before applying PCA and KMeans
-    scaler = StandardScaler()
-    scaled_df = scaler.fit_transform(df)
-
-    # Perform PCA to capture 95% of the variance
-    pca = PCA(n_components=3)
-    pca_df = pca.fit_transform(scaled_df)
-
-    # Create a DataFrame for plotting
-    plot_df = pd.DataFrame(pca_df, columns=['PC1', 'PC2', 'PC3'])
-    
-    # Standardize the data before applying PCA
-    scaler = StandardScaler()
-    scaled_df = scaler.fit_transform(df)
-
-    # Perform PCA to capture 95% of the variance
-    pca = PCA(n_components=3)
-    pca_df = pca.fit_transform(scaled_df)
-
-    # Create a DataFrame for plotting
-    plot_df = pd.DataFrame(pca_df, columns=['PC1', 'PC2', 'PC3'])
-
-    # Split the DataFrame into segments
-    mv_segments = np.array_split(plot_df, 3)
-
-
-    # Create segment numbers (e.g., Segment 1, Segment 2, ...)
-    segment_numbers = [f"Segment {i+1}" for i in range(len(mv_segments))]
-
-    # Add segment names and numbers to the DataFrame
-    for i, segment in enumerate(mv_segments):
-        segment['segment_name'] = segment_numbers[i]
-        segment['segment_number'] = i+1
-    
-    # Plot the 3D plot
-    fig = px.scatter_3d(plot_df, x='PC1', y='PC2', z='PC3', color=plot_df.index, hover_name=plot_df.index,
-                        color_continuous_scale=px.colors.sequential.Agsunset, opacity=0.5, width=450, height=450)
-
-    # Update the layout
-    fig.update_layout(title="Your Melodic Voiceprint", scene=dict(xaxis_title="PC1", yaxis_title="PC2", zaxis_title="PC3"))
-
-    return fig
-
 def secure_home():
     """ The main app function for the Secure page """
-    st.markdown("""##### In order to demonstrate the process of generating a\
-                Melodic Voiceprint,Upload an audio clip or record your voice below\
-                to generate a sample of your Melodic Voiceprint.  Obviously\
-                the actual training process is much more involved, but this\
-                will still provide a sense of how the process works.
-                """)
-    st.text("")
-    st.text("")
-    # Create two columns, one for uploading, and one for recording
-    col1, col2 = st.columns(2, gap="large")
-    with col1:
-        mic_image = Image.open('./resources/studio_mic1_small.png')
-        st.image(mic_image, use_column_width=True)
-        st.text("")
-        st.text("")
-        st.text("")
-        st.text("")
-        
-        col3, col4, col5 = st.columns([0.5, 1.5, 1])
-        with col3:
-            st.text("")
-        with col4:
-            st.markdown("Click to record: :green[Stopped] / \
-                        :red[Recording]")
-        with col5:
-            recorded_audio_bytes = audio_recorder(text="", icon_name="record-vinyl",
-            sample_rate=16000, neutral_color = "green", icon_size="3x")
-        st.text("")
-        st.text("")
-        st.text("")
-        if recorded_audio_bytes:
-            st.markdown("""
-                        <p style="color:#EDC480; font-size: 23px; text-align: center;">
-                        Recorded audio clip:
-                        </p>
-                        """, unsafe_allow_html=True)
-            st.audio(recorded_audio_bytes)
-            recorded_audio = librosa.load(io.BytesIO(recorded_audio_bytes))
-            # Using soundfile to read the audio file into a NumPy array
-            st.session_state.audio_bytes_list.append(recorded_audio)
-
-    with col2:
-        upload_image = Image.open('./resources/record_upload1_small.png')
-        st.image(upload_image, use_column_width=True)
-        st.text("")
-        uploaded_file = st.file_uploader("Upload an Audio File", type=['wav'],
-                                        key='upload_audio')
-        if uploaded_file:
-            with io.BytesIO(uploaded_file.getbuffer()) as f:
-                # Using soundfile to read the audio file into a NumPy array
-                audio = librosa.load(f)
-                if audio:
-                    st.audio(audio[0], sample_rate=audio[1])
-                st.session_state.audio_bytes_list.append(audio)
-
-    st.markdown("""
-                **Once you have uploaded and / or recorded your audio,\
-                click below to generate your Melodic Voiceprint.**
-                """)
-    
-    generate_mv_button = st.button("Generate Melodic Voiceprint",
-    type='primary', use_container_width=True)
-    if generate_mv_button:
-        if len(st.session_state.audio_bytes_list) == 0:
-            st.error("Please upload or record an audio clip.")
-        else:# Generate the 3D plot
-            with st.spinner("Generating your Melodic Voiceprint..."):
-                st.session_state.fig = generate_3d_plot()
-                # Switch to the plot page
-                st.session_state.secure_page = "secure_plot"
-                st.experimental_rerun()
-
-def secure_plot():
-    """ Display the user generated Melodic Voiceprint """
-    st.markdown("""
-    <div style="font-size: 15px">
-    <h5> Congratulations!  You have successfully\
-    generated your Melodic Voiceprint and it is ready\
-    to be secured.  Check out the 3d representation of your\
-    Melodic Voiceprint below.  Once we have your MV, we can\
-    store the trained model in a secure location so that only you\
-    can access it and license it out.</h5>
-    <h5>
-    When you are done reviewing the plot, secure your MV and proceed\
-    to the next step! 
-    </h5>
+    st.markdown(f"""
+    <div style='display: flex; justify-content: center; align-items: center; flex-direction: column;'>
+        <h4 id='headline' style="font-family: 'Montserrat', sans-serif; color: #3D82FF;
+        font-size: 26px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 3s;
+        -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
+        fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">Firt Rule's Solution</h4>
+        <br>
+        <h3 id='body'style="font-family: 'Montserrat', sans-serif; color: #ecebe4;
+        font-size: 17px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 5s;
+        -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
+        fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">We will work with each artist in order to
+        train their own voiceprint model.  Once stored securely in the Artist Vault, it can be used
+        to quickly identify deepfakes, allowing them to take the necessary actions for takedowns, etc.
+        </h3>
+        <h3 id='body'style="font-family: 'Montserrat', sans-serif; color: #ecebe4;
+        font-size: 17px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 3s;
+        -webkit-animation: fadeIn ease 5s; -moz-animation: fadeIn ease 8s; -o-animation:
+        fadeIn ease 8s; -ms-animation: fadeIn ease 8s;">Below we illustrate a simple demo of
+        this "Reverse Audio Search" capability.  This is the cornerstone of First Rule's approach,
+        acting with the artist's security and peace of mind as our guiding principle.
+        </h3>
+        <br>
+        <h3 id='body'style="font-family: 'Montserrat', sans-serif; color: #ecebe4;
+        font-size: 17px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 3s;
+        -webkit-animation: fadeIn ease 5s; -moz-animation: fadeIn ease 8s; -o-animation:
+        fadeIn ease 8s; -ms-animation: fadeIn ease 8s;">By using the same high level algorithms
+        used to generate the Melodic Voiceprint, we can calculate a "Similarity Score" that represents
+        the probability that the clip in question is a deepfake.  This arms the artist with the information
+        they need to confidently and quickly protect themselves.</h3>
     </div>
+    <style>
+        @keyframes fadeIn {{
+            from {{
+                opacity: 0;
+            }}
+            to {{
+                opacity: 1;
+            }}
+        }}
+    </style>
     """, unsafe_allow_html=True)
+    st.markdown("""<div class="text-container;" style="animation: fadeIn ease 3s;
+                -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s;
+                -o-animation: fadeIn ease 3s; -ms-animation:
+                fadeIn ease 3s;">
+                </div>""", unsafe_allow_html=True)
+    # Create two columns to display the audio clips
+    col1, col2 = st.columns(2, gap="medium")
+    with col1:
+        st.markdown("Suspected Joel Deepfake:")
+        original1 = librosa.load("./audio_samples/clones/joel_fcar.wav")
+        st.audio(original1[0], sample_rate=original1[1])
+        calculate_similarity1_button = st.button("Calculate Similarity Score",
+        type='primary', use_container_width=True, key='similarity1')
+        if calculate_similarity1_button:
+            with st.spinner("Calculating Similarity Score..."):
+                time.sleep(3)
+                st.text("")
+                st.markdown("##### Calculated Similarity Score: :red[98%]")
+                st.markdown("##### :red[Warning:  There is a *very high* probability this is a deep fake.\
+                            Take action immediately!]")
+    with col2:
+        st.markdown("Suspected Jenny Deepfake:")
+        original2 = librosa.load("./audio_samples/clones/tswift1.wav")
+        st.audio(original2[0], sample_rate=original2[1])
+        calculate_similarity2_button = st.button("Calculate Similarity Score",
+        type='primary', use_container_width=True, key='similarity2')
+        if calculate_similarity2_button:
+            with st.spinner("Calculating Similarity Score..."):
+                time.sleep(3)
+                st.text("")
+                st.markdown("##### Calculated Similarity Score: :green[3%]")
+                st.markdown("##### :green[No action required.  This is not a deep fake.]")
+
     st.markdown("---")
-    # Display the 3D plot
-    st.plotly_chart(st.session_state.fig, use_container_width=True)
-
-    secure_button = st.button("Secure Your Voiceprint", type='primary',
-    use_container_width=True)
-    if secure_button:
-        # Count down from 3 to 1 and then display the secure message
-        for i in range(3, 0, -1):
-            time.sleep(1.5)
-            if i == 3:
-                st.markdown(f"""
-                <div style="font-size: 30px;">
-                <h5 style="text-align: center">
-                Locking down in {i}
-                </h5>
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                st.markdown(f"""
-                <div style="font-size: 30px;">
-                <h5 style="text-align: center">
-                {i}
-                </h5>
-                </div>
-                """, unsafe_allow_html=True)
-        st.balloons()
-        switch_page("Voiceprint Demo")
-    create_new_mv_button = st.button("Create a new Melodic Voiceprint",
-    type='primary', use_container_width=True)
-    if create_new_mv_button:
-        st.session_state.audio_bytes_list = []
-        st.session_state.secure_page = "secure_home"
-        st.experimental_rerun()
-
-            
-
-            
-if st.session_state.secure_page == "secure_home":
-    secure_home()
-elif st.session_state.secure_page == "secure_plot":
-    secure_plot()
+    return_to_opps_button = st.button("Explore the Possibilities", type='primary', use_container_width=True)
+    if return_to_opps_button:
+        switch_page("Downstream Opportunities")
+   
+secure_home()
