@@ -188,25 +188,6 @@ def get_inputs_from_llm(artist:str = "Dave Matthews"):
             continue
 
 
-def get_audio_sample(inputs: str, audio_data: np.array): # Audio data is a base64 string
-    """Get an audio sample from the music gen model
-    based on the chat history"""
-    inputs = get_inputs_from_llm()
-    API_TOKEN =  os.getenv("HUGGING_FACE_KEY")
-    API_URL = "https://api-inference.huggingface.co/models/facebook/musicgen-small"
-    headers = {"Authorization": f"Bearer {API_TOKEN}"}
-     # We want the LLM to decide on the prompts
-    data = {
-        "text": inputs,
-        "melody": (32000, audio_data)
-    }
-    response = requests.request("POST", API_URL, headers=headers, data=data, timeout=45)
-    # Convert the tensor to a numpy array
-    add_message(role="ai", content="Here is the audio sample I created for you.\
-                Let me know what you think!")
-
-    return response.text
-
 def get_similar_audio_clips(audio_vector: Union[list, np.array]):
     """Get the most similar audio clips from the music vectorstore"""
     pinecone_key = os.getenv("PINECONE_KEY")
