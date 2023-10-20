@@ -27,11 +27,10 @@ def voiceprint_visual():
         -webkit-animation: fadeIn ease 5s; -moz-animation: fadeIn ease 8s; -o-animation:
         fadeIn ease 8s; -ms-animation: fadeIn ease 8s;">One such opportunity we are particularly excited about is "Co-writer",
         a revolutionary new path for artist engagement.  By leveraging multi-modal AI models
-        that are trained <i>with the artist's input</i> we aim be to emulate a real-life co-writing session,
-        all without the artist even having to be in the room.
+        that are trained <i>with the artist's input</i>, we aim to emulate a real-life co-writing session.
         <br>
         <br>
-        By working with the artist to select training data, we are taking the opposite approach
+        We want to work <i>with</i> artists to select which data is used when creating their unique models. We are taking the opposite approach
         to companies whose models are a black box.  In fact, UMG is currently 
         <a href="https://www.billboard.com/pro/universal-music-sues-ai-company-using-songs-train-models/">suing Anthropic</a>,\
         an AI company with products similar to ChatGPT, for using copyrighted data in their training runs.  We choose to collaborate,
@@ -56,11 +55,7 @@ def voiceprint_visual():
                 fadeIn ease 3s;">
                 </div>""", unsafe_allow_html=True)
    
-    co_writer_button = st.button("Co-writer", type = 'primary', use_container_width=True)
-    st.text("")
-    st.markdown("Curious about the cloning process? [Try it out for yourself](https://huggingface.co/spaces/dthomas84/RVC_RULE1)\
-                with Jenny and Joel's voices in our First Rule AI playground!")
-
+    co_writer_button = st.button("Try Out Co-writer", type = 'primary', use_container_width=True)
     if co_writer_button:
         switch_page("Co-writer")
 

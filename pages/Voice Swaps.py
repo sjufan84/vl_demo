@@ -324,6 +324,9 @@ def get_3d_chart_fcar():
                         type='secondary', use_container_width=True)
         if continue_secure_button:
             switch_page("Secure")
+        st.markdown("---")
+        st.markdown("Curious about the cloning process? [Try it out for yourself](https://huggingface.co/spaces/dthomas84/RVC_RULE1)\
+                with Jenny and Joel's voices in our First Rule AI playground!")
 
     with col1:  # Plot using the filtered DataFrame
         fig = px.scatter_3d(
@@ -383,7 +386,6 @@ def home():
         of data we trained Joel and Jenny's models with, and with some fine-tuning and a little more
         training time we could produce whole songs or even albums that could pass for an actual artist's.
         </h3>
-        <br>
         <h3 id='body'style="font-family: 'Montserrat', sans-serif; color: #ecebe4;
         font-size: 17px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 3s;
         -webkit-animation: fadeIn ease 5s; -moz-animation: fadeIn ease 8s; -o-animation:

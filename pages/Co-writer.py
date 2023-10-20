@@ -2,6 +2,7 @@
 the user to chat with Luke Combs and receive guidance on their song writing.
 This can be in the form of text or audio."""
 import os
+from io import BytesIO
 import asyncio
 import openai
 import streamlit as st
@@ -21,7 +22,7 @@ openai.organization = os.getenv("OPENAI_ORG2")
 def init_cowriter_session_variables():
     """ Initialize session state variables """
     # Initialize session state variables
-    session_vars = ["messages", "openai_model", "chat_state", "original_clip", "current_clip"
+    session_vars = ["messages", "openai_model", "chat_state", "original_clip", "current_audio_clip"
     ]
     default_values = [None, "gpt-4-0613", "text", None, None
     ]
@@ -49,13 +50,13 @@ async def chat_main():
         # Create a file uploader for the user to be able to upload their own audio
         uploaded_audio = st.sidebar.file_uploader("Upload an audio clip", type=["wav", "mp3"])
         if uploaded_audio:
-            st.session_state.original_clip = torchaudio.load(uploaded_audio.name, sr=32000)
-    if st.session_state.original_clip:
+            st.session_state.original_clip = torchaudio.load(BytesIO(uploaded_audio.getvalue()))
+    if st.session_state.original_clip != None:
         st.sidebar.markdown("Original Audio Clip:")
-        st.sidebar.audio(st.session_state.original_clip[0], format="audio/wav", start_time=0)
-    if not st.session_state.current_clip and st.session_state.original_clip:
+        st.sidebar.audio(st.session_state.original_clip[0].numpy(), sample_rate=st.session_state.original_clip[1], format="audio/wav", start_time=0)
+    if st.session_state.current_audio_clip == None and st.session_state.original_clip != None:
         st.session_state.current_clip = st.session_state.original_clip
-    if st.session_state.current_clip and st.session_state.current_clip != st.session_state.original_clip:
+    if st.session_state.current_clip != None and st.session_state.current_clip != st.session_state.original_clip:
         st.markdown("Current Audio Clip:")
         st.sidebar.audio(st.session_state.current_clip, format="audio/wav", start_time=0)
     if not st.session_state.messages:
@@ -71,12 +72,17 @@ async def chat_main():
         <h3 id='body'style="font-family: 'Montserrat', sans-serif; color: #ecebe4;
         font-size: 17px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 5s;
         -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
-        fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">There are two primary ways to engage
-        with co-writer.  One is to carry on a text-based back and forth with the artist who
-        will help guide you through the song writing process.  The other is to engage with
-        audio as well by uploading your own audio clip.  The artist will then respond to you
-        not only with text, but also a completely new audio clip based on your conversation
-        and the clip you uploaded.  You can toggle back and forth on the sidebar.  Have fun!
+        fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">While still in its early stages, we
+        believe that Co-writer can become the gold standard for AI <i>enhancing</i> rather than
+        replacing, the artist's ability to engage with fans, fellow musicians, and others, at scale,
+        and in a way that is authentic and true to the artist's style and personality.
+        <br>
+        <br>
+        Without giving away too much, we have created a simplified way to test out the very tip
+        of the iceberg of what can be achieved with this technology.  You can chat with the artist below
+        for tips on your song-writing journey, or, if you so chooose, you can upload your own
+        audio clips and a completely original piece of music will be generated based on the clip and your
+        conversation history.  Select an option on the sidebar to get started, and have fun!
         </h3>
     </div>
     <style>

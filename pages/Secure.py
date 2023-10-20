@@ -29,7 +29,6 @@ def secure_home():
         font-size: 26px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 3s;
         -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
         fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">Firt Rule's Solution</h4>
-        <br>
         <h3 id='body'style="font-family: 'Montserrat', sans-serif; color: #ecebe4;
         font-size: 17px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 5s;
         -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
@@ -44,7 +43,6 @@ def secure_home():
         this "Reverse Audio Search" capability.  This is the cornerstone of First Rule's approach,
         acting with the artist's security and peace of mind as our guiding principle.
         </h3>
-        <br>
         <h3 id='body'style="font-family: 'Montserrat', sans-serif; color: #ecebe4;
         font-size: 17px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 3s;
         -webkit-animation: fadeIn ease 5s; -moz-animation: fadeIn ease 8s; -o-animation:
@@ -81,7 +79,7 @@ def secure_home():
             with st.spinner("Calculating Similarity Score..."):
                 time.sleep(3)
                 st.text("")
-                st.markdown("##### Calculated Similarity Score: :red[98%]")
+                st.markdown("##### Calculated Similarity Score: :red[98.71%]")
                 st.markdown("##### :red[Warning:  There is a *very high* probability this is a deep fake.\
                             Take action immediately!]")
     with col2:
@@ -94,7 +92,7 @@ def secure_home():
             with st.spinner("Calculating Similarity Score..."):
                 time.sleep(3)
                 st.text("")
-                st.markdown("##### Calculated Similarity Score: :green[3%]")
+                st.markdown("##### Calculated Similarity Score: :green[3.08%]")
                 st.markdown("##### :green[No action required.  This is not a deep fake.]")
 
     st.markdown("---")
