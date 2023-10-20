@@ -31,7 +31,7 @@ def init_cowriter_session_variables():
             st.session_state[var] = default_value
 
 # Initialize session state variables
-init_cowriter_session_variables()    
+init_cowriter_session_variables() 
 
 def chat_main():
     """ Main function for the chat page """
