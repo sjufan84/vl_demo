@@ -12,7 +12,7 @@ from scipy.spatial.distance import cosine
 from utils.audio_processing import extract_features, read_audio
 
 st.set_page_config(page_title="Artist Vault Demo", page_icon=":microphone:",
-                initial_sidebar_state="expanded", layout="wide")
+                initial_sidebar_state="auto", layout="wide")
 
 
 def get_3d_chart_mv():

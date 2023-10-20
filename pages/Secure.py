@@ -18,7 +18,7 @@ from utils.audio_processing import extract_features
 st.set_page_config(
     page_title="Reverse Audio Search",
     page_icon="🎤",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 def secure_home():
@@ -28,7 +28,7 @@ def secure_home():
         <h4 id='headline' style="font-family: 'Montserrat', sans-serif; color: #3D82FF;
         font-size: 26px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 3s;
         -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
-        fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">Firt Rule's Solution</h4>
+        fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">First Rule's Solution</h4>
         <h3 id='body'style="font-family: 'Montserrat', sans-serif; color: #ecebe4;
         font-size: 17px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 5s;
         -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
