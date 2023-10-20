@@ -61,6 +61,8 @@ def voiceprint_visual():
                 -o-animation: fadeIn ease 3s; -ms-animation:
                 fadeIn ease 3s;">
                 </div>""", unsafe_allow_html=True)
+    
+    st.text("")
    
     co_writer_button = st.button("Try Out Co-writer", type = 'primary', use_container_width=True)
     if co_writer_button:

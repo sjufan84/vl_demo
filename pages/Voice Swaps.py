@@ -392,7 +392,7 @@ def home():
         fadeIn ease 8s; -ms-animation: fadeIn ease 8s;">In the 3d chart below, we have mapped out the high level
             features of each artist's vocals.  You will notice that for each point in the song, the artists' voices
             cluster together, but are not identical.  It is this difference that distinguishes each voiceprint
-            and allows for security measures to be taken to protect the artist and their autheticity.</h3>
+            and allows for security measures to be taken to protect the artist and their authenticity.</h3>
     </div>
     <style>
         @keyframes fadeIn {{

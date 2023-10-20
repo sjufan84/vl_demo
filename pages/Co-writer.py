@@ -73,9 +73,10 @@ def chat_main():
         font-size: 17px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 5s;
         -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
         fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">While still in its early stages, we
-        believe that Co-writer can become the gold standard for AI <i>enhancing</i> rather than
-        replacing, the artist's ability to engage with fans, fellow musicians, and others, at scale,
-        and in a way that is authentic and true to the artist's style and personality.
+        believe that Co-writer can become the gold standard for AI <i>enhancing</i>, rather than
+        replacing, the artist's ability to engage with fans, fellow musicians, and others.  The goal
+        is to make it feel as though the artist is really right there in the room, and we are getting
+        closer every day to making that a reality.
         <br>
         <br>
         Without giving away too much, we have created a simplified way to test out the very tip
