@@ -295,7 +295,7 @@ def get_3d_chart_fcar():
         st.markdown("""
         <p style="font-family: 'Montserrat', sans-serif;
                     color: #3D82FF; font-size: 15px; font-weight: 550;">
-                    LC Fast Car</p>
+                    Jenny Fast Car</p>
                     """, unsafe_allow_html=True)
         st.audio(jenny_bytes, format='audio/wav', start_time=0, sample_rate=16000)
         st.markdown("""
@@ -307,7 +307,7 @@ def get_3d_chart_fcar():
         st.markdown("""
         <p style="font-family: 'Montserrat', sans-serif;
                     color: #3D82FF; font-size: 15px; font-weight: 550;">
-                    Jenny Fast Car</p>
+                    LC Fast Car</p>
                     """, unsafe_allow_html=True)
         st.audio(lc_bytes, format='audio/wav', start_time=0, sample_rate=16000)
         selected_artists = st.multiselect(
@@ -414,3 +414,7 @@ def home():
 
 if __name__ == "__main__":
     home()
+      
+    # Display the "Business Chat" sidebar
+    from utils.bplan_utils import chat_state_sidebar
+    chat_state_sidebar()

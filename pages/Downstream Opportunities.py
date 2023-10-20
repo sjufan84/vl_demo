@@ -61,3 +61,7 @@ def voiceprint_visual():
 
 if __name__ == "__main__":
     voiceprint_visual()
+      
+    # Display the "Business Chat" sidebar
+    from utils.bplan_utils import chat_state_sidebar
+    chat_state_sidebar()

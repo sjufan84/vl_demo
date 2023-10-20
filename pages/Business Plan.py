@@ -1,79 +1,151 @@
-""" Page for users to ask questions about the business plan
-utilizing an LLM with a vectorstore as a retriever """
-import uuid
+""" Business Plan Chat Bot """
+import os
+import base64
+from PIL import Image
 import streamlit as st
-from streamlit_chat import message
-from utils.bplan_utils import get_bplan_response
+import openai
+from dotenv import load_dotenv
+import pinecone
+from langchain.chat_models import ChatOpenAI
+from langchain.retrievers import ContextualCompressionRetriever
+from langchain.retrievers.document_compressors import LLMChainExtractor
+from langchain.vectorstores import Pinecone
+from langchain.embeddings import OpenAIEmbeddings
 
-if "bplan_chat_page" not in st.session_state:
-    st.session_state.bplan_chat_page = "bplan_home"
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+# Load the environment variables
+load_dotenv()
 
-def bplan_intro():
-    """ Page to introduce the business plan chat """
-    st.session_state.chat_history = [] # Clear the chat history
-    st.markdown("""
-                <p style="font-size: 20px; font-weight: bold; color: #EDC480;">
-                Vocalockr Business Plan Chat</p>
-                """, unsafe_allow_html=True)
-    
-    st.markdown("##### At Vocalockr, we're pioneering an innovative approach\
-                to engaging with our business plan. We use a large language model\
-                paired with a vectorstore that contains the plan to create a\
-                chatbot that can intelligently answer questions about the business.\
-                Though this technology is new, it promises a rich\
-                and interactive experience to learn more about Vocalockr and our\
-                plans for the future.  Of course, we're eager to discuss more in person as well!"
-                )
+# Load the OpenAI API key
+openai.api_key = os.getenv("OPENAI_KEY2")
+openai_org = os.getenv("OPENAI_ORG2")
+
+# Load the Pinecone API key
+pinecone_key = os.getenv("PINECONE_KEY")
+pinecone_env = os.getenv("PINECONE_ENV")
+
+# Initialize pinecone
+pinecone.init(api_key=pinecone_key, environment=pinecone_env)
+
+# Initialize the embeddings
+embed = OpenAIEmbeddings()
+
+# Establish chat history and default model
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = "gpt-3.5-turbo-16k-0613"
+
+# Function to convert image to base64
+def img_to_base64(img_path):
+    """Convert an image to base64"""
+    with open(img_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+# Use the function
+IMG_PATH = "./resources/business_plan_bob.png"  # Replace with your image's path
+base64_string = img_to_base64(IMG_PATH)
+business_bob = Image.open(IMG_PATH)
+
+def get_context(query: str):
+    """ Get the context from the business plan vector database."""
+    index = Pinecone.from_existing_index("bplan", embedding=embed)
+    retriever = index.as_retriever()
+
+    llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613")
+
+    #llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613")
+    compressor = LLMChainExtractor.from_llm(llm)
+    compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)
+
+    compressed_docs = compression_retriever.get_relevant_documents(f"{query}")
+    return {"page_content": str([doc.page_content for doc in compressed_docs]), "metadata" : [doc.metadata for doc in compressed_docs]}
+
+def get_new_prompt(query: str, model:str="openai"):
+    """ Get a new prompt from the OpenAI API """
+    if model == "openai":
+        context = get_context(query)
+    initial_message = {
+        "role": "system",
+        "content": f"""
+        You are a Business Plan Bob, a master businessperson, entreprenuer, investor,
+        and start-up advisor, advising a company called "First Rule"
+        who is helping a start-up aiming to help artist's protect
+        their "Melodic Voiceprint" as well as help them monetize
+        it for downstream use cases.  A potential investor is browing
+        their demo and wants to ask questions about their business plan.
+        You have access to the business plan via a vector database that
+        you can query with a search term.  The context returned from the 
+        database is: {context}.  The query is {query}.  Your recent chat history
+        is {st.session_state.messages[-2:] if len(st.session_state.messages) > 2 else None}.
+        You are a representative of the company, so answer the investor's questions
+        on their behalf.  Do not break character and help them relay their plan in a way
+        that will help them get funding.
+        """
+    }
+
+    return initial_message
+
+def business_chat():
+    """ Chat bot to answer questions about the business plan """
+    st.markdown(f"""
+    <div style='display: flex; justify-content: center; align-items: center; flex-direction: column;'>
+        <img id='logo' src='data:image/png;base64,{base64_string}' style='height:80px; margin: 0;
+        margin-right: 45px; animation: fadeIn ease 3s; -webkit-animation: fadeIn ease 3s; -moz-animation:
+        fadeIn ease 3s; -o-animation: fadeIn ease 3s; -ms-animation: fadeIn ease 3s;'>
+        <h4 id='headline' style="font-family: 'Montserrat', sans-serif; color: #3D82FF;
+        font-size: 26px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 3s;
+        -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
+        fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">Business Chat</h4>
+    </div>
+    <style>
+        @keyframes fadeIn {{
+            from {{
+                opacity: 0;
+            }}
+            to {{
+                opacity: 1;
+            }}
+        }}
+    </style>
+    """, unsafe_allow_html=True)
     st.text("")
-    start_bplan_chat_button = st.button("Start Business Plan Chat", type="primary",
-                                         use_container_width=True)
-    if start_bplan_chat_button:
-        st.session_state.bplan_chat_page = "bplan_chat_main"
-        st.experimental_rerun()
 
-def bplan_chat_main():
-    """ Main interface for the user to ask questions about the business plan """
-    # Initial greeting from the ai
-    initial_greeting = "Welcome to Vocalockr Business Plan Chat!  I'm their virtual\
-        advisor and start-up strategist.  What questions do you have about their\
-        plan?"
-    if len(st.session_state.chat_history) == 0:
-        message(initial_greeting, avatar_style="miniavs", seed="Socks")
-    # Get the user's next question
-    user_question = st.text_area("Your question", height=100)
-    # Create a button to send the question to the vectorstore
-    send_question_button = st.button("Send your question", type="primary", use_container_width=True)
-    if send_question_button:
-        with st.spinner("Getting response..."):
-            # Get the bplan response
-            get_bplan_response(user_question)
-            # Set the session state to display the chat history
-            st.session_state.bplan_chat_page = "bplan_chat_main"
-            user_question = ""
-            st.experimental_rerun()
-    st.markdown("---")
-    chat_container = st.container()
-    with chat_container:
-        # Display the chat history
-        for chat_message in st.session_state.chat_history[-2:]:
-            # If the role is "ai", display the message on the left
-            if chat_message['role'] == "assistant":
-                message(chat_message['content'], avatar_style="miniavs", seed="Socks",
-                        key = f'{uuid.uuid4()}')
-            # If the role is "user", display the message on the right
-            elif chat_message['role'] == "user":
-                message(chat_message['content'], avatar_style="miniavs", seed="Felix",
-                        is_user=True, key=f'{uuid.uuid4()}')
-                
-    new_chat_button = st.button("Start New Chat Session", type="primary", use_container_width=True)
-    if new_chat_button:
-        st.session_state.chat_history = []
-        st.experimental_rerun()
-                
+    # Display chat messages from history on app rerun
+    for message in st.session_state.messages:
+        if message["role"] == "assistant":
+            with st.chat_message(message["role"], avatar=business_bob):
+                st.markdown(message["content"])
+        elif message["role"] == "user":
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
 
-if st.session_state.bplan_chat_page == "bplan_home":
-    bplan_intro()
-elif st.session_state.bplan_chat_page == "bplan_chat_main":
-    bplan_chat_main()
+    # Accept user input
+    if prompt := st.chat_input("What questions can I answer about First Rule's business plan?"):
+        with st.spinner("Consulting the business plan..."):
+            # Add user message to chat history
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            # Display user message in chat message container
+            with st.chat_message("user"):
+                st.markdown(prompt)
+            # Load the prophet image for the avatar
+            # Display assistant response in chat message container
+            with st.chat_message("assistant", avatar=business_bob):
+                message_placeholder = st.empty()
+                full_response = ""
+
+            initial_message = [get_new_prompt(prompt)]
+
+            for response in openai.ChatCompletion.create(
+                model=st.session_state["openai_model"],
+                messages=initial_message,
+                stream=True,
+                temperature=0.75,
+                max_tokens=500,
+                ):
+                full_response += response.choices[0].delta.get("content", "")
+                message_placeholder.markdown(full_response + "▌")
+            message_placeholder.markdown(full_response)
+            st.session_state.messages.append({"role": "assistant", "content": full_response})
+
+if __name__ == "__main__":
+    business_chat()

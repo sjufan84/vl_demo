@@ -101,3 +101,7 @@ def secure_home():
         switch_page("Downstream Opportunities")
    
 secure_home()
+  
+# Display the "Business Chat" sidebar
+from utils.bplan_utils import chat_state_sidebar
+chat_state_sidebar()

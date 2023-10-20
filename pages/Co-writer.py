@@ -22,7 +22,7 @@ openai.organization = os.getenv("OPENAI_ORG2")
 def init_cowriter_session_variables():
     """ Initialize session state variables """
     # Initialize session state variables
-    session_vars = ["messages", "openai_model", "chat_state", "original_clip", "current_audio_clip"
+    session_vars = ["cowriter_messages", "openai_model", "chat_state", "original_clip", "current_audio_clip"
     ]
     default_values = [None, "gpt-4-0613", "text", None, None
     ]
@@ -33,14 +33,14 @@ def init_cowriter_session_variables():
 # Initialize session state variables
 init_cowriter_session_variables()    
 
-async def chat_main():
+def chat_main():
     """ Main function for the chat page """
     new_prompt = [{"role": "system", "content" : f"""
     You are Dave Matthews, the famous musician and songwriter, engaged in a
     co-writing session with the user who could be a fellow musician or fan.  The goal
     of the session is to help the user feel as though you are right alongside them,
     helping them craft their song with Dave's style and personality.  Do not break character.
-    Your conversation so far is {st.session_state.messages}. 
+    Your conversation so far is {st.session_state.cowriter_messages}. 
     """}]
 
     # Set up the sidebar
@@ -55,12 +55,12 @@ async def chat_main():
         st.sidebar.markdown("Original Audio Clip:")
         st.sidebar.audio(st.session_state.original_clip[0].numpy(), sample_rate=st.session_state.original_clip[1], format="audio/wav", start_time=0)
     if st.session_state.current_audio_clip == None and st.session_state.original_clip != None:
-        st.session_state.current_clip = st.session_state.original_clip
-    if st.session_state.current_clip != None and st.session_state.current_clip != st.session_state.original_clip:
+        st.session_state.current_audio_clip = st.session_state.original_clip
+    if st.session_state.current_audio_clip != None and st.session_state.current_audio_clip != st.session_state.original_clip:
         st.markdown("Current Audio Clip:")
-        st.sidebar.audio(st.session_state.current_clip, format="audio/wav", start_time=0)
-    if not st.session_state.messages:
-        st.session_state.messages = new_prompt
+        st.sidebar.audio(st.session_state.current_audio_clip, format="audio/wav", start_time=0)
+    if not st.session_state.cowriter_messages:
+        st.session_state.cowriter_messages = new_prompt
 
     st.markdown(f"""
     <div style='display: flex; justify-content: center; align-items: center; flex-direction: column;'>
@@ -103,7 +103,7 @@ async def chat_main():
                 </div>""", unsafe_allow_html=True)
     st.text("")
     # Display chat messages from history on app rerun
-    for message in st.session_state.messages:
+    for message in st.session_state.cowriter_messages:
         if message["role"] == "assistant":
             with st.chat_message(message["role"], avatar="🎸"):
                 st.markdown(message["content"])
@@ -114,7 +114,7 @@ async def chat_main():
     # Accept user input
     if prompt := st.chat_input("Hey friend, let's start writing!"):
         # Add user message to chat historys
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.session_state.cowriter_messages.append({"role": "user", "content": prompt})
         # Display user message in chat message container
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -125,7 +125,7 @@ async def chat_main():
             full_response = ""
         for response in openai.ChatCompletion.create(
             model=st.session_state["openai_model"],
-            messages= [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+            messages= [{"role": m["role"], "content": m["content"]} for m in st.session_state.cowriter_messages],
             stream=True,
             temperature=1,
             max_tokens=200,
@@ -133,9 +133,9 @@ async def chat_main():
             full_response += response.choices[0].delta.get("content", "")
             message_placeholder.markdown(full_response + "▌")
         message_placeholder.markdown(full_response)
-        st.session_state.messages.append({"role": "assistant", "content": full_response})
+        st.session_state.cowriter_messages.append({"role": "assistant", "content": full_response})
         if st.session_state.chat_state == "audio":
             with st.spinner("Composing your audio..."):
-                st.session_state.current_clip = await get_music(st.session_state.current_clip, get_inputs_from_llm())
+                st.session_state.current_audio_clip = get_music(st.session_state.current_audio_clip, get_inputs_from_llm())
 
-asyncio.run(chat_main())
+chat_main()

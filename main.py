@@ -14,6 +14,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
+
+
 # Initialize the session state
 def init_session_variables():
     """Initialize session state variables"""
@@ -36,6 +38,8 @@ def init_session_variables():
 
 if "secure_page" not in st.session_state:
     st.session_state["secure_page"] = "secure_home"
+if "chat_state" not in st.session_state:
+    st.session_state["chat_state"] = "off"
 
 # Initialize the session variables
 init_session_variables()
@@ -99,4 +103,11 @@ def home():
     get_started_button = st.button("Get Started", type='primary', use_container_width=True)
     if get_started_button:
         switch_page("Voice Swaps")
+
+    st.text("")
+    
+    # Display the "Business Chat" sidebar
+    from utils.bplan_utils import chat_state_sidebar
+    chat_state_sidebar()
+
 home()
