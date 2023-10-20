@@ -3,6 +3,13 @@ by using a 3d plot of Joel and Jenny's voiceprints. """
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
 
+st.set_page_config(
+    page_title="Vocal NFT Demo",
+    page_icon="🎤",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
 def voiceprint_visual():
     """ Voiceprint Homepage """
     st.markdown(f"""

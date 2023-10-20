@@ -18,7 +18,7 @@ from utils.audio_processing import extract_features
 st.set_page_config(
     page_title="Reverse Audio Search",
     page_icon="🎤",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 def secure_home():
