@@ -41,3 +41,4 @@ pinecone-client
 tiktoken
 huggingface_hub
 transformers
+anthropic
