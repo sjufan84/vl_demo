@@ -40,6 +40,8 @@ if "secure_page" not in st.session_state:
     st.session_state["secure_page"] = "secure_home"
 if "chat_state" not in st.session_state:
     st.session_state["chat_state"] = "off"
+if "messages" not in st.session_state:
+    st.session_state["messages"] = []
 
 # Initialize the session variables
 init_session_variables()
