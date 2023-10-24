@@ -17,7 +17,7 @@ load_dotenv()
 
 # Load the OpenAI API key
 openai.api_key = os.getenv("OPENAI_KEY2")
-openai_org = os.getenv("OPENAI_ORG2")
+openai.organization = os.getenv("OPENAI_ORG2")
 
 # Load the Pinecone API key
 pinecone_key = os.getenv("PINECONE_KEY")
@@ -27,7 +27,7 @@ pinecone_env = os.getenv("PINECONE_ENV")
 pinecone.init(api_key=pinecone_key, environment=pinecone_env)
 
 # Initialize the embeddings
-embed = OpenAIEmbeddings()
+embed = OpenAIEmbeddings(openai_api_key=openai.api_key, openai_organization=openai.organization)
 
 # Establish chat history and default model
 if "messages" not in st.session_state:

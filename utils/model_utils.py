@@ -21,6 +21,7 @@ openai.organization = os.getenv("OPENAI_ORG2")
 embed = OpenAIEmbeddings(
     model="text-embedding-ada-002",
     openai_api_key = openai.api_key,
+    openai_organization = openai.organization,
     disallowed_special=()
 )
 # Initialize the session state
