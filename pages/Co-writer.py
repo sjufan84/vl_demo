@@ -2,11 +2,8 @@
 the user to chat with Luke Combs and receive guidance on their song writing.
 This can be in the form of text or audio."""
 import os
-import numpy as np
-from io import BytesIO
 import asyncio
 import openai
-import librosa
 import streamlit as st
 from dotenv import load_dotenv
 from utils.model_utils import get_inputs_from_llm
@@ -14,6 +11,7 @@ from utils.musicgen import get_music
 
 # Load environment variables
 load_dotenv()
+
 
 # Set OpenAI API key from Streamlit secrets
 openai.api_key = os.getenv("OPENAI_KEY2")

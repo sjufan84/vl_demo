@@ -1,5 +1,4 @@
 """ Utility functions for the musicgen model """
-import numpy as np
 from transformers import AutoProcessor, MusicgenForConditionalGeneration
 import streamlit as st
 from utils.model_utils import get_inputs_from_llm
@@ -40,14 +39,3 @@ async def get_music(text: str = st.session_state.llm_inputs,
     audio = audio_values[0].detach().cpu().numpy()
     
     return audio
-
-async def hf_inference_api(texts)
-    import json
-import requests
-API_URL = "https://api-inference.huggingface.co/models/gpt2"
-headers = {"Authorization": f"Bearer {API_TOKEN}"}
-def query(payload):
-    data = json.dumps(payload)
-    response = requests.request("POST", API_URL, headers=headers, data=data)
-    return json.loads(response.content.decode("utf-8"))
-data = query("Can you please let us know more details about your ")
