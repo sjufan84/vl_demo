@@ -152,7 +152,7 @@ async def chat_main():
         message_placeholder.markdown(full_response)
         st.session_state.cowriter_messages.append({"role": "assistant", "content": full_response})
         if st.session_state.chat_state == "audio":
-            with st.spinner("Composing your audio...  Feel free to chat in the meantime!"):
+            with st.spinner("Composing your audio...  I'll be back shortly!"):
                 st.session_state.current_clip = await get_music(st.session_state.llm_inputs)
                 st.experimental_rerun()
         
