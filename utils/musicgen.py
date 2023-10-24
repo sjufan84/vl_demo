@@ -33,7 +33,7 @@ async def get_music(text: str = st.session_state.llm_inputs,
         padding=True,
         return_tensors="pt",
     )
-    audio_values = model.generate(**inputs, do_sample=True, guidance_scale=3, max_new_tokens=750)
+    audio_values = model.generate(**inputs, do_sample=True, guidance_scale=3, max_new_tokens=450)
 
     # Convert the audio values to a numpy array
     audio = audio_values[0].detach().cpu().numpy()

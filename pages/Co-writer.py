@@ -50,7 +50,7 @@ async def chat_main():
         helping them craft their song with Dave's style and personality.  Do not break character.
         Your conversation so far is {st.session_state.cowriter_messages}  The user wants to also
         generate a music clip with the short description of {st.session_state.llm_inputs}.  There
-        is a separate model that will handle the music generation, but go ahead and responsd with 
+        is a separate model that will handle the music generation, but go ahead and respond with 
         a text related to the conversation and the new clip description to keep the conversation
         going while they wait for the new clip to be generated.  Let the user know that you are
         going to work on it and leave them something to think about while they wait.
@@ -115,6 +115,10 @@ async def chat_main():
                 -o-animation: fadeIn ease 3s; -ms-animation:
                 fadeIn ease 3s;">
                 </div>""", unsafe_allow_html=True)
+    if len(st.session_state.cowriter_messages) == 0:
+        st.warning("The audio generation does take some time, especially upon start.  As we scale,\
+        we will continue to increase our compute thus speeding up the process dramatically.  However, for\
+        demo purposes, we are not utilizing large amounts of GPU resources.")
     st.text("")
     # Display chat messages from history on app rerun
     for message in st.session_state.cowriter_messages:
