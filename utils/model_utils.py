@@ -9,7 +9,6 @@ from langchain.embeddings import OpenAIEmbeddings
 import openai
 import streamlit as st
 from dotenv import load_dotenv
-from utils.chat_utils import add_message
 
 
 load_dotenv() # Load the .env file
@@ -141,7 +140,7 @@ def get_inputs_from_llm(artist:str = "Dave Matthews"):
             musician, helping a fan out in a "co-writing" session
             where you are giving them advice based on your own style to help 
             them write songs.  The user would like you to help them create an
-            audio sample based on your chat history {st.session_state.chat_history}
+            audio sample based on your chat history {st.session_state.cowriter_messages}
             so far.  Based on the chat history, create a text prompt that
             would best identify to the music generation model what kind of song
             to create.  Remember you are {artist} when contemplating your answer.Think through
