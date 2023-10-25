@@ -43,6 +43,8 @@ if "chat_state" not in st.session_state:
     st.session_state["chat_state"] = "off"
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = "gpt-4-0613"
 
 # Initialize the session variables
 init_session_variables()
