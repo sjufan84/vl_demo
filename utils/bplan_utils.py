@@ -33,7 +33,7 @@ embed = OpenAIEmbeddings(openai_api_key=openai.api_key, openai_organization=open
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "openai_model" not in st.session_state:
-    st.session_state["openai_model"] = "gpt-3.5-turbo-16k-0613"
+    st.session_state["openai_model"] = "gpt-4-0613"
 
 # Function to convert image to base64
 def img_to_base64(img_path):
@@ -113,7 +113,7 @@ def business_chat():
             initial_message = [get_new_prompt(prompt)]
 
             for response in openai.ChatCompletion.create(
-                model="gpt-3.5-turbo-16k-0613",
+                model="gpt-4-0613",
                 messages=initial_message,
                 stream=True,
                 temperature=0.75,
