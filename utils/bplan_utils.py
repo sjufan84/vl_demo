@@ -113,7 +113,7 @@ def business_chat():
             initial_message = [get_new_prompt(prompt)]
 
             for response in openai.ChatCompletion.create(
-                model=st.session_state["openai_model"],
+                model="gpt-3.5-turbo-16k-0613",
                 messages=initial_message,
                 stream=True,
                 temperature=0.75,

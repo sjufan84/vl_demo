@@ -24,12 +24,13 @@ def init_session_variables():
         'embeddings', 'home_page', 'av_feature_dict', 'lc_feature_dict',
         'demo_visualize_page', "detailed_vocal_features_page",
         'nft_demo_page', 'token_id', 'contract_address',
-        'latest_nft', 'nft_metadata', 'chat_history' 'chat_page', 'user_name'
+        'latest_nft', 'nft_metadata', 'chat_history' 'chat_page', 'user_name', 'openai_model',
+        'messages'
     ]
     default_values = [
         {}, 'record_audio', 'upload_audio', {},'home', {}, {},
         'demo_visualize_home', "detailed_home", 'nft_demo_home', 0,
-        '', 0, {}, [], 'chat_home', '', 'bplan_home'
+        '', 0, {}, [], 'chat_home', '', 'bplan_home', "gpt-4-0613", []
     ]
 
     for var, default_value in zip(session_vars, default_values):
