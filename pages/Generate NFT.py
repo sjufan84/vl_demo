@@ -372,7 +372,7 @@ def display_nft_metadata():
     
 # Call the function to display the page
 if st.session_state.nft_demo_page == "nft_demo_home":
-    minting_demo_home()
+    artist_minting_demo()
 elif st.session_state.nft_demo_page == "artist_minting_demo":
     artist_minting_demo()
 elif st.session_state.nft_demo_page == "label_signing_demo":
