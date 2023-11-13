@@ -143,7 +143,7 @@ async def chat_main():
             full_response = ""
         st.session_state.llm_inputs = get_inputs_from_llm()
         for response in openai.ChatCompletion.create(
-            model="gpt-4-0613",
+            model="gpt-4-1106-preview",
             messages= new_prompt + [{"role": m["role"], "content": m["content"]} for m in st.session_state.cowriter_messages],
             stream=True,
             temperature=1,

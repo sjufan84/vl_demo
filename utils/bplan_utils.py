@@ -51,7 +51,8 @@ def get_context(query: str):
     index = Pinecone.from_existing_index("bplan", embedding=embed)
     retriever = index.as_retriever()
 
-    llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613", openai_api_key=openai.api_key, openai_organization=openai.organization)
+    llm = ChatOpenAI(temperature=0, model="gpt-4-1106-preview",
+    openai_api_key=openai.api_key, openai_organization=openai.organization)
 
     #llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613")
     compressor = LLMChainExtractor.from_llm(llm)
@@ -113,7 +114,7 @@ def business_chat():
             initial_message = [get_new_prompt(prompt)]
 
             for response in openai.ChatCompletion.create(
-                model="gpt-4-0613",
+                model="gpt-4-1106-preview",
                 messages=initial_message,
                 stream=True,
                 temperature=0.75,
