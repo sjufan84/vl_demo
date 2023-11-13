@@ -1,12 +1,10 @@
 """ This module contains the code for the NFT minting demo. """
 import os
+import time
 from dotenv import load_dotenv
 import uuid
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
-from web3 import Web3
-from PIL import Image
-
 
 # Load the environment variables
 load_dotenv()
@@ -113,13 +111,20 @@ def minting_demo_home():
     # Introduction to NFT minting
     st.markdown("""
                 <p style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 25px; font-weight: 550;">
-                Understanding NFT Minting: A Demonstration</p>
+                The Artist Vault Protocol.  Hybrid blockchain security for transparency, accountability, and peace of mind.</p>
                 """, unsafe_allow_html=True)
-    st.markdown("""**Minting an NFT (Non-Fungible Token) is like
-                creating a digital certificate of authenticity that
-                can be bought, sold, or traded. For artists, it's
-                a way to ensure ownership and control over their work.
-                Here's how it works:**""")
+    st.markdown("""**By leveraging the advantages of both issuing NFT contracts on the public blockchain and storing sensitive information
+    and financial transactions on a privately managed blockchain, we aim to make the process of onboarding artists onto the platform as intuitive
+    and familiar as possible.  Even though the web3 ecosystem has become more and more mainstream over the past few years, it has by no means reached
+    widespread adoption among a large swath of the population, particularly among a demographic that would include many of the artists we
+    are targeting for our platform.  By layering on a privately managed blockchain that can handle fiat transactions and more traditional
+    security measures for ease of access, we can alleviate the potential pain point of trying to set artists up with a crypto wallet,
+    explain cryptocurencies, and introduce large amounts of friction that may prove problematic for many of our users.  There are also, of course,
+    many issues with the web3 ecosystem, both fundamentally and reputationally.  One needs to look no further than the recent prosecution of Sam
+    Bankman-Fried in one of the largest scams in American history involving his cryptocurrency exchange, FTX, to see why leaning in to
+    web3 when approaching artists about securing their vocal legacy may prove problematic.  So with all that in mind, in the next few pages we will
+    walk through the process of onboarding an artist via the secure Artist Vault protocol as well as issuing publicly verifiable NFT contracts representing
+    the users consent and compensation for various downstream use cases.**""")
 
     # Step 1: Artist generates the NFT
     st.markdown("""
@@ -145,16 +150,27 @@ def artist_minting_demo():
     the NFT as an artist would."""
     # Artist Actions
     st.markdown("""
-    <p style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 25px; font-weight: 550;">
-    Artist Actions""", unsafe_allow_html=True)
-    st.text("")
-    st.text("")
+    <div style='display: block; width: 100%;'>
+    <h4 id='headline' style="font-family: 'Montserrat', sans-serif; color: #3D82FF;
+    font-size: 26px; font-weight: 550;  animation: fadeIn ease 3s;
+    -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
+    fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">Artist Actions</h4>
+    <h3 id='body'style="font-family: 'Montserrat', sans-serif; color: #ecebe4;
+    font-size: 16px; font-weight: 550; margin-bottom: -10px; animation: fadeIn ease 5s;
+    -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
+    fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">While the actual process of issuing NFTs
+    and signing contracts on our private blockchain is obviously more complex, this will give you
+    some sense of the process and how both the artist and First Rule can monetizes myriad downstream
+    use cases.
+</h3>
+    </div>""", unsafe_allow_html=True)
+    st.markdown("---")
     # We will create a form to take in all of the relevant information
     # for minting the NFT
     # Load the artist wallet
     artist_wallet = os.getenv("ARTIST_WALLET")
     label_wallet = os.getenv("LABEL_WALLET")
-    type_of_contract = st.selectbox('Type of Contract', options = ['MV Only', 'Co-writer', 'Personalized Content', 'Studio All Access'])
+    type_of_contract = st.selectbox('##### Type of Contract', options = ['MV Only', 'Co-writer', 'Personalized Content', 'Studio All Access'])
     # Depending on which type of contract is selected, we will display the relevant information
     # Set the cost of the contract
     if type_of_contract == 'MV Only':
@@ -170,16 +186,16 @@ def artist_minting_demo():
         limitations = 'None'
         cost = 100000
     # Set the amount of the contract
-    contract_cost = st.number_input("Enter the amount of the contract:", value=cost, step=5)
+    contract_cost = st.number_input("##### Enter the amount of the contract:", value=cost, step=5)
     approved_artist_address = artist_wallet
-    artist_address = st.selectbox("Select your wallet address:", [artist_wallet, "0x1234", "0x5678"])
+    artist_address = artist_wallet
     #st.markdown("**:blue[@Joel - Below is where the artist's key would activate the minting process.]**")
-    artist_private_key = st.text_input("Enter your private key:", type='password', value = os.getenv("ARTIST_PRIVATE_KEY"))
+    #artist_private_key = st.text_input("Enter your private key:", type='password', value = os.getenv("ARTIST_PRIVATE_KEY"))
     # Allow the user to enter the location of the relevant MV
-    voice_print_choice = st.text_input("Enter the link to the MV:", type="password", value=f"https://mvstorage.com/{artist_address}")
+    voice_print_choice = st.text_input("##### Enter the link to the MV:", type="password", value=f"https://mvstorage.com/{artist_address}")
     voice_print_link = f"https://mvstorage.com/{artist_address}" if not voice_print_choice else voice_print_choice
-    # Select the wallet address of the label
-    label_address = st.selectbox("Select the wallet address of the label:", [label_wallet, "0x1234", "0x5678"])
+    # Enter the name of the counterparty
+    label_address = st.text_input("##### Name of the counterparty:", value="Universal Music Group")
     # Set the contract_id
     contract_id = str(uuid.uuid4()) # Generate a random UUID
     # Get the limitations of the contract
@@ -187,10 +203,12 @@ def artist_minting_demo():
     # Load in the logo
     #logo = Image.open("./resources/vl_logo1.png")
     #st.image(logo, width=100)
-    mint_nft_button = st.button("Mint NFT", type='primary', use_container_width=True)
+    st.text("")
+    mint_nft_button = st.button("Sign Contract and Mint NFT", type='primary', use_container_width=True)
    
     if mint_nft_button:
         with st.spinner("Minting NFT..."):
+            time.sleep(3)
             # Validate the form inputs
             if artist_address != approved_artist_address:
                 st.error("You are not authorized to mint this NFT or the label address is\
@@ -244,29 +262,35 @@ def label_interface():
     st.text("")
     # Display available NFTs
     st.markdown("""
-                <p style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 15px; font-weight: 550;">
-                Below we display a sample contract that a counterparty would see when
-                they are signing an NFT.  The contract is generated by the artist and
-                is immutable once it is signed by both parties.  The counterparty can
-                view the contract and sign it if they agree to the terms.  Once both
-                parties have signed, the NFT is minted and the full metadata is revealed.
-                </p>
-                """, unsafe_allow_html=True)
+    <div style='display: block; width: 100%;'>
+    <h4 id='headline' style="font-family: 'Montserrat', sans-serif; color: #fff;
+    font-size: 18px; font-weight: 550;  animation: fadeIn ease 3s;
+    -webkit-animation: fadeIn ease 3s; -moz-animation: fadeIn ease 3s; -o-animation:
+    fadeIn ease 3s; -ms-animation: fadeIn ease 3s;">
+    Below we display a sample contract that a counterparty would see when
+    they are signing an NFT.  The contract is generated by the artist and
+    is immutable once it is signed by both parties.  The counterparty can
+    view the contract and sign it if they agree to the terms.  Once both
+    parties have signed, payment will be handled securely behind our private blockchain, and the
+    the NFT representing the contract is minted on the Ethereum blockchain for verification and transparency.
+    </p>
+    """, unsafe_allow_html=True)
+    st.markdown("---")
     # Display the details of the NFT
-    st.markdown(f"**Contract ID:** {st.session_state.contract.contract_id}")
-    st.markdown(f"**Contract Type:** {st.session_state.contract.contract_type}")
-    st.markdown(f"**Cost**: ${st.session_state.contract.total_cost:.2f}")
-    st.markdown(f"**Limitations:** {st.session_state.contract.limitations}")
+    st.markdown(f"##### Contract ID: {st.session_state.contract.contract_id}")
+    st.markdown(f"##### Contract Type: {st.session_state.contract.contract_type}")
+    st.markdown(f"##### Cost: ${st.session_state.contract.total_cost:.2f}")
+    st.markdown(f"##### Limitations: {st.session_state.contract.limitations}")
 
     # Allow the user to select their wallet address
-    wallet_address = st.selectbox("Select your wallet address:", [label_wallet, "0x1234", "0x5678"])
+    wallet_address = label_wallet
     # User inputs their private key
-    private_key = st.text_input("Enter your private key:", type="password", value = os.getenv("LABEL_KEY"))
-    private_key = os.getenv("LABEL_KEY")
+    #private_key = st.text_input("Enter your private key:", type="password", value = os.getenv("LABEL_KEY"))
+    #private_key = os.getenv("LABEL_KEY")
     approved_wallet_address = label_wallet
     st.text("")
     # Signing process
-    if st.markdown("Once you have confirmed the details of the contract, sign by clicking the button below\
+    if st.warning("Once you have confirmed the details of the contract, sign by clicking the button below\
                    to receive the full NFT metadata."):
         # Create a button to sign the contract
         sign_button = st.button("Sign Contract", type='primary', use_container_width=True)
@@ -309,12 +333,11 @@ def label_interface():
 def display_nft_metadata():
     """ Displays the metadata of the NFT."""
     st.markdown("""
-                <p style="font-family: 'Montserrat', sans-serif; color: #EDC480; font-size: 20px; font-weight: 550;">
-                Congratulations! You have successfully signed the NFT and the artist has signed as well.  
-                The full metadata is listed below:</p>
+                <p style="font-family: 'Montserrat', sans-serif; color: #fff; font-size: 20px; font-weight: 550;">
+                Congratulations! The artist has approved your contract and you can begin creating magic with their
+                digital likeness by your side.</p>
                 """, unsafe_allow_html=True)
-    st.text("")
-    st.text("")
+    st.markdown("---")
     st.markdown(f"**Contract ID:** {st.session_state.contract.contract_id}")
     st.markdown(f"**Contract Type:** {st.session_state.contract.contract_type}")
     st.markdown(f"**Total Cost**: ${st.session_state.contract.total_cost:.2f}")
@@ -331,14 +354,21 @@ def display_nft_metadata():
                 studios, and others. By training unique large language models with the artist\'s approved data,\
                 this introduces a groundbreaking level of personalization, shifting the way music is created and experienced.'
                 )
-    chat_with_artist_button = st.button("Co-write with Combs", type='primary', use_container_width=True)
+    chat_with_artist_button = st.button("Explore Co-writer", type='primary', use_container_width=True)
     if chat_with_artist_button:
+        st.session_state.contract = None
+        st.session_state.nft_demo_page = "artist_minting_demo"
         switch_page("Co-writer")
     mint_new_nft_button = st.button("Mint a new NFT", type='primary', use_container_width=True)
     if mint_new_nft_button:
         st.session_state.contract = None
         st.session_state.nft_demo_page = "artist_minting_demo"
         st.experimental_rerun()
+    back_to_home_button = st.button("Back to Home", type='primary', use_container_width=True)
+    if back_to_home_button:
+        st.session_state.contract = None
+        st.session_state.nft_demo_page = "artist_minting_demo"
+        switch_page("main")
     
 # Call the function to display the page
 if st.session_state.nft_demo_page == "nft_demo_home":

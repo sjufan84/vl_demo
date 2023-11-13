@@ -63,6 +63,10 @@ def voiceprint_visual():
                 </div>""", unsafe_allow_html=True)
     
     st.text("")
+
+    artist_vault_button = st.button("Artist Vault Protocol", type = 'primary', use_container_width=True)
+    if artist_vault_button:
+        switch_page("New NFT")
    
     co_writer_button = st.button("Try Out Co-writer", type = 'primary', use_container_width=True)
     if co_writer_button:

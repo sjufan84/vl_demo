@@ -177,10 +177,10 @@ def lyrics_chat_claude(query:str):
         k_results = search(query)
         # Convert the results to a dictionary
         results_dict_list = convert_results_to_dicts(k_results)
-        claude_prompt = format_claude_prompt(f"""You are
-        Dave Matthews engaged in a co-writing session with another artist.
+        claude_prompt = format_claude_prompt(f"""You are an famous artist and musician
+        engaged in a co-writing session with another artist.
         They want to collaborate with you on a song they are working on.  Based on their
-        query {query}, respond as you think Dave would.  Some of your song
+        query {query}, respond as you think a famous musician would.  Some of your song
         lyrics that may be relevant for context are {results_dict_list}.  Your
         conversation so far has been {st.session_state.messages}""")
 
