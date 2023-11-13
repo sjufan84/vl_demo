@@ -147,7 +147,7 @@ async def chat_main():
             messages= new_prompt + [{"role": m["role"], "content": m["content"]} for m in st.session_state.cowriter_messages],
             stream=True,
             temperature=1,
-            max_tokens=200,
+            max_tokens=250,
             ):
             full_response += response.choices[0].delta.get("content", "")
             message_placeholder.markdown(full_response + "▌")
