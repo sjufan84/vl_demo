@@ -56,17 +56,17 @@ def main():
           st.markdown(prompt)
       # Load the prophet image for the avatar
       # Display assistant response in chat message container
-      with st.chat_message("assistant", avatar="🎸"):
+      with st.spinner("Dave is thinking..."):
         if st.session_state.thread_id:
           response = add_message_and_run(thread_id=st.session_state.thread_id, message_content=prompt)
         else:
           response = create_thread_run(message_content=prompt)
 
-      # Add assistant response to chat history
-      st.session_state.cowriter_messages.append({"role": "assistant", "content": json.loads(response)["message"]})
-      # Display assistant response in chat message container
-      with st.chat_message("assistant", avatar="🎸"):
-          st.markdown(json.loads(response)["message"])
+        # Add assistant response to chat history
+        st.session_state.cowriter_messages.append({"role": "assistant", "content": json.loads(response)["message"]})
+        # Display assistant response in chat message container
+        with st.chat_message("assistant", avatar="🎸"):
+            st.markdown(json.loads(response)["message"])
   if st.session_state.audio_bytes:
     with st.sidebar.container():
       st.markdown("**Current Audio Clip**")

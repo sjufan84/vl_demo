@@ -129,23 +129,25 @@ def poll_run_status(run_id: str, thread_id: str):
 
                 # Call the function
                 function_output = call_named_function(function_name=function_name, **parameters)
+                st.session_state.audio_bytes = function_output
+                # Convert the output from bytes to string
+                function_output = function_output.decode("utf-8")
                 
                 # Append the tool output
-                tool_outputs.append({
-                    "tool_call_id": tool_call_id,
-                    "output": function_output
-                })
+                #tool_outputs.append({
+                #    "tool_call_id": tool_call_id,
+                #    "output": function_output
+                #})
                 # Add a message to the thread for metadata storage
                 #add_message(thread_id=thread_id,
                 #function_name=function_name, meta_map=parameters)
                 # Append the tool return values
-                tool_return_values.append({
-                    "tool_name" : function_name,
-                    "output": function_output
-                })
-
+                #tool_return_values.append({
+                #    "tool_name" : function_name,
+                #    "output": function_output
+                #})
             # Submit the tool outputs to the run
-            run = client.beta.threads.runs.submit_tool_outputs(thread_id=thread_id, run_id=run_id, tool_outputs=tool_outputs)
+            run = client.beta.threads.runs.submit_tool_outputs(thread_id=thread_id, run_id=run_id, tool_outputs=[{"Audio generated successfully"}])
             run_status = run
         else:
             # If the status is "queued" or "in-progress", wait and then retrieve status again
@@ -159,7 +161,7 @@ def poll_run_status(run_id: str, thread_id: str):
         "thread_id": thread_id, 
         "message": final_messages.data[0].content[0].text.value,
         "run_id": run_id,
-        "tool_return_values": tool_return_values
+        #"tool_return_values": tool_return_values
     }
 
 # Define a function to receive and upload files to the assistant
@@ -280,7 +282,7 @@ def create_thread_run(message_content: str, message_metadata: object = {}):
   )
   st.session_state.thread_id = run.thread_id
   # Poll the run status
-  response = json.dumps(poll_run_status(run_id=run.id, thread_id=run.thread_id))
+  response = poll_run_status(run_id=run.id, thread_id=run.thread_id)
 
   return response
   
