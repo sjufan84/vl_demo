@@ -90,7 +90,7 @@ async def chat_main():
         closer every day to making that a reality.
         <br>
         <br>
-        Without giving away too much, we have created a much simplified way to test out the very tip
+        Without giving away too much, we have create a more simplified way to test out the very tip
         of the iceberg of what can be achieved with this technology.  You can engage with the artist
         in a text co-writing session back and forth, and in the very near future you will also be able to engage with the 
         artist musically, generating audio clips based on both the context of the chat as well as uploaded clips.
