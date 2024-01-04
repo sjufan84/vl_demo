@@ -4,8 +4,8 @@ This can be in the form of text or audio."""
 import asyncio
 import streamlit as st
 from dotenv import load_dotenv
-from utils.model_utils import get_inputs_from_llm
-from utils.musicgen_utils import get_music
+# from utils.model_utils import get_inputs_from_llm
+# from utils.musicgen_utils import get_music
 from dependencies import get_openai_client
 
 # Load environment variables
@@ -59,10 +59,10 @@ async def chat_main():
     # uploaded_audio = None
     st.session_state.chat_state = st.sidebar.radio("Chat Mode", ["text"])
     st.text("")
-    if st.session_state.chat_state == "audio":
-        if isinstance(st.session_state.current_clip, str):
-            st.sidebar.markdown("**Current Clip:**")
-            st.sidebar.audio(st.session_state.current_clip, format="audio/wav", sample_rate=32000)
+    # if st.session_state.chat_state == "audio":
+    #    if isinstance(st.session_state.current_clip, str):
+    #        st.sidebar.markdown("**Current Clip:**")
+    #        st.sidebar.audio(st.session_state.current_clip, format="audio/wav", sample_rate=32000)
         # Create a file uploader for the user to be able to upload their own audio
     #    uploaded_audio = st.sidebar.file_uploader("Upload an audio clip", type=["wav", "mp3"])
     # if uploaded_audio and st.session_state.original_clip is None:
@@ -139,7 +139,6 @@ async def chat_main():
         with st.chat_message("assistant", avatar="🎸"):
             message_placeholder = st.empty()
             full_response = ""
-        st.session_state.llm_inputs = get_inputs_from_llm()
         response = client.chat.completions.create(
             model="gpt-4-1106-preview",
             messages= new_prompt + [{"role": m["role"], "content": m["content"]}
@@ -155,10 +154,10 @@ async def chat_main():
           message_placeholder.markdown(full_response + "▌")
         message_placeholder.markdown(full_response)
         st.session_state.cowriter_messages.append({"role": "assistant", "content": full_response})
-        if st.session_state.chat_state == "audio":
-            with st.spinner("Composing your audio...  I'll be back shortly!"):
-                st.session_state.current_clip = await get_music(st.session_state.llm_inputs)
-                st.experimental_rerun()
+        # if st.session_state.chat_state == "audio":
+        #    with st.spinner("Composing your audio...  I'll be back shortly!"):
+        #        st.session_state.current_clip = await get_music(st.session_state.llm_inputs)
+        #        st.experimental_rerun()
 
 if __name__ == "__main__":
     asyncio.run(chat_main())
