@@ -82,7 +82,8 @@ def get_new_prompt(query: str):
         is {st.session_state.messages[-2:] if len(st.session_state.messages) > 2 else None}.
         You are a representative of the company, so answer the investor's questions
         on their behalf.  Do not break character and help them relay their plan in a way
-        that will help them get funding.
+        that will help them get funding.  Keep your answer concise and to the point as to not
+        lose the investor's attention.
         """
     }
 
@@ -119,8 +120,8 @@ def business_chat():
               model="gpt-4-1106-preview",
               messages=initial_message,
               stream=True,
-              temperature=0.75,
-              max_tokens=350,
+              temperature=0.6,
+              max_tokens=750,
           )
         for chunk in response:
           if chunk.choices[0].finish_reason == "stop":
