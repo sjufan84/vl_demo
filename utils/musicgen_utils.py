@@ -1,12 +1,11 @@
 """ Utility functions for the musicgen model """
 from typing import List
-#from transformers import AutoProcessor, MusicgenForConditionalGeneration
-#import streamlit as st
+from transformers import AutoProcessor, MusicgenForConditionalGeneration
+import streamlit as st
 import requests
-#from utils.model_utils import get_inputs_from_llm
+from utils.model_utils import get_inputs_from_llm
 
-
-'''if "llm_inputs" not in st.session_state:
+if "llm_inputs" not in st.session_state:
     st.session_state.llm_inputs = None
 
 @st.cache_resource
@@ -42,7 +41,7 @@ async def get_music(text: str = st.session_state.llm_inputs,
     audio = audio_values[0].detach().cpu().numpy()
     
     return audio
-'''
+
 """ Utility functions for the musicgen model """
 def generate_music(keywords: List[str]):
   API_URL = "https://api-inference.huggingface.co/models/facebook/musicgen-stereo-medium"
@@ -52,4 +51,4 @@ def generate_music(keywords: List[str]):
   }
   response = requests.post(API_URL, headers=headers, json=payload)
 	
-  return response.content # Return the audio bytes
+  return response.content  # Return the audio bytes

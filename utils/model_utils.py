@@ -9,14 +9,9 @@ from langchain.embeddings import OpenAIEmbeddings
 import openai
 import streamlit as st
 from dotenv import load_dotenv
+from dependencies import get_openai_client  # noqa
 
-
-load_dotenv() # Load the .env file
-
-# Read in the openai api key from the .env file
-openai.api_key = os.getenv("OPENAI_KEY2")
-# Read in the openai organization id from the .env file
-openai.organization = os.getenv("OPENAI_ORG2")
+client = get_openai_client()
 
 embed = OpenAIEmbeddings(
     model="text-embedding-ada-002",
@@ -104,7 +99,7 @@ def get_artist_response(question:str, artist:str = "Dave Matthews"):
     
     for model in models:
         try:
-            for response in openai.ChatCompletion.create(
+            completion = client.chat.completions.create(
                 model=model,
                 messages=messages,
                 max_tokens=500,
@@ -113,9 +108,10 @@ def get_artist_response(question:str, artist:str = "Dave Matthews"):
                 temperature=1,
                 n=1,
                 stream=True
-            ):
-                full_response += response.choices[0].delta.get("content", "")
-                if response.choices[0].delta.get("stop"):
+            )
+            for chunk in completion:
+                full_response += chunk.choices[0].delta
+                if chunk.choices[0].finish_reason == "stop":
                     break
             return full_response
         
@@ -169,7 +165,7 @@ def get_inputs_from_llm(artist:str = "Dave Matthews"):
     "gpt-3.5-turbo-16k", "gpt-3.5-turbo-0613"] # Set list of models to iterate through
     for model in models:
         try:
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model=model,
                 messages = messages,
                 max_tokens=200,

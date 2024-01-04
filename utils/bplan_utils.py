@@ -11,23 +11,23 @@ from langchain.retrievers import ContextualCompressionRetriever
 from langchain.retrievers.document_compressors import LLMChainExtractor
 from langchain.vectorstores import Pinecone
 from langchain.embeddings import OpenAIEmbeddings
+from dependencies import get_openai_client
 
 # Load the environment variables
 load_dotenv()
 
-# Load the OpenAI API key
-openai.api_key = os.getenv("OPENAI_KEY2")
-openai.organization = os.getenv("OPENAI_ORG2")
-
-# Load the Pinecone API key
-pinecone_key = os.getenv("PINECONE_KEY")
-pinecone_env = os.getenv("PINECONE_ENV")
-
-# Initialize pinecone
-pinecone.init(api_key=pinecone_key, environment=pinecone_env)
+# Load the OpenAI client
+client = get_openai_client()
 
 # Initialize the embeddings
-embed = OpenAIEmbeddings(openai_api_key=openai.api_key, openai_organization=openai.organization)
+def embed_text(text: str):
+  value = client.embeddings.create(
+  model="text-embedding-ada-002",
+  input=text,
+  encoding_format="float"
+  )
+  value = value.data[0].embedding
+  return value
 
 # Establish chat history and default model
 if "messages" not in st.session_state:
@@ -47,24 +47,26 @@ IMG_PATH = "./resources/business_plan_bob.png"  # Replace with your image's path
 business_bob = Image.open(IMG_PATH)
 
 def get_context(query: str):
-    """ Get the context from the business plan vector database."""
-    index = Pinecone.from_existing_index("bplan", embedding=embed)
-    retriever = index.as_retriever()
+  """ Get the context from the business plan vector database."""
+  pinecone.init(api_key=os.getenv("PINECONE_KEY"), environment=os.getenv("PINECONE_ENV"))
+  index = pinecone.Index('bplan') 
 
-    llm = ChatOpenAI(temperature=0, model="gpt-4-1106-preview",
-    openai_api_key=openai.api_key, openai_organization=openai.organization)
+  query_responses = index.query(
+    top_k=3,
+    include_metadata=True,
+    vector=embed_text(query),
+  )
 
-    #llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613")
-    compressor = LLMChainExtractor.from_llm(llm)
-    compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)
+  response_list = []
+  for response in query_responses.matches:
+    context = response.metadata["text"]
+    response_list.append(context)
 
-    compressed_docs = compression_retriever.get_relevant_documents(f"{query}")
-    return {"page_content": str([doc.page_content for doc in compressed_docs]), "metadata" : [doc.metadata for doc in compressed_docs]}
+  return response_list
 
-def get_new_prompt(query: str, model:str="openai"):
+def get_new_prompt(query: str):
     """ Get a new prompt from the OpenAI API """
-    if model == "openai":
-        context = get_context(query)
+    context = get_context(query)
     initial_message = {
         "role": "system",
         "content": f"""
@@ -113,17 +115,20 @@ def business_chat():
 
             initial_message = [get_new_prompt(prompt)]
 
-            for response in openai.ChatCompletion.create(
-                model="gpt-4-1106-preview",
-                messages=initial_message,
-                stream=True,
-                temperature=0.75,
-                max_tokens=500,
-                ):
-                full_response += response.choices[0].delta.get("content", "")
-                message_placeholder.markdown(full_response + "▌")
-            message_placeholder.markdown(full_response)
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
+            response = client.chat.completions.create(
+              model="gpt-4-1106-preview",
+              messages=initial_message,
+              stream=True,
+              temperature=0.75,
+              max_tokens=350,
+          )
+        for chunk in response:
+          if chunk.choices[0].finish_reason == "stop":
+            break
+          full_response += chunk.choices[0].delta.content
+          message_placeholder.markdown(full_response + "▌")
+        message_placeholder.markdown(full_response)
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
 
 def chat_state_sidebar():
     """ Sidebar for the chat state """

@@ -1,18 +1,10 @@
 """ Demo for securing the Melodic Voiceprint of an artist. \
     We will allow the user to upload and / or record a clip\
     of their voice and then generate a demo of the Melodic Voiceprint"""
-import io
 import time
 import librosa
-import numpy as np
 import streamlit as st
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from audio_recorder_streamlit import audio_recorder
-import plotly.express as px
 from streamlit_extras.switch_page_button import switch_page
-from utils.audio_processing import extract_features
 
 # Set the page configuration
 st.set_page_config(
@@ -74,7 +66,7 @@ def secure_home():
         original1 = librosa.load("./audio_samples/clones/joel_fcar.wav")
         st.audio(original1[0], sample_rate=original1[1])
         calculate_similarity1_button = st.button("Calculate Similarity Score",
-        type='primary', use_container_width=True, key='similarity1')
+                          type='primary', use_container_width=True, key='similarity1')
         if calculate_similarity1_button:
             with st.spinner("Calculating Similarity Score..."):
                 time.sleep(3)

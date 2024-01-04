@@ -12,52 +12,53 @@ load_dotenv()
 
 # Create a class for the contract
 class Contract:
-    """ Base class for the contract. """
-    def __init__(self, contract_type : str, amount : int, cost : float, limitations : str, mv_link : str, contract_id : str,
-                 artist_address : str = '', counterparty_address : str = ''):
-        """ Initialize the contract. """
-        self.contract_type = contract_type
-        self.amount = amount
-        self.cost = cost
-        self.limitations = limitations
-        self.initiated = False
-        self.artist_signed = False
-        self.counterparty_signed = False
-        self.total_cost = self.cost * self.amount
-        self.developer_fee = self.calculate_fee()
-        self.mv_link = mv_link
-        self.contract_id = contract_id
-        self.artist_address = artist_address
-        self.counterparty_address = counterparty_address
-        self.profit = self.total_cost - self.developer_fee
+  """ Base class for the contract. """
+  def __init__(self, contract_type : str, amount : int, cost : float, 
+  limitations : str, mv_link : str, contract_id : str,
+  artist_address : str = '', counterparty_address : str = ''):
+      """ Initialize the contract. """
+      self.contract_type = contract_type
+      self.amount = amount
+      self.cost = cost
+      self.limitations = limitations
+      self.initiated = False
+      self.artist_signed = False
+      self.counterparty_signed = False
+      self.total_cost = self.cost * self.amount
+      self.developer_fee = self.calculate_fee()
+      self.mv_link = mv_link
+      self.contract_id = contract_id
+      self.artist_address = artist_address
+      self.counterparty_address = counterparty_address
+      self.profit = self.total_cost - self.developer_fee
 
-    def initiate_contract(self):
-        """ Initiate the contract. """
-        self.initiated = True
+  def initiate_contract(self):
+    """ Initiate the contract. """
+    self.initiated = True
 
-    def artist_sign_contract(self):
-        """ Artist signs the contract. """
-        self.artist_signed = True
-    
-    def counterparty_sign_contract(self):
-        """ Counterparty signs the contract. """
-        self.counterparty_signed = True
-    
-    def get_contract_status(self):
-        """ Get the contract status. """
-        return self.initiated, self.artist_signed, self.counterparty_signed
-    
-    def get_contract_details(self):
-        """ Get the contract details. """
-        return self.contract_type, self.amount, self.cost, self.limitations
-    
-    def get_contract(self):
-        """ Get the contract. """
-        return self
-    
-    def calculate_fee(self):
-        """ Calculate the developer fee. """
-        return self.total_cost * 0.05
+  def artist_sign_contract(self):
+      """ Artist signs the contract. """
+      self.artist_signed = True
+  
+  def counterparty_sign_contract(self):
+      """ Counterparty signs the contract. """
+      self.counterparty_signed = True
+  
+  def get_contract_status(self):
+      """ Get the contract status. """
+      return self.initiated, self.artist_signed, self.counterparty_signed
+  
+  def get_contract_details(self):
+      """ Get the contract details. """
+      return self.contract_type, self.amount, self.cost, self.limitations
+  
+  def get_contract(self):
+      """ Get the contract. """
+      return self
+  
+  def calculate_fee(self):
+      """ Calculate the developer fee. """
+      return self.total_cost * 0.05
 
 # Connect to Ethereum (Replace with your provider URL)
 #w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:7545"))
@@ -169,8 +170,8 @@ def artist_minting_demo():
     # for minting the NFT
     # Load the artist wallet
     artist_wallet = os.getenv("ARTIST_WALLET")
-    label_wallet = os.getenv("LABEL_WALLET")
-    type_of_contract = st.selectbox('##### Type of Contract', options = ['MV Only', 'Co-writer', 'Personalized Content', 'Studio All Access'])
+    type_of_contract = st.selectbox('##### Type of Contract', options =
+                                    ['MV Only', 'Co-writer', 'Personalized Content', 'Studio All Access'])
     # Depending on which type of contract is selected, we will display the relevant information
     # Set the cost of the contract
     if type_of_contract == 'MV Only':

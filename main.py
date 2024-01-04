@@ -89,7 +89,7 @@ def home():
     <h5>
     “When <a href="https://www.nytimes.com/2023/04/19/arts/music/ai-drake-the-weeknd-fake.html"
     style="color:#3D82FF">an AI deepfake</a> song imitating Drake and the Weeknd was released
-    in April of this year, it revealed a reality that was once confined to <b>science fiction</b>. 
+    in April of last year, it revealed a reality that was once confined to <b>science fiction</b>. 
     The music industry was thrown into disarray as <b>legal, ethical, and business
     dilemmas</b> surrounding artificial intelligence in the arts emerged.
     </h5>
