@@ -176,7 +176,7 @@ async def chat_main():
                 st.session_state.current_clip = await musicgen_pipeline()
                 logging.info(f"Current clip: {st.session_state.current_clip}")
                 logging.debug("Rerunning app after composing audio.")
-                # st.rerun()
+                st.rerun()
     if st.session_state.current_clip:
         st.audio(sample_rate=st.session_state.current_clip[1], data=st.session_state.current_clip[0])
 
