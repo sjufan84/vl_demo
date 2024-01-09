@@ -26,7 +26,7 @@ def load_audio(audio_path: str) -> Tuple[torch.Tensor, int]:
     waveform, sample_rate = torchaudio.load(audio_path)
     # Flatten the tensor if it's multi-channel
     if waveform.ndim > 1:
-        waveform = torch.mean(waveform, dim=0, keepdim=True) # Average the channels
+        waveform = torch.mean(waveform, dim=0, keepdim=True)  # Average the channels
     return waveform, sample_rate
 
 def plot_waveform(_waveform: torch.Tensor, sr: int, title: str = "Waveform") -> go.Figure:
@@ -42,7 +42,7 @@ def plot_waveform(_waveform: torch.Tensor, sr: int, title: str = "Waveform") -> 
     fig.update_layout(title=title, xaxis_title="Time", yaxis_title="Amplitude")
     fig.update_yaxes(gridcolor="gray")
     fig.update_xaxes(gridcolor="gray")
-    
+
     return fig
 
 
@@ -75,7 +75,7 @@ def plot_spectrogram(_specgram, title="Spectrogram", ylabel="freq_bin"):
     fig = px.imshow(specgram_db, origin="lower", labels={'x': 'Frame', 'y': ylabel, 'color': 'dB'})
     if title:
         fig.update_layout(title=title)
-    
+
     return fig
 
 def generate_mel_spectrogram(_waveform, sample_rate):
@@ -164,10 +164,11 @@ def plot_pitch(_waveform, sr, _pitch):
 
     # Create the figure with two traces
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=time_axis_waveform, y=waveform[0],
-                line=dict(width=1, color="gray"), opacity=0.3, name="Waveform"))
-    fig.add_trace(go.Scatter(x=time_axis_pitch, y=pitch[0], line=dict(width=2,
-                color="green"), name="Pitch"))
+    fig.add_trace(go.Scatter(
+        x=time_axis_waveform, y=waveform[0],
+        line=dict(width=1, color="gray"), opacity=0.3, name="Waveform"))
+    fig.add_trace(go.Scatter(
+        x=time_axis_pitch, y=pitch[0], line=dict(width=2, color="green"), name="Pitch"))
 
     # Update layout
     fig.update_layout(title="Pitch Feature", xaxis_title="Time", yaxis_title="Amplitude")
@@ -179,14 +180,16 @@ def plot_pitch(_waveform, sr, _pitch):
 def plot_mfcc(_mfcc):
     """ Plot the MFCC using plotly """
     mfcc = _mfcc
-    fig = px.imshow(mfcc.squeeze().numpy(), origin="lower", labels={'x': 'Frame', 'y': 'Coefficients', 'color': 'Value'})
+    fig = px.imshow(mfcc.squeeze().numpy(),
+                    origin="lower", labels={'x': 'Frame', 'y': 'Coefficients', 'color': 'Value'})
     fig.update_layout(title="MFCC")
     return fig
 
 def plot_lfcc(_lfcc):
     """ Plot the LFCC using plotly """
     lfcc = _lfcc
-    fig = px.imshow(lfcc.squeeze().numpy(), origin="lower", labels={'x': 'Frame', 'y': 'Coefficients', 'color': 'Value'})
+    fig = px.imshow(lfcc.squeeze().numpy(),
+                    origin="lower", labels={'x': 'Frame', 'y': 'Coefficients', 'color': 'Value'})
     fig.update_layout(title="LFCC")
     return fig
 

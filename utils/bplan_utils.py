@@ -3,14 +3,8 @@ import os
 import base64
 from PIL import Image
 import streamlit as st
-import openai
 from dotenv import load_dotenv
 import pinecone
-from langchain.chat_models import ChatOpenAI
-from langchain.retrievers import ContextualCompressionRetriever
-from langchain.retrievers.document_compressors import LLMChainExtractor
-from langchain.vectorstores import Pinecone
-from langchain.embeddings import OpenAIEmbeddings
 from dependencies import get_openai_client
 
 # Load the environment variables
@@ -21,13 +15,13 @@ client = get_openai_client()
 
 # Initialize the embeddings
 def embed_text(text: str):
-  value = client.embeddings.create(
-  model="text-embedding-ada-002",
-  input=text,
-  encoding_format="float"
-  )
-  value = value.data[0].embedding
-  return value
+    value = client.embeddings.create(
+        model="text-embedding-ada-002",
+        input=text,
+        encoding_format="float"
+    )
+    value = value.data[0].embedding
+    return value
 
 # Establish chat history and default model
 if "messages" not in st.session_state:
@@ -43,26 +37,24 @@ def img_to_base64(img_path):
 
 # Use the function
 IMG_PATH = "./resources/business_plan_bob.png"  # Replace with your image's path
-#base64_string = img_to_base64(IMG_PATH)
+# base64_string = img_to_base64(IMG_PATH)
 business_bob = Image.open(IMG_PATH)
 
 def get_context(query: str):
-  """ Get the context from the business plan vector database."""
-  pinecone.init(api_key=os.getenv("PINECONE_KEY"), environment=os.getenv("PINECONE_ENV"))
-  index = pinecone.Index('bplan') 
+    """ Get the context from the business plan vector database."""
+    pinecone.init(api_key=os.getenv("PINECONE_KEY"), environment=os.getenv("PINECONE_ENV"))
+    index = pinecone.Index('bplan')
+    query_responses = index.query(
+        top_k=3,
+        include_metadata=True,
+        vector=embed_text(query),
+    )
+    response_list = []
+    for response in query_responses.matches:
+        context = response.metadata["text"]
+        response_list.append(context)
 
-  query_responses = index.query(
-    top_k=3,
-    include_metadata=True,
-    vector=embed_text(query),
-  )
-
-  response_list = []
-  for response in query_responses.matches:
-    context = response.metadata["text"]
-    response_list.append(context)
-
-  return response_list
+    return response_list
 
 def get_new_prompt(query: str):
     """ Get a new prompt from the OpenAI API """
@@ -77,7 +69,7 @@ def get_new_prompt(query: str):
         it for downstream use cases.  A potential investor is browing
         their demo and wants to ask questions about their business plan.
         You have access to the business plan via a vector database that
-        you can query with a search term.  The context returned from the 
+        you can query with a search term.  The context returned from the
         database is: {context}.  The query is {query}.  Your recent chat history
         is {st.session_state.messages[-2:] if len(st.session_state.messages) > 2 else None}.
         You are a representative of the company, so answer the investor's questions
@@ -117,12 +109,12 @@ def business_chat():
             initial_message = [get_new_prompt(prompt)]
 
             response = client.chat.completions.create(
-              model="gpt-4-1106-preview",
-              messages=initial_message,
-              stream=True,
-              temperature=0.6,
-              max_tokens=750,
-          )
+                model="gpt-4-1106-preview",
+                messages=initial_message,
+                stream=True,
+                temperature=0.6,
+                max_tokens=750,
+            )
         for chunk in response:
           if chunk.choices[0].finish_reason == "stop":
             break
@@ -134,7 +126,8 @@ def business_chat():
 def chat_state_sidebar():
     """ Sidebar for the chat state """
     # Create a radio button to select the page
-    chat_state = st.sidebar.radio('**:rainbow[Questions about the Business Plan?  Turn on "Business Chat" and get answers from our AI Business Advisor.]**', ("on", "off"), index=1)
+    chat_state = st.sidebar.radio('**:rainbow[Questions about the Business Plan?\
+    Turn on "Business Chat" and get answers from our AI Business Advisor.]**', ("on", "off"), index=1)
     if chat_state == "on":
         st.session_state.chat_state = "on"
         business_chat()
