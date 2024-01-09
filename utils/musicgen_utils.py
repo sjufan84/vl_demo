@@ -142,7 +142,7 @@ def musicgen_pipeline(prompt: str = None):
     generate_kwargs = {
         "do_sample": True,
         "temperature": 0.7,
-        "max_new_tokens": 350,
+        "max_new_tokens": 250,
     }
 
     # Generate the audio clip
