@@ -2,7 +2,7 @@
 the user to chat with Luke Combs and receive guidance on their song writing.
 This can be in the form of text or audio."""
 import logging
-import asyncio
+# import asyncio
 # from IPython.display import Audio
 import streamlit as st
 from dotenv import load_dotenv
@@ -36,7 +36,7 @@ def init_cowriter_session_variables():
 # Initialize session state variables
 init_cowriter_session_variables()
 
-async def chat_main():
+def chat_main():
     """ Main function for the chat page """
     if st.session_state.chat_state == "text":
         new_prompt = [{"role": "system", "content" : f"""
@@ -173,7 +173,7 @@ async def chat_main():
         st.session_state.cowriter_messages.append({"role": "assistant", "content": full_response})
         if st.session_state.chat_state == "audio":
             with st.spinner("Composing your audio...  I'll be back shortly!"):
-                st.session_state.current_clip = await musicgen_pipeline()
+                st.session_state.current_clip = musicgen_pipeline()
                 logging.info(f"Current clip: {st.session_state.current_clip}")
                 logging.debug("Rerunning app after composing audio.")
                 st.rerun()
@@ -182,4 +182,4 @@ async def chat_main():
 
 if __name__ == "__main__":
     logging.info("Starting main chat function.")
-    asyncio.run(chat_main())
+    chat_main()
