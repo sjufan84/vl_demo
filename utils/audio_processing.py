@@ -2,7 +2,7 @@
 from typing import Tuple
 import base64
 from io import BytesIO
-from IPython.display import Audio
+# from IPython.display import Audio
 import numpy as np
 import librosa
 import torch
@@ -44,11 +44,6 @@ def plot_waveform(_waveform: torch.Tensor, sr: int, title: str = "Waveform") -> 
     fig.update_xaxes(gridcolor="gray")
 
     return fig
-
-
-def play_audio(file) -> Audio:
-    """ Play the audio waveform using IPython.display.Audio """
-    return Audio(filename=file, rate=22050)
 
 def get_spectrogram(_waveform):
     """ Get the spectrogram from the waveform """

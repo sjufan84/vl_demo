@@ -12,5 +12,4 @@ torchaudio==2.1.2
 transformers
 openai==1.6.1
 pinecone-client==2.2.4
-ipython==8.20.0
 requests==2.31.0

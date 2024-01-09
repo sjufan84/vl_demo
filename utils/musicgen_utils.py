@@ -1,8 +1,6 @@
 import logging
 # import os
-import time
 import numpy as np
-import requests
 import streamlit as st
 from dependencies import get_openai_client
 # from huggingface_hub import InferenceClient
@@ -76,7 +74,7 @@ async def get_inputs_from_llm(artist: str = "Dave Matthews"):
             logging.error(f"Timeout error: {e}")
             continue
 
-async def get_audio_clip(inputs: str = None, max_retries: int = 5, wait_time: int = 15):
+'''async def get_audio_clip(inputs: str = None, max_retries: int = 5, wait_time: int = 15):
     """
     Function to get audio clip from the music generation model.
     It sends a POST request to the Hugging Face API and handles potential errors.
@@ -126,7 +124,7 @@ async def get_audio_clip(inputs: str = None, max_retries: int = 5, wait_time: in
 
     # If we reach the max number of retries, raise an error
     logging.error("Max number of retries reached.")
-    raise Exception("Max number of retries reached.")
+    raise Exception("Max number of retries reached.")'''
 
 async def musicgen_pipeline(prompt: str = None):
     """ Function to generate music clip based on user input """
