@@ -19,7 +19,7 @@ headers = {"Authorization": "Bearer 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"}
 
 @st.cache_resource
 def get_pipe():
-    music_generator = pipeline(task="text-tod-audio", model="facebook/musicgen-small")
+    music_generator = pipeline(task="text-to-audio", model="facebook/musicgen-small")
 
     return music_generator
 
