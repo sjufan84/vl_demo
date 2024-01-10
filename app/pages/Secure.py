@@ -63,7 +63,7 @@ def secure_home():
     col1, col2 = st.columns(2, gap="medium")
     with col1:
         st.markdown("Suspected Joel Deepfake:")
-        original1 = librosa.load("./audio_samples/clones/joel_fcar.wav")
+        original1 = librosa.load("./audio_samples/clones/joel_compare.wav")
         st.audio(original1[0], sample_rate=original1[1])
         calculate_similarity1_button = st.button("Calculate Similarity Score",
                           type='primary', use_container_width=True, key='similarity1')
@@ -76,7 +76,7 @@ def secure_home():
                             Take action immediately!]")
     with col2:
         st.markdown("Suspected Jenny Deepfake:")
-        original2 = librosa.load("./audio_samples/clones/tswift1.wav")
+        original2 = librosa.load("./audio_samples/clones/jenny_compare.wav")
         st.audio(original2[0], sample_rate=original2[1])
         calculate_similarity2_button = st.button("Calculate Similarity Score",
         type='primary', use_container_width=True, key='similarity2')
