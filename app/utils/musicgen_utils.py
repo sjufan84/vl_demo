@@ -23,7 +23,7 @@ def get_pipe():
 
     return music_generator
 
-def get_inputs_from_llm(artist: str = "Dave Matthews"):
+async def get_inputs_from_llm(artist: str = "Dave Matthews"):
     """
     Function to get inputs from LLM. It uses the OpenAI client
     to generate a prompt for the music generation model.
@@ -126,7 +126,7 @@ def get_inputs_from_llm(artist: str = "Dave Matthews"):
     logging.error("Max number of retries reached.")
     raise Exception("Max number of retries reached.")'''
 
-def musicgen_pipeline(prompt: str = None):
+async def musicgen_pipeline(prompt: str = None):
     """ Function to generate music clip based on user input """
     # Get the music generation pipeline
     music_generator = get_pipe()
@@ -134,7 +134,7 @@ def musicgen_pipeline(prompt: str = None):
 
     # Get the inputs for the LLM
     if prompt is None:
-        prompt = get_inputs_from_llm()
+        prompt = await get_inputs_from_llm()
     logging.info(f"Prompt: {prompt}")
 
     # diversify the music generation by adding randomness with

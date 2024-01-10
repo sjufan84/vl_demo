@@ -28,7 +28,7 @@ def init_session_variables():
         'messages'
     ]
     default_values = [
-        {}, 'record_audio', 'upload_audio', {},'home', {}, {},
+        {}, 'record_audio', 'upload_audio', {}, 'home', {}, {},
         'demo_visualize_home', "detailed_home", 'nft_demo_home', 0,
         '', 0, {}, [], 'chat_home', '', 'bplan_home', "gpt-4-0613", []
     ]
@@ -89,7 +89,7 @@ def home():
     <h5>
     “When <a href="https://www.nytimes.com/2023/04/19/arts/music/ai-drake-the-weeknd-fake.html"
     style="color:#3D82FF">an AI deepfake</a> song imitating Drake and the Weeknd was released
-    in April of last year, it revealed a reality that was once confined to <b>science fiction</b>. 
+    in April of last year, it revealed a reality that was once confined to <b>science fiction</b>.
     The music industry was thrown into disarray as <b>legal, ethical, and business
     dilemmas</b> surrounding artificial intelligence in the arts emerged.
     </h5>
@@ -108,7 +108,7 @@ def home():
         switch_page("Voice Swaps")
 
     st.text("")
-    
+
     # Display the "Business Chat" sidebar
     from utils.bplan_utils import chat_state_sidebar
     chat_state_sidebar()
